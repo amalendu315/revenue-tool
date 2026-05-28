@@ -1,0 +1,659 @@
+﻿@{
+    ViewData["Title"] = "Dashboard Page";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+
+    .tip-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: center;
+        margin: 0;
+    }
+
+        .tip-table th {
+            font-weight: 700 !important;
+            font-size: 11px;
+            color: #64748b;
+            padding: 6px 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .tip-table td {
+            font-weight: 600;
+            font-size: 12px;
+            color: #1e293b;
+            padding: 6px 12px;
+        }
+
+        .tip-table .pct-row td {
+            color: #0b5ed7;
+            background-color: rgba(13, 110, 253, 0.05);
+            border-radius: 4px;
+        }
+
+    .tip-box {
+        position: absolute;
+        display: none;
+        z-index: 1000;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        padding: 8px;
+        min-width: 250px;
+    }
+
+    .cal-range-text {
+        white-space: normal !important;
+        display: block;
+        line-height: 1.2;
+        font-size: 13px;
+    }
+
+    /* Fix DataTable Column Width */
+    #calendarTable {
+        table-layout: fixed !important;
+    }
+
+        #calendarTable td:nth-child(4) { /* Target 'Date Range' column */
+            white-space: normal !important;
+            word-wrap: break-word !important;
+            max-width: 150px !important;
+        }
+</style>
+
+
+<div class="page-content">
+    <div class="container-fluid">
+        <div class="conatiner cox">
+            <div class="row">
+                <div class="col-md-2 col-12 d-flex justify-content-start align-items-center">
+                    <h4 class="mb-sm-0"> Festival calander </h4>
+                </div>
+
+                <div class="col-md-10 col-12">
+                    <div class="row g-1 align-items-center justify-content-end">
+                        <div class="col-lg-auto col-md-6 col-12 col-sm">
+                            <div class="input-group shadow-sm d-flex">
+                                <input type="text" id="searchEventInput" class="form-control border-0 ps-2" placeholder="Search events..." style="min-width: 250px; height: 38px;">
+                            </div>
+                        </div>
+
+                        <!-- DOMESTIC / INTERNATIONAL FILTER -->
+                        <div class="col-lg-auto col-md-6 col-12 col-sm-6 col-md-auto">
+                            <select id="sectorTypeFilter" class="form-select w-auto font-weight-bold shadow-sm text-primary">
+                                <option value="All" selected>All Sectors</option>
+                                <option value="Domestic">Domestic</option>
+                                <option value="International">International</option>
+                            </select>
+                        </div>
+
+                        <div class="col-lg-auto col-md-6 col-6 col-sm-auto">
+                            <div class="form-check mb-0">
+                                <input class="form-check-input" type="radio" name="flexRadioDefault" id="radio1" checked>
+                                <label class="form-check-label" for="radio1">All</label>
+                            </div>
+                        </div>
+                        <div class="col-lg-auto col-md-6 col-6 col-sm-auto">
+                            <div class="form-check mb-0">
+                                <input class="form-check-input" type="radio" name="flexRadioDefault" id="radio3">
+                                <label class="form-check-label" for="radio3"> Normal Blackout</label>
+                            </div>
+                        </div>
+                        <div class="col-lg-auto col-md-6 col-6 col-sm-auto">
+                            <div class="form-check mb-0">
+                                <input class="form-check-input" type="radio" name="flexRadioDefault" id="radio2">
+                                <label class="form-check-label" for="radio2">High Blackout</label>
+                            </div>
+                        </div>
+                        <div class="col-lg-auto col-md-6 col-6 col-sm-auto">
+                            <div class="form-check mb-0">
+                                <input class="form-check-input" type="radio" name="flexRadioDefault" id="radio4">
+                                <label class="form-check-label" for="radio4">Weekend</label>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-auto col-md-6  col-6 col-sm-4">
+                            <select id="yearFilter" class="form-select w-auto font-weight-bold shadow-sm">
+                                <option value="2024">2024</option>
+                                <option value="2025">2025</option>
+                                <option value="2026" selected>2026</option>
+                                <option value="2027">2027</option>
+                                <option value="2028">2028</option>
+                            </select>
+                        </div>
+
+                        <div class="col-lg-auto col-md-6 col-6 col-sm-4">
+                            <select id="monthFilter" class="form-select w-auto shadow-sm">
+                                <option value="All" selected>All Months</option>
+                                <option value="January">January</option>
+                                <option value="February">February</option>
+                                <option value="March">March</option>
+                                <option value="April">April</option>
+                                <option value="May">May</option>
+                                <option value="June">June</option>
+                                <option value="July">July</option>
+                                <option value="August">August</option>
+                                <option value="September">September</option>
+                                <option value="October">October</option>
+                                <option value="November">November</option>
+                                <option value="December">December</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cal-container">
+            <div class="cal-toolbar">
+                <span class="cal-toolbar-title">Detailed calendar</span>
+                <div class="cal-view-toggle">
+                    <button class="cal-view-btn cal-active" id="cal-btn-cards" onclick="setCalView('cards')">Cards</button>
+                    <button class="cal-view-btn" id="cal-btn-list" onclick="setCalView('list')">List</button>
+                </div>
+            </div>
+
+            <!-- 1. LOADING STATE UI -->
+            <div id="loading-overlay" style="padding: 4rem; text-align: center;">
+                <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <h5 class="mt-3 text-muted">Analyzing Data...</h5>
+                <p class="text-muted small">Please wait while we fetch the latest events and blackout dates.</p>
+            </div>
+
+            <!-- 2. ERROR FEEDBACK UI -->
+            <div id="error-overlay" style="display:none; padding: 2rem; background: #fff3f3; border: 1px solid #ffcdd2; border-radius: 8px; margin: 1rem 0;">
+                <h5 class="text-danger mb-2">Failed to load data</h5>
+                <p id="error-message" class="text-danger mb-0"></p>
+            </div>
+
+            <!-- 3. RENDER CONTENT OVERLAY -->
+            <div id="content-overlay" style="display:none;">
+                <div id="cal-card-view" style="padding: 1rem 0;"></div>
+
+                <div id="list-view" style="display:none;">
+                    <table id="calendarTable" class="display responsive nowrap" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Event</th>
+                                <th>Date</th>
+                                <th>Day</th>
+                                <th>Date range</th>
+                                <th>Days Count</th>
+                                <th>No. Of Sector</th>
+                                <th>No. Of Flight</th>
+                                <th>Flight Seat Capacity</th>
+                                <th>Target Seat</th>
+                                <th>Achived</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="list-tbody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let allEvents = [];
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const yearFilter = document.getElementById('yearFilter');
+            const monthFilter = document.getElementById('monthFilter');
+            const sectorTypeFilter = document.getElementById('sectorTypeFilter');
+
+            document.getElementById('searchEventInput').addEventListener('input', applyFilters);
+
+            loadDataForYear(yearFilter.value);
+
+            yearFilter.addEventListener('change', function () {
+                monthFilter.value = 'All'; // Reset month when year changes
+                loadDataForYear(this.value);
+            });
+
+            document.querySelectorAll('input[name="flexRadioDefault"]').forEach(radio => {
+                radio.addEventListener('change', applyFilters);
+            });
+
+            monthFilter.addEventListener('change', applyFilters);
+            sectorTypeFilter.addEventListener('change', applyFilters);
+        });
+
+        function loadDataForYear(year) {
+            document.getElementById('content-overlay').style.display = 'none';
+            document.getElementById('error-overlay').style.display = 'none';
+            document.getElementById('loading-overlay').style.display = 'block';
+
+            // Automatic logic: include past if looking at historical years
+            const includePast = parseInt(year) < new Date().getFullYear();
+
+            fetch(`/Dashboard/GetDashboardData?year=${year}&includePast=${includePast}`)
+                .then(res => res.json())
+                .then(result => {
+                    document.getElementById('loading-overlay').style.display = 'none';
+
+                    if (!result.success) {
+                        showError(result.message);
+                        return;
+                    }
+
+                    allEvents = result.data || [];
+                    document.getElementById('content-overlay').style.display = 'block';
+                    applyFilters();
+                })
+                .catch(err => {
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    showError("Network error while connecting to controller: " + err.message);
+                });
+        }
+
+        function showError(msg) {
+            document.getElementById('error-overlay').style.display = 'block';
+            let formattedMsg = msg;
+
+            if (msg.includes("Unauthorized") || msg.includes("401")) {
+                formattedMsg += "<br><br><strong style='color:#b71c1c;'>Security Note:</strong> Your Azure session token has expired or is invalid. <br><br> <a href='/Login/Logout' class='btn btn-danger btn-sm'>Log Out & Refresh Token</a>";
+            }
+
+            document.getElementById('error-message').innerHTML = formattedMsg;
+        }
+
+        // --- DYNAMIC ROLL-UP FILTERING LOGIC ---
+        // --- DYNAMIC ROLL-UP FILTERING LOGIC ---
+        function applyFilters() {
+            let filtered = [];
+            const searchQuery = document.getElementById('searchEventInput').value.toLowerCase().trim();
+            const isNormalBlackout = document.getElementById('radio3').checked;
+            const isHighBlackout = document.getElementById('radio2').checked;
+            const isWeekend = document.getElementById('radio4').checked;
+            const selectedMonth = document.getElementById('monthFilter').value;
+            const sectorType = document.getElementById('sectorTypeFilter').value;
+
+            allEvents.forEach(e => {
+
+                // 1. Text Search
+                if (searchQuery !== "" && !e.name.toLowerCase().includes(searchQuery)) {
+                    return;
+                }
+
+                // 2. Weekend Search: Only show events strictly containing "Weekend" in the name!
+                if (isWeekend && !e.name.toLowerCase().includes('weekend')) {
+                    return;
+                }
+
+                // 3. Sector Type Filter & Stats Swap
+                let sCovered = e.sectorsCovered;
+                let sourceStats = e.dailyStats; // Default to all days
+
+                // Use the backend-provided data to switch our target days and seats!
+                if (sectorType === "Domestic") {
+                    sCovered = e.totalDomSectors;
+                    sourceStats = e.domDailyStats || [];
+                }
+                else if (sectorType === "International") {
+                    sCovered = e.totalIntlSectors;
+                    sourceStats = e.intlDailyStats || [];
+                }
+
+                // Hide event if it has 0 sectors of the selected type
+                if (sCovered === 0 && sectorType !== 'All') return;
+
+                // 4. Filter the specific travel days of the event
+                let validDays = sourceStats.filter(day => {
+                    let pass = true;
+                    const dDate = new Date(day.date);
+                    const priority = (day.priority || "Normal").toLowerCase();
+                    const dayMonthName = dDate.toLocaleString('en-US', { month: 'long' });
+
+                    if (isNormalBlackout) {
+                        pass = pass && (priority !== 'high');
+                    } else if (isHighBlackout) {
+                        pass = pass && (priority === 'high');
+                    }
+
+                    if (selectedMonth !== "All") {
+                        pass = pass && (dayMonthName === selectedMonth);
+                    }
+
+                    return pass;
+                });
+
+                if (validDays.length > 0) {
+                    let tSeat = 0;
+                    let ach = 0;
+                    let fCount = 0;
+                    let uniqueDatesSet = new Set();
+
+                    validDays.forEach(day => {
+                        tSeat += day.targetSeat;
+                        ach += day.achieved;
+                        fCount += day.flightCount;
+                        uniqueDatesSet.add(day.date);
+                    });
+
+                    const uniqueDates = Array.from(uniqueDatesSet).sort();
+                    // FIX: Get only the FIRST and LAST dates from the filtered set
+                    const firstDate = new Date(uniqueDates[0]);
+                    const lastDate = new Date(uniqueDates[uniqueDates.length - 1]);
+                    let dateRangeStr = formatDateShort(firstDate) + " - " + formatDate(lastDate);
+
+                    // CRITICAL FIX: Group dates into continuous chunks to prevent the disjointed illusion!
+                    let dateChunks = [];
+                    let currentStart = new Date(uniqueDates[0]);
+                    let currentEnd = currentStart;
+
+                    for (let i = 1; i < uniqueDates.length; i++) {
+                        let d = new Date(uniqueDates[i]);
+
+                        // If gap is 7 days or less (604800000ms), keep stretching the current chunk
+                        if (d - currentEnd <= 604800000) {
+                            currentEnd = d;
+                        } else {
+                            dateChunks.push({ start: currentStart, end: currentEnd });
+                            currentStart = d;
+                            currentEnd = d;
+                        }
+                    }
+                    dateChunks.push({ start: currentStart, end: currentEnd });
+
+                    // Map the chunks into a clean, comma-separated string
+                    // let dateRangeStr = dateChunks.map(c => {
+                    //     if (c.start.getTime() === c.end.getTime()) {
+                    //         return formatDate(c.start);
+                    //     } else if (c.start.getFullYear() === c.end.getFullYear()) {
+                    //         return formatDateShort(c.start) + " – " + formatDate(c.end);
+                    //     } else {
+                    //         return formatDate(c.start) + " – " + formatDate(c.end);
+                    //     }
+                    // }).join(", ");
+
+                    let theme = tSeat >= 1200 ? "red" : (tSeat >= 600 ? "yellow" : "green");
+
+                    filtered.push({
+                        id: e.id,
+                        name: e.name,
+                        eventDate: e.eventDate,
+                        dateRange: dateRangeStr, // Now just First-Last
+                        daysCount: uniqueDates.length,
+                        sectorsCovered: sCovered, // Shows domestic/intl breakdown
+                        flightCount: fCount,
+                        paxCapacity: fCount * 150,
+                        targetSeat: tSeat,
+                        achieved: ach,
+                        isImportant: e.isImportant,
+                        categoryClass: e.isImportant ? "cal-badge-festival" : "cal-badge-holiday",
+                        themeColor: theme,
+                        airlinesBreakdown: e.airlinesBreakdown,
+                        airlineAchieved: e.airlineAchieved
+                    });
+                }
+            });
+
+            filtered.sort((a, b) => new Date(a.eventDate) - new Date(b.eventDate));
+
+            renderCards(filtered, sectorType);
+            renderList(filtered, sectorType);
+        }
+
+        function formatDate(date) {
+            return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+        function formatDateShort(date) {
+            return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+        }
+
+        function renderCards(data, sectorType) {
+            const cardView = document.getElementById('cal-card-view');
+
+            if (data.length === 0) {
+                const yearText = document.getElementById('yearFilter').value;
+                const monthText = document.getElementById('monthFilter').value !== 'All' ? ` in ${document.getElementById('monthFilter').value}` : '';
+                const typeText = document.getElementById('sectorTypeFilter').value !== 'All' ? ` ${document.getElementById('sectorTypeFilter').value}` : '';
+                const searchText = document.getElementById('searchEventInput').value.trim() !== '' ? ` matching "${document.getElementById('searchEventInput').value}"` : '';
+                cardView.innerHTML = `<div class="text-center text-muted" style="padding: 4rem 0;"><h5>No active events found.</h5><p>There are no upcoming${typeText} blackout events${searchText} for ${yearText}${monthText}.</p></div>`;
+                return;
+            }
+
+            const grouped = data.reduce((acc, curr) => {
+                const d = new Date(curr.eventDate);
+                const key = d.toLocaleString('en-GB', { month: 'long' }) + ' Events ' + d.getFullYear();
+                if (!acc[key]) acc[key] = [];
+                acc[key].push(curr);
+                return acc;
+            }, {});
+
+            let html = '';
+            let isFirst = true;
+
+            for (const [groupName, items] of Object.entries(grouped)) {
+                html += `<h5 class="${isFirst ? '' : 'mt-5'}">${groupName}</h5>`;
+                html += `<div class="cal-card-grid">`;
+
+                items.forEach(item => {
+                    const percentage = item.targetSeat > 0 ? Math.round((item.achieved * 100) / item.targetSeat) : 0;
+                    const remaining = Math.max(0, item.targetSeat - item.achieved);
+
+                    const themeColor = item.themeColor || 'green';
+                    const barClass = `bar-${themeColor}`;
+                    const bgClass = `bg-${themeColor}`;
+                    const pctClass = `pct-${themeColor}`;
+                    const remClass = `rem-${themeColor}`;
+                    const targetColorClass = themeColor === 'green' ? '' : `target-${themeColor}`;
+                    const cardClass = item.isImportant ? 'cal-event-card festival' : 'cal-event-card';
+
+                    let titleHtml = item.isImportant ? `
+                                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                                    <span class="cal-card-title">${item.name}</span>
+                                    <div class="sparkle-wrap" style="flex-shrink:0;">
+                                        <span class="sparkle">✦</span><span class="sparkle">✦</span><span class="sparkle">✦</span>
+                                        <div class="festival-badge"><span class="festival-dot"></span>Festival</div>
+                                    </div>
+                                </div>` : `<span class="cal-card-title">${item.name}</span>`;
+
+                    html += `
+                            <div class="${cardClass}">
+                                ${titleHtml}
+                                <div class="cal-divider"></div>
+                                <div class="cal-meta-row">
+                                    <div>
+                                        <div class="cal-meta-label">Occasion date</div>
+                                        <div class="cal-meta-value">${new Date(item.eventDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                                    </div>
+                                    <div>
+                                        <div class="cal-meta-label">Day</div>
+                                        <div class="cal-meta-value">${new Date(item.eventDate).toLocaleDateString('en-GB', { weekday: 'long' })}</div>
+                                    </div>
+                                </div>
+                                        <div class="cal-range-row" style="align-items: flex-start;">
+                                            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="flex-shrink: 0; margin-top: 2px;">
+                                                <rect x="2" y="3" width="12" height="11" rx="1.5" />
+                                                <path d="M5 2v2M11 2v2M2 7h12" />
+                                            </svg>
+                                            <span class="cal-range-text" style="white-space: normal; line-height: 1.4; flex-grow: 1; padding-right: 5px; word-break: break-word;">${item.dateRange}</span>
+                                            <span class="cal-days-pill" style="flex-shrink: 0; align-self: flex-start;">${item.daysCount} days</span>
+                                        </div>
+                                <div class="cal-stat-row">
+                                    <div class="cal-stat-cell">
+                                        <span class="cal-meta-label">Sectors covered</span>
+                                        <span class="cal-stat-num">${item.sectorsCovered}</span>
+                                    </div>
+                                    <div class="cal-stat-cell">
+                                        <span class="cal-meta-label">Pax capacity</span>
+                                        <span class="cal-stat-num">${item.paxCapacity.toLocaleString()}</span>
+                                    </div>
+                                </div>
+                                <div class="cal-divider"></div>
+                                <div class="cal-seat-row">
+                                    <div class="cal-seat-labels">
+                                        <span class="cal-meta-label" style="margin-bottom:0;">Seats</span>
+                                        <span class="cal-seat-target ${targetColorClass}">Target: ${item.targetSeat}</span>
+                                    </div>
+                                    <div class="cal-seat-bar-bg">
+                                        <div class="cal-seat-bar-fill ${barClass}" style="width:${percentage}%"></div>
+                                    </div>
+                                    <div class="cal-seat-labels">
+                                        <span class="cal-seat-achieved">${item.achieved} achieved</span>
+                                        <span class="${pctClass}">${percentage}%</span>
+                                    </div>
+                                </div>
+                                <div class="cal-remaining-row ${bgClass}">
+                                    <span class="cal-remaining-label">Remaining</span>
+                                    <span class="cal-remaining-num ${remClass}">${remaining} seats left</span>
+                                </div>
+                                <a href="/OccasionDetails/Index/${item.id}?sectorType=${encodeURIComponent(sectorType)}" class="cal-details-link">View details →</a>
+                            </div>`;
+                });
+                html += `</div>`;
+                isFirst = false;
+            }
+            cardView.innerHTML = html;
+        }
+
+        function renderList(data, sectorType) {
+            if (typeof $ !== 'undefined' && $.fn.DataTable.isDataTable('#calendarTable')) {
+                $('#calendarTable').DataTable().destroy();
+            }
+
+            let html = '';
+
+            data.forEach(item => {
+                let tipBoxHtml = '';
+                if (item.airlineAchieved && Object.keys(item.airlineAchieved).length > 0) {
+                    let validAirlines = Object.entries(item.airlineAchieved).filter(([k]) => k && k.toLowerCase() !== 'total');
+                    let totalAch = validAirlines.reduce((sum, [code, count]) => sum + count, 0);
+                    let calcTotal = totalAch === 0 ? 1 : totalAch;
+
+                    let ths = '';
+                    let countTds = '';
+                    let pctTds = '';
+
+                    for (const [code, count] of validAirlines) {
+                        ths += `<th>${code}</th>`;
+                        countTds += `<td>${count}</td>`;
+                        let pct = Math.round((count / calcTotal) * 100);
+                        pctTds += `<td>${pct}%</td>`;
+                    }
+
+                    ths += `<th>Total</th>`;
+                    countTds += `<td style="font-weight: 800; color: #0b5ed7;">${totalAch}</td>`;
+                    pctTds += `<td style="font-weight: 800; color: #0b5ed7;">100%</td>`;
+
+                    tipBoxHtml = `
+                            <table class="tip-table">
+                                <thead><tr>${ths}</tr></thead>
+                                <tbody>
+                                    <tr>${countTds}</tr>
+                                    <tr class="pct-row">${pctTds}</tr>
+                                </tbody>
+                            </table>`;
+                } else {
+                    const oldBreakdown = item.airlinesBreakdown ? item.airlinesBreakdown.map(a => `<li>${a}</li>`).join('') : '';
+                    tipBoxHtml = `<ul>${oldBreakdown}</ul>`;
+                }
+
+                html += `
+                        <tr>
+                            <td>${item.name}</td>
+                            <td>${new Date(item.eventDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                            <td>${new Date(item.eventDate).toLocaleDateString('en-GB', { weekday: 'long' })}</td>
+                            <td>${item.dateRange}</td>
+                            <td>${item.daysCount}</td>
+                            <td>${item.sectorsCovered}</td>
+                            <td>${item.flightCount}</td>
+                            <td>${item.paxCapacity.toLocaleString()}</td>
+                            <td>${item.targetSeat}</td>
+                            <td style="position:relative;">
+                                ${item.achieved}
+                                <button class="tip-btn" onclick="toggleTip(this)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-info">
+                                        <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                    </svg>
+                                </button>
+                                <div class="tip-box overflow-hidden">${tipBoxHtml}</div>
+                            </td>
+                            <td><a href="/OccasionDetails/Index/${item.id}?sectorType=${encodeURIComponent(sectorType)}">View details →</a></td>
+                        </tr>`;
+            });
+
+            document.getElementById('list-tbody').innerHTML = html;
+
+            if (typeof $ !== 'undefined' && $.fn.DataTable) {
+                $('#calendarTable').DataTable({
+                    responsive: true,
+                    paging: true,
+                    pageLength: 10,
+                    lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                    searching: true,
+                    ordering: true,
+                    dom: '<"d-flex justify-content-between align-items-center mb-3"if>rt<"d-flex justify-content-between align-items-center mt-3"lp><"clear">',
+                    language: {
+                        search: "_INPUT_",
+                        searchPlaceholder: "Search sectors...",
+                        info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                        infoEmpty: "Showing 0 entries",
+                        lengthMenu: "Show _MENU_ entries"
+                    },
+                    columnDefs: [
+
+                        { targets: [8], orderable: true }
+                    ]
+                });
+            }
+        }
+
+        function setCalView(view) {
+            if (view === 'cards') {
+                document.getElementById('cal-card-view').style.display = 'block';
+                document.getElementById('list-view').style.display = 'none';
+                document.getElementById('cal-btn-cards').classList.add('cal-active');
+                document.getElementById('cal-btn-list').classList.remove('cal-active');
+            } else {
+                document.getElementById('cal-card-view').style.display = 'none';
+                document.getElementById('list-view').style.display = 'block';
+                document.getElementById('cal-btn-list').classList.add('cal-active');
+                document.getElementById('cal-btn-cards').classList.remove('cal-active');
+
+                if (typeof $ !== 'undefined' && $.fn.DataTable.isDataTable('#calendarTable')) {
+                    $('#calendarTable').DataTable().columns.adjust().responsive.recalc();
+                }
+            }
+        }
+
+        function toggleTip(btn) {
+            document.querySelectorAll('.tip-box').forEach(box => {
+                if (box !== btn.nextElementSibling) box.style.display = 'none';
+            });
+
+            let box = btn.nextElementSibling;
+            let isOpening = box.style.display !== 'block';
+
+            if (isOpening) {
+                box.style.display = 'block';
+
+                if (window.innerWidth > 768) {
+                    let btnRect = btn.getBoundingClientRect();
+                    let boxWidth = box.offsetWidth;
+                    let boxHeight = box.offsetHeight;
+
+                    box.style.top = (btn.offsetTop - (boxHeight / 2) + (btn.offsetHeight / 2)) + "px";
+
+                    if (btnRect.right + boxWidth + 30 > window.innerWidth) {
+                        box.style.left = (btn.offsetLeft - boxWidth - 10) + "px";
+                    } else {
+                        box.style.left = (btn.offsetLeft + btn.offsetWidth + 10) + "px";
+                    }
+                }
+            } else {
+                box.style.display = 'none';
+            }
+        }
+    </script>
+}

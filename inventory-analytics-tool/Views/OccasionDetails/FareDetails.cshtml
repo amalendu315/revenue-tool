@@ -1,0 +1,285 @@
+﻿@{
+    ViewData["Title"] = "Fare Details Page";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .tip-table { width: 100%; border-collapse: collapse; text-align: center; margin: 0; }
+    .tip-table th { font-weight: 700 !important; font-size: 11px; color: #64748b; padding: 6px 12px; border-bottom: 1px solid #e2e8f0; }
+    .tip-table td { font-weight: 600; font-size: 12px; color: #1e293b; padding: 6px 12px; }
+    .tip-table .pct-row td { color: #0b5ed7; background-color: rgba(13, 110, 253, 0.05); border-radius: 4px; }
+    .tip-box { position: absolute; display: none; z-index: 1000; background: #fff; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); border-radius: 8px; padding: 8px; min-width: 250px; }
+    .tip-btn { background: none; border: none; padding: 0; margin-left: 4px; color: #64748b; cursor: pointer; }
+    .tip-btn:hover { color: #0b5ed7; }
+</style>
+
+<div class="page-content">
+    <div class="container-fluid">
+
+        <div class="conatiner cox">
+            <div class="row">
+                <div class="col-6 d-flex justify-content-start align-items-center gap-3">
+                    <a href="/OccasionDetails/Index/@ViewBag.EventId?sectorType=@ViewBag.SectorType" class="btn btn-sm btn-light border shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" title="Back to Sector Details">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    </a>
+                    <h4 class="mb-sm-0"> Fare Details: <span class="text-primary">@ViewBag.EventName -> @ViewBag.Sector</span> </h4>
+                </div>
+                <div class="col-6">
+                    <div class="row">
+                        <div class="col-md-12 d-flex justify-content-end align-items-center">
+                            <select id="inputState" class="form-select w-auto shadow-sm" data-choices="" data-choices-sorting="true">
+                                <option selected>Filter By Month</option>
+                                <option value="January">January</option>
+                                <option value="February">February</option>
+                                <option value="March">March</option>
+                                <option value="April">April</option>
+                                <option value="May">May</option>
+                                <option value="June">June</option>
+                                <option value=\"July\">July</option>
+                                <option value="August">August</option>
+                                <option value="September">September</option>
+                                <option value="October">October</option>
+                                <option value="November">November</option>
+                                <option value="December">December</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="boxes position-relative bg-white shadow-sm rounded-4 p-4 mt-3 w-100">
+            <div id="loading-overlay" style="padding: 4rem; text-align: center;">
+                <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <h5 class="mt-3 text-muted">Fetching Fare Details...</h5>
+                <p class="text-muted small">Loading travel date level breakdown for @ViewBag.Sector</p>
+            </div>
+
+            <div id="error-overlay" style="display:none; padding: 2rem; background: #fff3f3; border: 1px solid #ffcdd2; border-radius: 8px; margin: 1rem 0;">
+                <h5 class="text-danger mb-2">Failed to load data</h5>
+                <p id="error-message" class="text-danger mb-0"></p>
+            </div>
+
+            <div id="content-overlay" style="display:none; width: 100%;">
+                <table id="calendarTable" class="display responsive nowrap w-100" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Sector</th>
+                            <th>DOJ</th>
+                            <th>Airlines</th>
+                            <th>Flight Count</th>
+                            <th>Total Strength</th>
+                            <th>Target Seats</th>
+                            <th>Achieved</th>
+                            <th>Attempt Count</th>
+                            <th>Target Fare</th>
+                            <th>Avg. Pur. Fare</th>
+                            <th>Last Online Fare</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="list-tbody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let allFares = [];
+        const currentEventId = @ViewBag.EventId;
+        const currentSector = '@ViewBag.Sector';
+        const currentSectorType = '@ViewBag.SectorType';
+
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch(`/OccasionDetails/GetFareData?eventId=${currentEventId}&sector=${encodeURIComponent(currentSector)}&year=2026`)
+                .then(res => res.json())
+                .then(result => {
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    if (!result.success) {
+                        showError(result.message);
+                        return;
+                    }
+
+                    allFares = result.data || [];
+                    document.getElementById('content-overlay').style.display = 'block';
+                    applyFilters();
+                })
+                .catch(err => {
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    showError("Network error while connecting to controller: " + err.message);
+                });
+
+            document.getElementById('inputState').addEventListener('change', applyFilters);
+        });
+
+        function showError(msg) {
+            document.getElementById('error-overlay').style.display = 'block';
+            let formattedMsg = msg;
+            if (msg.includes("Unauthorized") || msg.includes("401")) {
+                formattedMsg += "<br><br><strong style='color:#b71c1c;'>Security Note:</strong> Your Azure session token has expired. <br><br> <a href='/Login/Logout' class='btn btn-danger btn-sm'>Refresh Token</a>";
+            }
+            document.getElementById('error-message').innerHTML = formattedMsg;
+        }
+
+        function applyFilters() {
+            let filtered = allFares;
+            const selectedMonth = document.getElementById('inputState').value;
+
+            if (selectedMonth !== "Filter By Month") {
+                filtered = filtered.filter(e => {
+                    const eventMonth = new Date(e.travelDate).toLocaleString('en-US', { month: 'long' });
+                    return eventMonth === selectedMonth;
+                });
+            }
+
+            renderList(filtered);
+        }
+
+        function renderList(data) {
+            if (typeof $ !== 'undefined' && $.fn.DataTable.isDataTable('#calendarTable')) {
+                $('#calendarTable').DataTable().destroy();
+            }
+
+            let html = '';
+            if (data.length === 0) {
+                html = `<tr><td colspan="12" class="text-center text-muted py-4">No fare details found matching current filters.</td></tr>`;
+                document.getElementById('list-tbody').innerHTML = html;
+            } else {
+                data.forEach(item => {
+
+                    // --- NEW: Calculate Percentages and Build the Custom Tooltip Table ---
+                    let tipBoxHtml = '';
+                    if (item.airlineAchieved && Object.keys(item.airlineAchieved).length > 0) {
+                        let validAirlines = Object.entries(item.airlineAchieved).filter(([k]) => k && k.toLowerCase() !== 'total');
+                        let totalAch = validAirlines.reduce((sum, [code, count]) => sum + count, 0);
+                        let calcTotal = totalAch === 0 ? 1 : totalAch; 
+
+                        let ths = '';
+                        let countTds = '';
+                        let pctTds = '';
+
+                        for (const [code, count] of validAirlines) {
+                            ths += `<th>${code}</th>`;
+                            countTds += `<td>${count}</td>`;
+                            let pct = Math.round((count / calcTotal) * 100);
+                            pctTds += `<td>${pct}%</td>`;
+                        }
+
+                        ths += `<th>Total</th>`;
+                        countTds += `<td style="font-weight: 800; color: #0b5ed7;">${totalAch}</td>`;
+                        pctTds += `<td style="font-weight: 800; color: #0b5ed7;">100%</td>`;
+
+                        tipBoxHtml = `
+                        <table class="tip-table">
+                            <thead><tr>${ths}</tr></thead>
+                            <tbody>
+                                <tr>${countTds}</tr>
+                                <tr class="pct-row">${pctTds}</tr>
+                            </tbody>
+                        </table>`;
+                    } else {
+                        const oldBreakdown = item.airlinesBreakdown ? item.airlinesBreakdown.map(a => `<li>${a}</li>`).join('') : '';
+                        tipBoxHtml = `<ul>${oldBreakdown}</ul>`;
+                    }
+                    // ---------------------------------------------------------------------
+
+                    html += `
+                    <tr>
+                        <td>${item.sector}</td>
+                        <td data-sort="${new Date(item.travelDate).getTime()}">${item.doj}</td>
+                        <td>${item.airlinesCount}</td>
+                        <td>
+                            ${item.hasFlightData 
+                                ? item.flightCount 
+                                : '<span class="badge bg-warning text-dark">No Flight Data</span>'}
+                        </td>
+                        <td>${item.totalStrength}</td>
+                        <td>${item.target}</td>
+                        <td style="position:relative;">
+                            ${item.achieved}
+                            <button class="tip-btn" onclick="toggleTip(this)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-info">
+                                    <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                </svg>
+                            </button>
+                            <div class="tip-box">${tipBoxHtml}</div>
+                        </td>
+                        <td>${item.attemptCount}</td>
+                        <td data-sort="${item.targetFare}">₹${item.targetFare.toLocaleString('en-IN')}</td>
+                        <td data-sort="${item.avgPurFare}">₹${item.avgPurFare.toLocaleString('en-IN')}</td>
+                        <td data-sort="${item.lastOnlineFare}">
+                            ${item.lastOnlineFare > 0 ? '₹' + item.lastOnlineFare.toLocaleString('en-IN') : '-'}
+                        </td>
+                        <td>
+                            <a href="/OccasionDetails/FareTrend?eventId=${currentEventId}&sector=${encodeURIComponent(item.sector)}&date=${encodeURIComponent(item.travelDate)}&sectorType=${encodeURIComponent(currentSectorType)}" class="card-link btn btn-sm btn-light">View details →</a>
+                        </td>
+                    </tr>`;
+                });
+                
+                document.getElementById('list-tbody').innerHTML = html;
+
+                if (typeof $ !== 'undefined' && $.fn.DataTable) {
+                    $('#calendarTable').DataTable({
+                        responsive: true,
+                        paging: true,
+                        pageLength: 10,
+                        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                        searching: true,
+                        ordering: true,
+                        dom: '<"d-flex justify-content-between align-items-center mb-3"if>rt<"d-flex justify-content-between align-items-center mt-3"lp><"clear">',
+                        language: {
+                            search: "_INPUT_",
+                            searchPlaceholder: "Search sectors...",
+                            info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                            infoEmpty: "Showing 0 entries",
+                            lengthMenu: "Show _MENU_ entries"
+                        },
+                        columnDefs: [
+                            { targets: [8], orderable: false }
+                        ]
+                    });
+                }
+            }
+        }
+
+        // Smart Edge Detection Tooltip toggler
+        function toggleTip(btn) {
+            document.querySelectorAll('.tip-box').forEach(box => {
+                if (box !== btn.nextElementSibling) box.style.display = 'none';
+            });
+            let box = btn.nextElementSibling;
+            let isOpening = box.style.display !== 'block';
+
+            if (isOpening) {
+                box.style.display = 'block';
+                if (window.innerWidth > 768) {
+                    let btnRect = btn.getBoundingClientRect();
+                    let boxWidth = box.offsetWidth;
+                    let boxHeight = box.offsetHeight;
+                    
+                    box.style.top = (btn.offsetTop - (boxHeight / 2) + (btn.offsetHeight / 2)) + "px";
+                    
+                    if (btnRect.right + boxWidth + 30 > window.innerWidth) {
+                        box.style.left = (btn.offsetLeft - boxWidth - 10) + "px"; 
+                    } else {
+                        box.style.left = (btn.offsetLeft + btn.offsetWidth + 10) + "px";
+                    }
+                }
+            } else {
+                box.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('td')) {
+                document.querySelectorAll('.tip-box').forEach(box => box.style.display = 'none');
+            }
+        });
+    </script>
+}

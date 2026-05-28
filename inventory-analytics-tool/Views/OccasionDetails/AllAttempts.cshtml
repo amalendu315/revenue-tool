@@ -1,0 +1,647 @@
+﻿@model IEnumerable<inventory_analytics_tool.Models.AttemptRecord>
+@{
+    ViewData["Title"] = "Group Queries";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    body, html {
+        overflow-x: hidden !important;
+    }
+
+    .fb-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        width: 100%;
+    }
+
+    .fb-field {
+        min-width: 180px;
+    }
+
+    .fb-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        overflow: hidden;
+    }
+
+        .fb-actions .btn {
+            white-space: nowrap;
+        }
+
+    .boxes {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    table.dataTable {
+        width: 100% !important;
+    }
+
+    @@media (max-width: 768px) {
+        .fb-row {
+            flex-direction: column;
+        }
+
+        .fb-field {
+            width: 100%;
+        }
+
+        .fb-actions {
+            display: block !important;
+        }
+
+            .fb-actions .btn {
+                margin-top: 10px;
+            }
+    }
+
+    table.dataTable thead th {
+        font-weight: 500 !important;
+        font-size: 12px;
+        padding: 12px 5px !important;
+        text-align: center;
+    }
+
+    .placeholder {
+        background-color: transparent;
+    }
+
+    input:focus {
+        outline: none;
+        border: 1px solid #ccc;
+        border-color: #ccc;
+    }
+
+    .dd-trigger .placeholder {
+        color: #333;
+    }
+
+    .dd-search {
+        border: none !important;
+    }
+
+    .status-badge {
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 11px;
+    }
+</style>
+
+<div class="page-content">
+    <div class="container-fluid">
+
+        <div class="conatiner cox position-relative">
+            <div class="row align-items-center">
+                <div class="col-xl-9 col-lg-8 col-md-12 d-flex justify-content-start align-items-center gap-3" style="overflow-x: auto; white-space: nowrap; padding-bottom: 5px;">
+                    <a href="/Dashboard/Index" class="btn btn-sm btn-light border shadow-sm d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px;" title="Back to Dashboard">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    </a>
+                    <h4 class="mb-0"> Master Overview: <span class="text-primary">All Group Queries</span></h4>
+                    <div class="fb-field flex-shrink-0 mb-0" style="min-width: auto;">
+                        <div class="d-flex gap-2">
+                            <input type="date" id="serverFromDate" class="fb-control" value="@ViewBag.FromDate" />
+                            <input type="date" id="serverToDate" class="fb-control" value="@ViewBag.ToDate" />
+                            <button class="btn btn-secondary" onclick="fetchServerData()">Pull</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-lg-4 col-md-12 mt-2 mt-lg-0 d-flex justify-content-lg-end justify-content-start align-items-center">
+                    <select id="inputState" class="form-select w-auto" data-choices="" data-choices-sorting="true">
+                        <option selected="">Filter By Month</option>
+                        <option> January </option>
+                        <option> February </option>
+                        <option> March </option>
+                        <option> April </option>
+                        <option> May </option>
+                        <option> June </option>
+                        <option> July </option>
+                        <option> August </option>
+                        <option> September</option>
+                        <option> October </option>
+                        <option> November </option>
+                        <option> December </option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="conatiner cox mt-5 position-relative" style="z-index: 1040;">
+            <div class="fb-row">
+
+                <div class="fb-field" id="field-sector">
+                    <span class="fb-label">Sector</span>
+                    <div class="dd-trigger" tabindex="0">
+                        <span class="dd-val placeholder" id="filter-sector">Select</span>
+                        <svg class="dd-icon dd-arrow" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                    </div>
+                    <div class="dd-panel">
+                        <div class="dd-search-wrap"><input class="dd-search" type="text" placeholder="Search..."></div>
+                        <div class="dd-list"></div>
+                    </div>
+                </div>
+
+                <div class="fb-field" id="field-station">
+                    <span class="fb-label">Station</span>
+                    <div class="dd-trigger" tabindex="0">
+                        <span class="dd-val placeholder" id="filter-station">Select</span>
+                        <svg class="dd-icon dd-arrow" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                    </div>
+                    <div class="dd-panel">
+                        <div class="dd-search-wrap"><input class="dd-search" type="text" placeholder="Search..."></div>
+                        <div class="dd-list"></div>
+                    </div>
+                </div>
+
+                <div class="fb-field" id="field-airline">
+                    <span class="fb-label">Airline</span>
+                    <div class="dd-trigger" tabindex="0">
+                        <span class="dd-val placeholder" id="filter-airline">Select</span>
+                        <svg class="dd-icon dd-arrow" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                    </div>
+                    <div class="dd-panel">
+                        <div class="dd-search-wrap"><input class="dd-search" type="text" placeholder="Search..."></div>
+                        <div class="dd-list"></div>
+                    </div>
+                </div>
+
+                <div class="fb-field">
+                    <span class="fb-label">Travel date</span>
+                    <div class="dd-trigger cal-trigger" tabindex="0">
+                        <span class="dd-val placeholder" id="filter-travel-date">Select date</span>
+                        <svg class="dd-icon" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="2" stroke="#1a1a1a" stroke-width="1.3" /><path d="M5 1.5v2M11 1.5v2M2 7h12" stroke="#1a1a1a" stroke-width="1.3" stroke-linecap="round" /></svg>
+                    </div>
+                    <div class="cal-panel"></div>
+                </div>
+
+                <div class="fb-field" id="field-status">
+                    <span class="fb-label">Status</span>
+                    <div class="dd-trigger" tabindex="0">
+                        <span class="dd-val placeholder" id="filter-status">Select</span>
+                        <svg class="dd-icon dd-arrow" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                    </div>
+                    <div class="dd-panel">
+                        <div class="dd-search-wrap"><input class="dd-search" type="text" placeholder="Search..."></div>
+                        <div class="dd-list"></div>
+                    </div>
+                </div>
+
+                <div class="fb-field" id="field-conf-status">
+                    <span class="fb-label">Conf. Status</span>
+                    <div class="dd-trigger" tabindex="0">
+                        <span class="dd-val placeholder" id="filter-conf-status">Select</span>
+                        <svg class="dd-icon dd-arrow" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                    </div>
+                    <div class="dd-panel">
+                        <div class="dd-search-wrap"><input class="dd-search" type="text" placeholder="Search..."></div>
+                        <div class="dd-list"></div>
+                    </div>
+                </div>
+
+                <div class="fb-field" id="field-lead">
+                    <span class="fb-label">Lead</span>
+                    <div class="dd-trigger" tabindex="0">
+                        <span class="dd-val placeholder" id="filter-lead">Select</span>
+                        <svg class="dd-icon dd-arrow" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                    </div>
+                    <div class="dd-panel">
+                        <div class="dd-search-wrap"><input class="dd-search" type="text" placeholder="Search..."></div>
+                        <div class="dd-list"></div>
+                    </div>
+                </div>
+
+                <div class="fb-field">
+                    <span class="fb-label">Flight no.</span>
+                    <input type="text" class="fb-control" id="flight-no" placeholder="e.g. AI 202">
+                </div>
+
+                <div class="fb-actions mt-2">
+                    <button class="btn btn-search" id="btnApplySearch" onclick="applyFiltersAndClose()">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5" /><path d="M10.5 10.5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg>
+                        Search
+                    </button>
+
+                    <button class="btn btn-search bg-secondary border-secondary" onclick="resetAllFilters()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                        Reset
+                    </button>
+
+                    <input type="file" id="import-input" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" style="display:none" onchange="importData(event)">
+                    <button class="btn btn-import" onclick="document.getElementById('import-input').click()">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 10V2M5 5l3-3 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /><path d="M2 12h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg>
+                        Upload File
+                    </button>
+
+                    <button class="btn btn-export" onclick="exportAllToExcel()">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M5 7l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /><path d="M2 12h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg>
+                        Export Data
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="boxes position-relative bg-white shadow-sm rounded-4 p-4 mt-3 w-100" style="z-index: 1;">
+            <div class="table-responsive">
+                <table id="attemptTable" class="display" style="width:100%">
+                    <thead class="table-light">
+                        <tr>
+                            <th>AQ ID</th>
+                            <th>Entry Date</th>
+                            <th>Req ID</th>
+                            <th>Org</th>
+                            <th>Des</th>
+                            <th>Travel Date</th>
+                            <th>Airline Code</th>
+                            <th>Flight Code</th>
+                            <th>Pax</th>
+                            <th>Online Fare</th>
+                            <th>Auto Quote</th>
+                            <th>Status</th>
+                            <th>Neg. Fare</th>
+                            <th>Conf. Status</th>
+                            <th>Remarks</th>
+                            <th>PNR</th>
+                            <th>Open Remarks</th>
+                            <th>Lead</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null)
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="fw-bold text-primary" data-sort="@item.Id">@item.AqId</td>
+                                    <td data-sort="@item.RawEntryDate.Ticks">@item.EntryDate</td>
+                                    <td>@item.ReqId</td>
+                                    <td>@item.Origin</td>
+                                    <td>@item.Destination</td>
+                                    <td data-sort="@item.RawTravelDate.Ticks">@item.TravelDate</td>
+                                    <td class="text-center">@item.AirlineCode</td>
+                                    <td class="text-center">@(string.IsNullOrEmpty(item.AirlineCode) ? item.FlightCode : item.FlightCode.Replace(item.AirlineCode, "").Trim())</td>
+                                    <td class="text-center">@item.Pax</td>
+                                    <td>@item.OnlineFare</td>
+                                    <td>@item.AutoQuote</td>
+                                    <td>
+                                        @if (item.Status == "PNR CREATED")
+                                        {
+                                            <span class="badge bg-success status-badge">@item.Status</span>
+                                        }
+                                        else if (item.Status == "REJECTED")
+                                        {
+
+                                            <span class="badge bg-danger status-badge">@item.Status</span>
+                                        }
+                                        else if (item.Status == "NEGOTIATION SENT")
+                                        {
+
+                                            <span class="badge bg-warning text-dark status-badge">@item.Status</span>
+                                        }
+                                        else
+                                        {
+
+                                            <span class="badge bg-light text-dark status-badge">PENDING</span>
+                                        }
+                                    </td>
+                                    <td>@item.NegFare</td>
+                                    <td class="text-center">
+                                        @if (item.ConfStatus == "YES")
+                                        {
+                                            <span class="badge bg-success status-badge">YES</span>
+                                        }
+                                        else if (item.ConfStatus == "NO")
+                                        {
+
+                                            <span class="badge bg-danger status-badge">NO</span>
+                                        }
+                                        else
+                                        {
+
+                                            <span></span>
+                                        }
+                                    </td>
+                                    <td><small class="text-muted">@item.Remarks</small></td>
+                                    <td>@item.PNR</td>
+                                    <td>@item.OpenRemarks</td>
+                                    <td>@item.Lead</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let dataTable;
+
+        $(document).ready(function () {
+            dataTable = $('#attemptTable').DataTable({
+                responsive: true,
+                paging: true,
+                pageLength: 25,
+                lengthMenu: [[25, 50, 100, -1], [25, 50, 100, "All"]],
+                ordering: true,
+                dom: '<"d-flex justify-content-between align-items-center mb-3"if>rt<"d-flex justify-content-between align-items-center mt-3"lp><"clear">',
+                language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: "Search any record...",
+                    lengthMenu: "Show _MENU_ entries"
+                }
+            });
+
+            populateDynamicDropdowns();
+
+            $.fn.dataTable.ext.search.push(customTableFilter);
+
+            // Re-attached listeners for text & select
+            document.getElementById('flight-no').addEventListener('keyup', () => dataTable.draw());
+            document.getElementById('inputState').addEventListener('change', () => dataTable.draw());
+        });
+
+        function applyFiltersAndClose() {
+            dataTable.draw();
+            closeAll();
+        }
+
+        function resetAllFilters() {
+            document.getElementById('flight-no').value = '';
+            document.getElementById('inputState').value = 'Filter By Month';
+
+            document.querySelectorAll('.dd-val').forEach(el => {
+                el.textContent = el.id === 'filter-travel-date' ? 'Select date' : 'Select';
+                el.classList.add('placeholder');
+            });
+            dataTable.draw();
+        }
+
+        function fetchServerData() {
+            const from = document.getElementById('serverFromDate').value;
+            const to = document.getElementById('serverToDate').value;
+            window.location.href = `/OccasionDetails/AllAttempts?fromDate=${from}&toDate=${to}`;
+        }
+
+        // ----------------------------------------------------
+        // DYNAMIC FILTER EXTRACTOR
+        // ----------------------------------------------------
+        function populateDynamicDropdowns() {
+            let sectors = new Set();
+            let stations = new Set();
+            let airlines = new Set();
+            let statuses = new Set();
+            let confStatuses = new Set();
+            let leads = new Set();
+
+            dataTable.rows().data().each(function (row) {
+                // Now considering shifted indices because of EntryDate!
+                // 3=Org, 4=Des, 6=Airline, 11=Status, 13=Conf, 17=Lead
+                let org = row[3] ? row[3].trim() : '';
+                let des = row[4] ? row[4].trim() : '';
+
+                if (org) stations.add(org);
+                if (des) stations.add(des);
+                if (org && des) sectors.add(`${org}-${des}`);
+
+                if (row[6] && row[6].trim() !== '') airlines.add(row[6].trim());
+
+                let cleanStatus = $('<div>').html(row[11]).text().trim();
+                if (cleanStatus) statuses.add(cleanStatus);
+
+                let cleanConf = $('<div>').html(row[13]).text().trim();
+                if (cleanConf) confStatuses.add(cleanConf);
+
+                if (row[17] && row[17].trim() !== '') leads.add(row[17].trim());
+            });
+
+            function buildDropdown(selector, dataSet) {
+                const list = document.querySelector(selector);
+                if (!list) return;
+                list.innerHTML = '';
+                Array.from(dataSet).sort().forEach(val => {
+                    list.insertAdjacentHTML('beforeend', `<div class="dd-item">${val}</div>`);
+                });
+            }
+
+            buildDropdown('#field-sector .dd-list', sectors);
+            buildDropdown('#field-station .dd-list', stations);
+            buildDropdown('#field-airline .dd-list', airlines);
+            buildDropdown('#field-status .dd-list', statuses);
+            buildDropdown('#field-conf-status .dd-list', confStatuses);
+            buildDropdown('#field-lead .dd-list', leads);
+        }
+
+        // ----------------------------------------------------
+        // CUSTOM SEARCH ALGORITHM FOR DATATABLES
+        // ----------------------------------------------------
+        function customTableFilter(settings, data, dataIndex) {
+            const filterSector = document.getElementById('filter-sector').textContent.trim();
+            const filterStation = document.getElementById('filter-station').textContent.trim();
+            const filterAirline = document.getElementById('filter-airline').textContent.trim();
+            const filterTravelDate = document.getElementById('filter-travel-date').textContent.trim();
+            const filterStatus = document.getElementById('filter-status').textContent.trim();
+            const filterConfStatus = document.getElementById('filter-conf-status').textContent.trim();
+            const filterLead = document.getElementById('filter-lead').textContent.trim();
+            const filterFlightNo = document.getElementById('flight-no').value.trim().toLowerCase();
+            const filterMonth = document.getElementById('inputState').value.trim();
+
+            const org = data[3].toLowerCase();
+            const des = data[4].toLowerCase();
+            const sectorCombo = `${org}-${des}`;
+            const tDate = data[5];
+            const airline = data[6];
+            const flightCode = data[7].toLowerCase();
+            const status = $('<div>').html(data[11]).text().trim();
+            const confStatus = $('<div>').html(data[13]).text().trim();
+            const lead = data[17].trim();
+
+            if (filterSector !== 'Select' && sectorCombo !== filterSector.toLowerCase()) return false;
+            if (filterStation !== 'Select' && data[3] !== filterStation && data[4] !== filterStation) return false;
+            if (filterAirline !== 'Select' && airline !== filterAirline) return false;
+            if (filterFlightNo && !flightCode.includes(filterFlightNo)) return false;
+            if (filterTravelDate !== 'Select date' && tDate !== filterTravelDate) return false;
+            if (filterStatus !== 'Select' && status !== filterStatus) return false;
+            if (filterConfStatus !== 'Select' && confStatus !== filterConfStatus) return false;
+            if (filterLead !== 'Select' && lead !== filterLead) return false;
+
+            if (filterMonth !== 'Filter By Month' && filterMonth !== 'All Months') {
+                const parsedDate = new Date(tDate);
+                if (!isNaN(parsedDate)) {
+                    const rowMonth = parsedDate.toLocaleString('en-US', { month: 'long' });
+                    if (rowMonth !== filterMonth) return false;
+                }
+            }
+
+            return true;
+        }
+
+        // ----------------------------------------------------
+        // UPLOAD & EXPORT LOGIC
+        // ----------------------------------------------------
+        async function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const isConfirmed = confirm(`Are you sure you want to import ${file.name}?`);
+            if (!isConfirmed) {
+                event.target.value = '';
+                return;
+            }
+
+            const btn = document.querySelector('.btn-import');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Uploading...`;
+            btn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/OccasionDetails/UploadAttempts', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(result.message);
+                    location.reload();
+                } else {
+                    alert('Upload failed: ' + result.message);
+                }
+            } catch (err) {
+                alert('A network error occurred during upload: ' + err.message);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                event.target.value = '';
+            }
+        }
+
+        function exportAllToExcel() {
+            // Updated to grab the dynamically selected dates instead of hardcoding "?year=2026"
+            const from = document.getElementById('serverFromDate').value || '';
+            const to = document.getElementById('serverToDate').value || '';
+            window.location.href = `/OccasionDetails/ExportAllAttemptsToExcel?fromDate=${from}&toDate=${to}`;
+        }
+
+        // ----------------------------------------------------
+        // SEARCH WIDGETS & CALENDARS INIT
+        // ----------------------------------------------------
+        const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        const DOWS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+
+        function closeAll() {
+            document.querySelectorAll('.dd-panel.open, .cal-panel.open').forEach(p => p.classList.remove('open'));
+            document.querySelectorAll('.dd-trigger.open').forEach(t => t.classList.remove('open'));
+        }
+
+        /* ── Search Dropdowns ── */
+        document.querySelectorAll('.fb-field:has(.dd-panel)').forEach(field => {
+            const trigger = field.querySelector('.dd-trigger');
+            const panel = field.querySelector('.dd-panel');
+            const search = field.querySelector('.dd-search');
+            const val = field.querySelector('.dd-val');
+            const listContainer = field.querySelector('.dd-list');
+
+            trigger.addEventListener('click', () => {
+                const opening = !panel.classList.contains('open');
+                closeAll();
+                if (opening) {
+                    panel.classList.add('open');
+                    trigger.classList.add('open');
+                    if (search) {
+                        search.value = '';
+                        listContainer.querySelectorAll('.dd-item').forEach(i => i.style.display = '');
+                        setTimeout(() => search.focus(), 40);
+                    }
+                }
+            });
+
+            search && search.addEventListener('input', () => {
+                const q = search.value.toLowerCase();
+                let any = false;
+                const items = listContainer.querySelectorAll('.dd-item');
+
+                items.forEach(i => {
+                    const show = i.textContent.toLowerCase().includes(q);
+                    i.style.display = show ? '' : 'none';
+                    any ||= show;
+                });
+
+                let empty = panel.querySelector('.dd-empty');
+                if (!any && !empty) listContainer.insertAdjacentHTML('beforeend', '<div class="dd-empty">No results</div>');
+                if (any && empty) empty.remove();
+            });
+
+            listContainer.addEventListener('click', (e) => {
+                const item = e.target.closest('.dd-item');
+                if (item) {
+                    listContainer.querySelectorAll('.dd-item').forEach(i => i.classList.remove('selected'));
+                    item.classList.add('selected');
+                    val.textContent = item.textContent;
+                    val.classList.remove('placeholder');
+                    applyFiltersAndClose();
+                }
+            });
+        });
+
+        /* ── Calendar Date Picker ── */
+        document.querySelectorAll('.fb-field:has(.cal-panel)').forEach(field => {
+            const trigger = field.querySelector('.cal-trigger');
+            const panel = field.querySelector('.cal-panel');
+            const val = field.querySelector('.dd-val');
+            let view = new Date(), selected = null;
+
+            function render() {
+                const y = view.getFullYear(), m = view.getMonth();
+                const today = new Date(); today.setHours(0, 0, 0, 0);
+                let html = DOWS.map(d => `<div class="cal-dow">${d}</div>`).join('');
+                for (let i = 0; i < new Date(y, m, 1).getDay(); i++) html += `<div class="cal-day empty"></div>`;
+                for (let d = 1; d <= new Date(y, m + 1, 0).getDate(); d++) {
+                    const date = new Date(y, m, d);
+                    const cls = 'cal-day' + (selected?.toDateString() === date.toDateString() ? ' selected' : date.toDateString() === today.toDateString() ? ' today' : '');
+                    html += `<div class="${cls}" data-ts="${date.getTime()}">${d}</div>`;
+                }
+                panel.innerHTML = `
+                                        <div class="cal-header">
+                                            <button class="cal-nav" data-dir="-1">&#8249;</button>
+                                            <span class="cal-title">${MONTHS[m]} ${y}</span>
+                                            <button class="cal-nav" data-dir="1">&#8250;</button>
+                                        </div>
+                                        <div class="cal-grid">${html}</div>`;
+
+                panel.querySelectorAll('.cal-nav').forEach(btn => btn.addEventListener('click', e => {
+                    e.stopPropagation();
+                    view = new Date(y, m + +btn.dataset.dir, 1);
+                    render();
+                }));
+                panel.querySelectorAll('.cal-day:not(.empty)').forEach(day => day.addEventListener('click', e => {
+                    e.stopPropagation();
+                    selected = new Date(+day.dataset.ts);
+                    val.textContent = selected.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                    val.classList.remove('placeholder');
+                    applyFiltersAndClose();
+                }));
+            }
+
+            trigger.addEventListener('click', () => {
+                const opening = !panel.classList.contains('open');
+                closeAll();
+                if (opening) { render(); panel.classList.add('open'); trigger.classList.add('open'); }
+            });
+        });
+
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.fb-field')) closeAll();
+        });
+    </script>
+}
