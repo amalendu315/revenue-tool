@@ -2,124 +2,416 @@
     ViewData["Title"] = "Login || Air iQ Blackout";
 }
 
-<div class="auth-page-wrapper pt-5">
-    <!-- auth page bg -->
-    <div class="auth-one-bg-position auth-one-bg" id="auth-particles">
-        <div class="bg-overlay"></div>
+<style>
+    body, html {
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+        background-color: #ffffff;
+    }
 
-        <div class="shape">
-            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1440 120">
-                <path d="M 0,36 C 144,53.6 432,123.2 720,124 C 1008,124.8 1296,56.8 1440,40L1440 140L0 140z"></path>
-            </svg>
+    /* Full screen split layout */
+    .split-layout {
+        min-height: 100vh;
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    /* =========================================
+           CUSTOM DESKTOP SPLIT (60% / 40%)
+           ========================================= */
+    @@media (min-width: 992px) {
+        .left-panel {
+            flex: 0 0 60%;
+            max-width: 60%;
+        }
+
+        .right-panel {
+            flex: 0 0 40%;
+            max-width: 40%;
+        }
+    }
+
+    /* =========================================
+           LEFT PANEL: BRANDING & ILLUSTRATION
+           ========================================= */
+    .left-panel {
+        position: relative;
+        background: linear-gradient(135deg, #0a2342 0%, #174f8c 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px;
+        overflow: hidden;
+    }
+
+        /* Abstract background grid pattern for tech feel */
+        .left-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: 1;
+        }
+
+    /* Glowing accent behind illustration */
+    .glow-orb {
+        position: absolute;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(14, 165, 233, 0.35) 0%, rgba(0, 0, 0, 0) 70%);
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 2;
+    }
+
+    .illustration-container {
+        z-index: 5;
+        text-align: center;
+        max-width: 500px;
+    }
+
+    .illustration-svg {
+        width: 100%;
+        max-width: 380px;
+        height: auto;
+        margin-bottom: 40px;
+        filter: drop-shadow(0 20px 30px rgba(0,0,0,0.3));
+    }
+
+    .brand-title {
+        color: #ffffff;
+        font-size: 32px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        margin-bottom: 15px;
+    }
+
+    .brand-subtitle {
+        color: #aab4c3;
+        font-size: 16px;
+        line-height: 1.6;
+        font-weight: 400;
+    }
+
+    /* =========================================
+           RIGHT PANEL: LOGIN FORM & DOODLE BG
+           ========================================= */
+    .right-panel {
+        background-color: #ffffff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        padding: 40px 20px;
+        z-index: 10;
+        overflow: hidden;
+    }
+
+        /* HIGH-DENSITY ORGANIC TRAVEL DOODLE PATTERN */
+        .right-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            /* Dense 800x800 custom SVG to mimic the hand-drawn organic feel of the reference */
+            background-image: url("data:image/svg+xml,%3Csvg width='800' height='800' viewBox='0 0 800 800' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cg id='pl'%3E%3Cpath d='M10,25 h15 l10,-10 h5 l-10,10 h15 c5,0 8,3 8,5 c0,2 -3,5 -8,5 h-30 l-10,10 h-5 l8,-10 h-10 l-3,-4 z'/%3E%3Cpath d='M35,30 l-10,15 h-5 l10,-15'/%3E%3C/g%3E%3Cg id='su'%3E%3Crect x='-20' y='-15' width='40' height='30' rx='3'/%3E%3Cpath d='M-8,-15 v-5 c0,-2 16,-2 16,0 v5'/%3E%3Cpath d='M-10,-15 v30 M10,-15 v30'/%3E%3Cpath d='M-20,-10 h5 M-20,10 h5 M20,-10 h-5 M20,10 h-5'/%3E%3C/g%3E%3Cg id='sn'%3E%3Ccircle r='8'/%3E%3Cpath d='M0,-12 v-3 M0,12 v3 M-12,0 h-3 M12,0 h3 M-9,-9 l-2,-2 M9,9 l2,2 M-9,9 l-2,2 M9,-9 l2,-2'/%3E%3C/g%3E%3Cg id='co'%3E%3Ccircle r='14'/%3E%3Ccircle r='10'/%3E%3Cpath d='M0,-10 L3,-3 L10,0 L3,3 L0,10 L-3,3 L-10,0 L-3,-3 Z'/%3E%3Ccircle cy='-16' r='2'/%3E%3C/g%3E%3Cg id='hb'%3E%3Cpath d='M-12,0 C-12,-18 12,-18 12,0 C12,12 6,20 6,24 H-6 C-6,20 -12,12 -12,0 Z'/%3E%3Cpath d='M-6,0 C-6,-18 -6,-18 -6,0 M6,0 C6,-18 6,-18 6,0 M0,-15 V24'/%3E%3Crect x='-4' y='28' width='8' height='6'/%3E%3Cpath d='M-6,24 L-4,28 M6,24 L4,28'/%3E%3C/g%3E%3Cg id='sh'%3E%3Cpath d='M-25,10 L25,10 L30,0 L-30,0 Z M-15,0 V-10 H15 V0 M-5,-10 V-18 H5 V-10 M15,-5 H25 M5,-16 h8 v4 h-8 z'/%3E%3C/g%3E%3Cg id='pt'%3E%3Cpath d='M0,25 Q-5,10 0,0 M0,0 Q-15,-15 -25,-5 Q-10,5 0,0 M0,0 Q-5,-20 5,-25 Q10,-10 0,0 M0,0 Q20,-20 30,-10 Q15,-5 0,0 M0,0 Q15,5 25,15 Q5,10 0,0'/%3E%3C/g%3E%3Cg id='pi'%3E%3Cpath d='M0,-15 C-8,-15 -8,-3 0,10 C8,-3 8,-15 0,-15 Z'/%3E%3Ccircle cy='-10' r='3'/%3E%3C/g%3E%3Cg id='st'%3E%3Cpath d='M0,-4 L1,-1 L4,0 L1,1 L0,4 L-1,1 L-4,0 L-1,-1 Z'/%3E%3C/g%3E%3Cg id='sl'%3E%3Cpath d='M-5,5 C-5,-5 5,-5 5,5 Z M-2,5 V0 M2,5 V0 M0,5 V-2'/%3E%3C/g%3E%3C/defs%3E%3Cg stroke='%23b4c0d3' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round' opacity='0.55'%3E%3C!-- Winding Flight Paths --%3E%3Cpath d='M-50,200 C150,-50 250,400 450,200 S650,0 850,300' stroke-dasharray='6 8'/%3E%3Cpath d='M-50,600 C100,800 300,400 500,600 S700,800 850,500' stroke-dasharray='6 8'/%3E%3Cpath d='M100,-50 C0,150 200,300 100,500 S300,750 200,850' stroke-dasharray='6 8'/%3E%3Cpath d='M600,-50 C750,150 500,300 700,500 S500,750 650,850' stroke-dasharray='6 8'/%3E%3Cpath d='M250,300 C400,100 550,450 400,550 S100,400 250,300' stroke-dasharray='6 8'/%3E%3C!-- Scattered Elements --%3E%3Cuse href='%23pl' x='150' y='120' transform='rotate(-15 150 120)'/%3E%3Cuse href='%23pl' x='650' y='280' transform='rotate(25 650 280)'/%3E%3Cuse href='%23pl' x='250' y='650' transform='rotate(-45 250 650)'/%3E%3Cuse href='%23pl' x='720' y='650' transform='rotate(-10 720 650)'/%3E%3Cuse href='%23su' x='380' y='160' transform='rotate(10 380 160)'/%3E%3Cuse href='%23su' x='120' y='550' transform='rotate(-20 120 550)'/%3E%3Cuse href='%23su' x='580' y='720' transform='rotate(15 580 720)'/%3E%3Cuse href='%23su' x='700' y='80' transform='rotate(-5 700 80)'/%3E%3Cuse href='%23sn' x='280' y='80'/%3E%3Cuse href='%23sn' x='680' y='420'/%3E%3Cuse href='%23sn' x='420' y='760'/%3E%3Cuse href='%23sn' x='80' y='350'/%3E%3Cuse href='%23co' x='520' y='250'/%3E%3Cuse href='%23co' x='180' y='750'/%3E%3Cuse href='%23co' x='350' y='450'/%3E%3Cuse href='%23hb' x='80' y='200'/%3E%3Cuse href='%23hb' x='550' y='550'/%3E%3Cuse href='%23hb' x='300' y='680'/%3E%3Cuse href='%23sh' x='450' y='380' transform='rotate(-10 450 380)'/%3E%3Cuse href='%23sh' x='750' y='180' transform='rotate(5 750 180)'/%3E%3Cuse href='%23sh' x='180' y='480' transform='rotate(15 180 480)'/%3E%3Cuse href='%23pt' x='580' y='100'/%3E%3Cuse href='%23pt' x='280' y='500'/%3E%3Cuse href='%23pt' x='60' y='780'/%3E%3Cuse href='%23pt' x='780' y='520'/%3E%3Cuse href='%23pi' x='220' y='320' transform='rotate(15 220 320)'/%3E%3Cuse href='%23pi' x='480' y='680' transform='rotate(-15 480 680)'/%3E%3Cuse href='%23pi' x='650' y='480' transform='rotate(10 650 480)'/%3E%3Cuse href='%23st' x='100' y='80'/%3E%3Cuse href='%23st' x='300' y='250'/%3E%3Cuse href='%23st' x='600' y='350'/%3E%3Cuse href='%23st' x='200' y='600'/%3E%3Cuse href='%23st' x='750' y='750'/%3E%3Cuse href='%23sl' x='400' y='100' transform='rotate(45 400 100)'/%3E%3Cuse href='%23sl' x='150' y='400' transform='rotate(-30 150 400)'/%3E%3Cuse href='%23sl' x='680' y='580' transform='rotate(60 680 580)'/%3E%3Cuse href='%23sl' x='350' y='720' transform='rotate(-45 350 720)'/%3E%3C/g%3E%3C/svg%3E");
+            background-size: 600px 600px;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+    /* Elevated Login Card */
+    .login-wrapper {
+        background: #ffffff;
+        padding: 45px 35px;
+        border-radius: 12px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08), 0 5px 15px rgba(0, 0, 0, 0.04);
+        width: 100%;
+        max-width: 400px;
+        z-index: 10;
+        position: relative;
+    }
+
+    .login-logo {
+        text-align: center;
+        margin-bottom: 35px;
+    }
+
+        .login-logo img {
+            height: 42px;
+        }
+
+    /* Clean, blocky inputs */
+    .custom-input-group {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+        .custom-input-group i.input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8c98a4;
+            font-size: 18px;
+            z-index: 5;
+        }
+
+    .custom-input {
+        background-color: #f4f6f9;
+        border: 1px solid #eef2f7;
+        border-radius: 6px;
+        padding: 14px 15px 14px 46px;
+        height: 52px;
+        font-size: 14px;
+        color: #1a1a1a;
+        width: 100%;
+        transition: all 0.2s ease;
+    }
+
+        .custom-input:focus {
+            background-color: #ffffff;
+            border-color: #0b5ed7;
+            box-shadow: 0 0 0 3px rgba(11, 94, 215, 0.1);
+            outline: none;
+        }
+
+        .custom-input::placeholder {
+            color: #aab4c3;
+            font-weight: 500;
+        }
+
+    .btn-toggle-pass {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #8c98a4;
+        z-index: 5;
+        padding: 0;
+    }
+
+        .btn-toggle-pass:hover {
+            color: #333;
+        }
+
+    /* Distinct Coral Button with Dark Border */
+    .btn-auth {
+        background-color: #f25b5b; /* Coral red */
+        color: #1a1a1a; /* Dark text */
+        border: 2px solid #1a1a1a; /* Solid dark border */
+        border-radius: 6px;
+        padding: 14px;
+        font-weight: 800;
+        font-size: 14px;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        width: 100%;
+        box-shadow: 4px 4px 0px rgba(26, 26, 26, 0.1);
+        transition: all 0.2s ease;
+        margin-top: 15px;
+        margin-bottom: 25px;
+    }
+
+        .btn-auth:hover {
+            background-color: #e64c4c;
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px rgba(26, 26, 26, 0.1);
+        }
+
+    .right-footer {
+        position: absolute;
+        bottom: 20px;
+        width: 100%;
+        text-align: center;
+        color: #8c98a4;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        z-index: 10;
+        background: rgba(255, 255, 255, 0.85); /* Ensures text is readable over doodles */
+        padding: 5px 0;
+        backdrop-filter: blur(4px);
+    }
+
+    .mobile-bg-elements {
+        display: none;
+    }
+
+    /* =========================================
+           MOBILE RESPONSIVENESS OVERRIDES
+           ========================================= */
+    @@media (max-width: 991.98px) {
+        .split-layout {
+            background: linear-gradient(135deg, #0a2342 0%, #174f8c 100%);
+            align-items: center;
+        }
+        /* Show tech grid and glow orb on mobile background */
+        .mobile-bg-elements {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+            .mobile-bg-elements::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+                background-size: 30px 30px;
+                z-index: 1;
+            }
+
+        .right-panel {
+            background: transparent;
+            padding: 20px;
+        }
+            /* Remove the doodle background on mobile */
+            .right-panel::before {
+                display: none;
+            }
+
+        .login-wrapper {
+            background: #ffffff;
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .right-footer {
+            color: rgba(255, 255, 255, 0.6);
+            background: transparent;
+            backdrop-filter: none;
+        }
+    }
+
+</style>
+
+<div class="container-fluid p-0">
+    <div class="row g-0 split-layout">
+
+        <div class="mobile-bg-elements">
+            <div class="glow-orb" style="width:300px; height:300px;"></div>
         </div>
-        <canvas class="particles-js-canvas-el" width="2970" height="760" style="width: 100%; height: 100%;"></canvas>
-    </div>
 
-    <!-- auth page content -->
-    <div class="auth-page-content">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="text-center mt-sm-5 mb-4 text-white-50">
-                        <div>
-                            <a href="index.html" class="d-inline-block auth-logo">
-                                <img src="~/images/logo.png" alt="" height="50">
-                            </a>
-                        </div>
-                        <p class="mt-3 fs-15 fw-medium">Welcome to air iQ 365</p>
-                    </div>
-                </div>
+        <div class="col-12 d-none d-lg-flex left-panel">
+            <div class="glow-orb"></div>
+
+            <div class="illustration-container">
+                <svg class="illustration-svg" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <ellipse cx="200" cy="220" rx="160" ry="60" fill="url(#gridGradient)" opacity="0.3" />
+                    <path d="M40 220 C40 260, 360 260, 360 220" stroke="#0ea5e9" stroke-width="2" stroke-dasharray="6 6" opacity="0.5" />
+                    <path d="M120 180 L80 260 M280 180 L320 260 M200 170 L200 280" stroke="#0ea5e9" stroke-width="1" opacity="0.3" />
+
+                    <path d="M100 200 L320 80 L230 220 L180 170 L200 120 L130 180 Z" fill="#ffffff" opacity="0.9" />
+                    <path d="M180 170 L230 220 L200 260 Z" fill="#aab4c3" opacity="0.8" />
+                    <path d="M130 180 L200 120 L100 200 Z" fill="#eef2f7" opacity="0.5" />
+
+                    <path d="M50 250 C 100 250, 150 180, 320 80" stroke="#f25b5b" stroke-width="4" stroke-linecap="round" fill="none" />
+                    <circle cx="320" cy="80" r="6" fill="#f25b5b" />
+
+                    <circle cx="280" cy="140" r="4" fill="#0ea5e9" />
+                    <circle cx="150" cy="100" r="3" fill="#ffffff" opacity="0.6" />
+                    <circle cx="220" cy="60" r="5" fill="#0ea5e9" opacity="0.8" />
+
+                    <defs>
+                        <radialGradient id="gridGradient" cx="0.5" cy="0.5" r="0.5">
+                            <stop offset="0%" stop-color="#0ea5e9" />
+                            <stop offset="100%" stop-color="#0ea5e9" stop-opacity="0" />
+                        </radialGradient>
+                    </defs>
+                </svg>
+
+                <h2 class="brand-title">AIR iQ 365 Insights</h2>
+                <p class="brand-subtitle">Enterprise flight analytics, inventory tracking, and blackout management platform.</p>
             </div>
-            <!-- end row -->
-
-            <div class="row justify-content-center">
-                <div class="col-md-8 col-lg-6 col-xl-5">
-                    <div class="card mt-4 card-bg-fill">
-
-                        <div class="card-body p-4">
-                            <div class="text-center mt-2">
-                                <h5 class="text-primary">Welcome Back !</h5>
-                            </div>
-                            <div class="p-2 mt-4">
-                                <form asp-controller="Login" asp-action="Index" method="post">
-
-                                    @if (ViewBag.ErrorMessage != null)
-                                    {
-                                        <div class="alert alert-danger" role="alert">
-                                            @ViewBag.ErrorMessage
-                                        </div>
-                                    }
-
-                                    <div class="mb-3">
-                                        <label for="username" class="form-label">Username</label>
-                                        <input type="text" class="form-control" id="username" name="username" placeholder="Enter username" required>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label" for="password-input">Password</label>
-                                        <div class="position-relative auth-pass-inputgroup mb-3">
-                                            <input type="password" class="form-control pe-5 password-input" name="password" placeholder="Enter password" id="password-input" required>
-                                            <button class="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted password-addon material-shadow-none" type="button" id="password-addon"><i class="ri-eye-fill align-middle"></i></button>
-                                        </div>
-                                    </div>
-
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="" id="auth-remember-check">
-                                        <label class="form-check-label" for="auth-remember-check">Remember me</label>
-                                    </div>
-
-                                    <div class="mt-4">
-                                        <button class="btn btn-success w-100" type="submit">Sign In</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                        <!-- end card body -->
-                    </div>
-                    <!-- end card -->
-
-                </div>
-                <!-- end row -->
-            </div>
-            <!-- end container -->
         </div>
-        <!-- end auth page content -->
-        <!-- footer -->
-        <footer class="footer">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="text-center">
-                            <p class="mb-0 text-muted">
-                                &copy;
-                                <script>document.write(new Date().getFullYear())</script> Developed by Airiq365
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </footer>
-        <!-- end Footer -->
-    </div>
 
- </div>
+        <div class="col-12 right-panel">
+
+            <div class="login-wrapper">
+                <div class="login-logo">
+                    <img src="~/images/logo.png" alt="Air iQ Logo">
+                </div>
+
+                <form asp-controller="Login" asp-action="Index" method="post">
+
+                    @if (ViewBag.ErrorMessage != null)
+                    {
+                        <div class="alert alert-danger py-2 px-3 text-center fs-13 border-0 shadow-sm rounded-2 mb-4" role="alert" style="background-color: #fef2f2; color: #991b1b;">
+                            @ViewBag.ErrorMessage
+                        </div>
+                    }
+
+                    <div class="custom-input-group">
+                        <i class="ri-user-fill input-icon"></i>
+                        <input type="text" class="custom-input" id="username" name="username" placeholder="Username" required>
+                    </div>
+
+                    <div class="custom-input-group">
+                        <i class="ri-lock-fill input-icon"></i>
+                        <input type="password" class="custom-input" name="password" placeholder="Password" id="password-input" required>
+                        <button class="btn-toggle-pass" type="button" id="password-addon">
+                            <i class="ri-eye-fill fs-16" id="eye-icon"></i>
+                        </button>
+                    </div>
+
+                    <button class="btn-auth" type="submit">LOGIN</button>
+
+                </form>
+            </div>
+
+            <div class="right-footer">
+                &copy; <script>document.write(new Date().getFullYear())</script> POWERED BY AIR IQ 365
+            </div>
+
+        </div>
+
+    </div>
+</div>
 
 @section Scripts {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-        const passwordAddon = document.getElementById('password-addon');
-        const passwordInput = document.getElementById('password-input');
+            const passwordAddon = document.getElementById('password-addon');
+            const passwordInput = document.getElementById('password-input');
+            const eyeIcon = document.getElementById('eye-icon');
 
-        if (passwordAddon && passwordInput) {
-        passwordAddon.addEventListener('click', function () {
-        // Toggle the type attribute
-        if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        } else {
-        passwordInput.type = 'password';
-        }
-        });
-        }
+            if (passwordAddon && passwordInput) {
+                passwordAddon.addEventListener('click', function () {
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                        eyeIcon.classList.remove('ri-eye-fill');
+                        eyeIcon.classList.add('ri-eye-off-fill');
+                    } else {
+                        passwordInput.type = 'password';
+                        eyeIcon.classList.remove('ri-eye-off-fill');
+                        eyeIcon.classList.add('ri-eye-fill');
+                    }
+                });
+            }
         });
     </script>
 }

@@ -356,17 +356,19 @@ namespace inventory_analytics_tool.Workers
         private readonly IConfiguration _config;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IWebHostEnvironment _env;
+        private readonly IServiceScopeFactory _scopeFactory;
 
         private readonly TimeSpan _refreshInterval = TimeSpan.FromMinutes(30);
         private readonly int _primaryYear = 2026;
 
-        public FestivalDataWorker(IMemoryCache cache, ILogger<FestivalDataWorker> logger, IConfiguration config, IHttpClientFactory httpClientFactory, IWebHostEnvironment env)
+        public FestivalDataWorker(IMemoryCache cache, ILogger<FestivalDataWorker> logger, IConfiguration config, IHttpClientFactory httpClientFactory, IWebHostEnvironment env, IServiceScopeFactory scopeFactory)
         {
             _cache = cache;
             _logger = logger;
             _config = config;
             _httpClientFactory = httpClientFactory;
             _env = env;
+            _scopeFactory = scopeFactory;        
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -392,6 +394,7 @@ namespace inventory_analytics_tool.Workers
                 }
                 else
                 {
+                     await CalculateFareDropAlertsAsync();
                     await Task.Delay(_refreshInterval, stoppingToken);
                 }
             }
@@ -466,7 +469,7 @@ namespace inventory_analytics_tool.Workers
             // PHASE 2: Historical / Future Data (Separated into Historical Cache)
             // ======================================================================
             _logger.LogInformation("PHASE 2: Fetching full historical background data...");
-            int[] phase2Years = _env.IsDevelopment() ? new[] { 2026 } : new[] { 2024, 2025, 2026, 2027, 2028 };
+            int[] phase2Years = new[] { 2024, 2025, 2026, 2027, 2028 };
 
             var historicalProcessedEvents = new List<DashboardUiEvent>();
             var historicalRawEvents = new List<EventListData>();
@@ -480,7 +483,7 @@ namespace inventory_analytics_tool.Workers
                 _logger.LogInformation($"Background Fetch Complete for {year}. Cache updated.");
             }
 
-            return true;
+            return true;    
         }
 
         private async Task ProcessSpecificYearAsync(
@@ -727,6 +730,168 @@ namespace inventory_analytics_tool.Workers
                 }
                 catch (Exception ex) { _logger.LogError($"Cache swap error: {ex.Message}"); }
             });
+        }
+
+        // =======================================================
+        // NEW BACKGROUND TASK: Calculates alerts silently!
+        // =======================================================
+        //private void CalculateFareDropAlertsAsync()
+        //{
+        //    _logger.LogInformation("Worker: Scanning Cache for Fare Drop Alerts...");
+        //    try
+        //    {
+        //        // Instantly grab data from the memory caches (No DB required!)
+        //        if (!_cache.TryGetValue("RawEventListData", out List<EventListData> rawEvents) || rawEvents == null) return;
+        //        if (!_cache.TryGetValue("DashboardMasterData", out List<DashboardUiEvent> dashEvents) || dashEvents == null) return;
+        //        _cache.TryGetValue("FDestList", out List<FDestData> cachedFDest);
+        //        cachedFDest ??= new List<FDestData>();
+
+        //        var alerts = new List<object>();
+        //        var today = DateTime.Today;
+
+        //        foreach (var rawEvent in rawEvents)
+        //        {
+        //            var dashEvent = dashEvents.FirstOrDefault(e => e.Id == rawEvent.EventId);
+        //            if (dashEvent == null || rawEvent.Details == null) continue;
+
+        //            foreach (var sectorData in rawEvent.Details)
+        //            {
+        //                if (sectorData.Details == null) continue;
+        //                string sectorString = $"{sectorData.FromCode}-{sectorData.ToCode}";
+
+        //                var destMatch = cachedFDest.FirstOrDefault(f =>
+        //                string.Equals(f.FromCode, sectorData.FromCode, StringComparison.OrdinalIgnoreCase) &&
+        //                string.Equals(f.ToCode, sectorData.ToCode, StringComparison.OrdinalIgnoreCase));
+        //                string leadName = !string.IsNullOrEmpty(destMatch?.InternalOwner) ? destMatch.InternalOwner : "Unassigned";
+
+        //                foreach (var tdd in sectorData.Details)
+        //                {
+        //                    // 1. Skip past dates or dates missing a Target Fare
+        //                    if (tdd.TravelDate.Date < today || tdd.TargetFare <= 0) continue;
+
+        //                    // 2. Read the online fare DIRECTLY from the API data!
+        //                    // ---> NOTE: Change 'OnlineFare' to the actual property name from your API (e.g., AvgPurchaseFare) <---
+        //                    double currentOnlineFare = tdd.LastOnlineFare;
+
+        //                    // 3. THE TRIGGER: If the online fare is valid AND dropped below the Target Fare
+        //                    if (currentOnlineFare > 0 && currentOnlineFare < tdd.TargetFare)
+        //                    {
+        //                        alerts.Add(new
+        //                        {
+        //                            eventId = rawEvent.EventId,
+        //                            eventName = dashEvent.Name,
+        //                            sector = sectorString,
+        //                            travelDate = tdd.TravelDate.ToString("dd MMM yyyy"),
+        //                            rawDate = tdd.TravelDate,
+        //                            targetFare = (int)Math.Round(tdd.TargetFare, MidpointRounding.AwayFromZero),
+        //                            lastOnlineFare = (int)Math.Round(currentOnlineFare, MidpointRounding.AwayFromZero),
+        //                            lead = leadName
+        //                        });
+        //                    }
+        //                }
+        //            }
+        //        }
+
+        //        var sortedAlerts = alerts.OrderBy(a => ((dynamic)a).rawDate).ToList();
+
+        //        // Save it to the cache permanently
+        //        var cacheOptions = new MemoryCacheEntryOptions().SetPriority(CacheItemPriority.NeverRemove);
+        //        _cache.Set("ActiveFareAlerts", sortedAlerts, cacheOptions);
+
+        //        _logger.LogInformation($"Worker: Found {sortedAlerts.Count} Fare Drop Alerts instantly without hitting the DB.");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError($"Worker Alerts Error: {ex.Message}");
+        //    }
+        //}
+
+        // =======================================================
+        // NEW BACKGROUND TASK: Calculates alerts using Live DB!
+        // =======================================================
+        private async Task CalculateFareDropAlertsAsync()
+        {
+            _logger.LogInformation("Worker: Scanning Live DB for Fare Drop Alerts...");
+            try
+            {
+                // Must create a scope to safely use scoped DB Helper in a singleton worker
+                using (var scope = _scopeFactory.CreateScope())
+                {
+                    var dbHelper = scope.ServiceProvider.GetRequiredService<inventory_analytics_tool.Helpers.IDatabaseHelper>();
+
+                    if (!_cache.TryGetValue("RawEventListData", out List<EventListData> rawEvents) || rawEvents == null) return;
+                    if (!_cache.TryGetValue("DashboardMasterData", out List<DashboardUiEvent> dashEvents) || dashEvents == null) return;
+                    _cache.TryGetValue("FDestList", out List<FDestData> cachedFDest);
+                    cachedFDest ??= new List<FDestData>();
+
+                    var alerts = new List<object>();
+                    var today = DateTime.Today;
+
+                    foreach (var rawEvent in rawEvents)
+                    {
+                        var dashEvent = dashEvents.FirstOrDefault(e => e.Id == rawEvent.EventId);
+                        if (dashEvent == null || rawEvent.Details == null) continue;
+
+                        foreach (var sectorData in rawEvent.Details)
+                        {
+                            if (sectorData.Details == null || !sectorData.Details.Any()) continue;
+                            string sectorString = $"{sectorData.FromCode}-{sectorData.ToCode}";
+
+                            var destMatch = cachedFDest.FirstOrDefault(f =>
+                                string.Equals(f.FromCode, sectorData.FromCode, StringComparison.OrdinalIgnoreCase) &&
+                                string.Equals(f.ToCode, sectorData.ToCode, StringComparison.OrdinalIgnoreCase));
+                            string leadName = !string.IsNullOrEmpty(destMatch?.InternalOwner) ? destMatch.InternalOwner : "Unassigned";
+
+                            // SMART BATCHING: Find the date range for this sector to avoid N+1 DB queries
+                            var minDate = sectorData.Details.Min(d => d.TravelDate).Date;
+                            var maxDate = sectorData.Details.Max(d => d.TravelDate).Date;
+
+                            // Fetch the live lowest fares from the DB for the entire date range at once
+                            var dbLowestFares = await dbHelper.GetLowestLatestFaresAsync(sectorString, minDate, maxDate);
+
+                            foreach (var tdd in sectorData.Details)
+                            {
+                                if (tdd.TravelDate.Date < today || tdd.TargetFare <= 0) continue;
+
+                                // Extract the true live DB fare instead of the stale API fare
+                                if (dbLowestFares.TryGetValue(tdd.TravelDate.Date, out var fareData))
+                                {
+                                    double currentOnlineFare = fareData.LowestFare;
+                                    DateTime fareEntryDate = fareData.EntryDate; // Successfully extracted
+                                    // THE TRIGGER
+                                    if (currentOnlineFare > 0 && currentOnlineFare < tdd.TargetFare)
+                                    {
+                                        alerts.Add(new
+                                        {
+                                            eventId = rawEvent.EventId,
+                                            eventName = dashEvent.Name,
+                                            sector = sectorString,
+                                            travelDate = tdd.TravelDate.ToString("dd MMM yyyy"),
+                                            rawDate = tdd.TravelDate,
+                                            targetFare = (int)Math.Round(tdd.TargetFare, MidpointRounding.AwayFromZero),
+                                            lastOnlineFare = (int)Math.Round(currentOnlineFare, MidpointRounding.AwayFromZero),
+                                            entryDate = fareEntryDate.ToString("dd MMM yyyy HH:mm:ss"),
+                                            lead = leadName
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    var sortedAlerts = alerts.OrderBy(a => ((dynamic)a).rawDate).ToList();
+
+                    // Save it to the cache permanently
+                    var cacheOptions = new MemoryCacheEntryOptions().SetPriority(CacheItemPriority.NeverRemove);
+                    _cache.Set("ActiveFareAlerts", sortedAlerts, cacheOptions);
+
+                    _logger.LogInformation($"Worker: Found {sortedAlerts.Count} Fare Drop Alerts using live DB.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Worker Alerts Error: {ex.Message}");
+            }
         }
     }
 }

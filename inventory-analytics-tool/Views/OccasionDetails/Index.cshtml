@@ -5,25 +5,7 @@
 }
 
 <style>
-    /* 1. Force the table to behave */
-    #calendarTable {
-        table-layout: fixed !important; /* Forces columns to respect width settings */
-        width: 100% !important;
-    }
-
-        /* 2. Target the Date Range Column (2nd column) */
-        #calendarTable td:nth-child(2),
-        #calendarTable th:nth-child(2) {
-            width: 180px !important; /* Set a specific width for this column */
-            white-space: normal !important;
-            word-wrap: break-word !important;
-            line-height: 1.3 !important;
-        }
-
-    /* 3. Ensure the responsive wrapper doesn't lock content */
-    .dataTables_wrapper .table-responsive {
-        overflow-x: auto;
-    }
+   
     .tip-table { width: 100%; border-collapse: collapse; text-align: center; margin: 0; }
     .tip-table th { font-weight: 700 !important; font-size: 11px; color: #64748b; padding: 6px 12px; border-bottom: 1px solid #e2e8f0; }
     .tip-table td { font-weight: 600; font-size: 12px; color: #1e293b; padding: 6px 12px; }

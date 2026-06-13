@@ -93,12 +93,11 @@ public class OccasionDetailsController : Controller
     {
         try
         {
-            if (!_cache.TryGetValue("RawEventListData", out List<EventListData> cachedEvents) || cachedEvents == null)
-            {
-                return Json(new { success = false, message = "System is currently updating background data. Please try again." });
-            }
+            var allCachedEvents = new List<EventListData>();
+            if (_cache.TryGetValue("RawEventListData", out List<EventListData> primary)) allCachedEvents.AddRange(primary);
+            if (_cache.TryGetValue("HistoricalRawEventListData", out List<EventListData> historical)) allCachedEvents.AddRange(historical);
 
-            var apiEvent = cachedEvents.FirstOrDefault(e => e.EventId == id);
+            var apiEvent = allCachedEvents.FirstOrDefault(e => e.EventId == id);
             if (apiEvent == null || apiEvent.Details == null) return Json(new { success = true, data = new List<object>() });
 
             _cache.TryGetValue("FDestList", out List<FDestData> cachedFDest);
@@ -323,12 +322,12 @@ public class OccasionDetailsController : Controller
     {
         try
         {
-            if (!_cache.TryGetValue("RawEventListData", out List<EventListData> cachedEvents) || cachedEvents == null)
-                return Json(new { success = false, message = "System is updating data." });
+            var allCachedEvents = new List<EventListData>();
+            if (_cache.TryGetValue("RawEventListData", out List<EventListData> primaryRaw)) allCachedEvents.AddRange(primaryRaw);
+            if (_cache.TryGetValue("HistoricalRawEventListData", out List<EventListData> histRaw)) allCachedEvents.AddRange(histRaw);
 
-            var apiEvent = cachedEvents.FirstOrDefault(e => e.EventId == eventId);
-            if (apiEvent == null || apiEvent.Details == null)
-                return Json(new { success = true, data = new List<object>() });
+            var apiEvent = allCachedEvents.FirstOrDefault(e => e.EventId == eventId);
+            if (apiEvent == null || apiEvent.Details == null) return Json(new { success = true, data = new List<object>() });
 
             var sectorData = apiEvent.Details.FirstOrDefault(s =>
                 string.Equals($"{s.FromCode}-{s.ToCode}", sector, StringComparison.OrdinalIgnoreCase));
@@ -341,6 +340,17 @@ public class OccasionDetailsController : Controller
             var yearEnd = new DateTime(year + 1, 1, 15);
 
             var fareList = new List<object>();
+
+            var allDashEvents = new List<DashboardUiEvent>();
+            if (_cache.TryGetValue("DashboardMasterData", out List<DashboardUiEvent> primaryDash)) allDashEvents.AddRange(primaryDash);
+            if (_cache.TryGetValue("HistoricalDashboardMasterData", out List<DashboardUiEvent> histDash)) allDashEvents.AddRange(histDash);
+
+            var masterDates = new List<DateTime>();
+            var dashEvent = allDashEvents.FirstOrDefault(e => e.Id == eventId);
+            if (dashEvent != null && dashEvent.DailyStats != null)
+            {
+                masterDates = dashEvent.DailyStats.Select(ds => DateTime.Parse(ds.Date)).Where(dt => dt >= yearStart && dt <= yearEnd).OrderBy(d => d).ToList();
+            }
 
             // IMPORTANT:
             // Use DateRange as the main calendar source,
@@ -678,26 +688,33 @@ public class OccasionDetailsController : Controller
             }
 
             // Write Data
+            // Write Data (ExportAttemptsToExcel)
             int row = 2;
             foreach (var rec in attemptRecords)
             {
-                worksheet.Cell(row, 1).Value = rec.AqId;
-                worksheet.Cell(row, 2).Value = rec.RawEntryDate.ToString("yyyy-MM-dd"); 
-                worksheet.Cell(row, 2).Value = rec.ReqId;
-                worksheet.Cell(row, 3).Value = rec.Origin;
-                worksheet.Cell(row, 4).Value = rec.Destination;
-                worksheet.Cell(row, 5).Value = rec.RawTravelDate.ToString("yyyy-MM-dd");
-                worksheet.Cell(row, 6).Value = rec.AirlineCode;
-                worksheet.Cell(row, 7).Value = rec.FlightCode.Replace(rec.AirlineCode, "").Trim();
-                worksheet.Cell(row, 8).Value = rec.Pax;
-                worksheet.Cell(row, 9).Value = rec.AutoQuote?.Replace("₹", "").Replace(",", "");
-                worksheet.Cell(row, 10).Value = rec.Status == "Pending" ? "" : rec.Status;
-                worksheet.Cell(row, 11).Value = rec.NegFare?.Replace("₹", "").Replace(",", "");
-                worksheet.Cell(row, 12).Value = rec.ConfStatus;
-                worksheet.Cell(row, 13).Value = rec.Remarks;
-                worksheet.Cell(row, 14).Value = rec.PNR;
-                worksheet.Cell(row, 15).Value = rec.OpenRemarks;
-                worksheet.Cell(row, 16).Value = rec.Lead;
+                worksheet.Cell(row, 1).Value = rec.AqId ?? "";
+                worksheet.Cell(row, 2).Value = rec.RawEntryDate.ToString("yyyy-MM-dd");
+                worksheet.Cell(row, 3).Value = rec.ReqId ?? ""; // Fixed column alignment!
+                worksheet.Cell(row, 4).Value = rec.Origin ?? "";
+                worksheet.Cell(row, 5).Value = rec.Destination ?? "";
+                worksheet.Cell(row, 6).Value = rec.RawTravelDate.ToString("yyyy-MM-dd");
+                worksheet.Cell(row, 7).Value = rec.AirlineCode ?? "";
+
+                // Safely handles missing flight codes
+                worksheet.Cell(row, 8).Value = rec.FlightCode?.Replace(rec.AirlineCode ?? "", "").Trim() ?? "";
+
+                worksheet.Cell(row, 9).Value = rec.Pax;
+                worksheet.Cell(row, 10).Value = rec.AutoQuote?.Replace("₹", "").Replace(",", "") ?? "";
+
+                // Safely handles the Pending check
+                worksheet.Cell(row, 11).Value = (rec.Status == "Pending") ? "" : (rec.Status ?? "");
+
+                worksheet.Cell(row, 12).Value = rec.NegFare?.Replace("₹", "").Replace(",", "") ?? "";
+                worksheet.Cell(row, 13).Value = rec.ConfStatus ?? "";
+                worksheet.Cell(row, 14).Value = rec.Remarks ?? "";
+                worksheet.Cell(row, 15).Value = rec.PNR ?? "";
+                worksheet.Cell(row, 16).Value = rec.OpenRemarks ?? "";
+                worksheet.Cell(row, 17).Value = rec.Lead ?? "";
                 row++;
             }
 
@@ -969,8 +986,128 @@ public class OccasionDetailsController : Controller
     }
 
 
+    //[HttpGet]
+    //public async Task<IActionResult> ExportAllAttemptsToExcel(string fromDate, string toDate, string travelDate)
+    //{
+    //    DateTime? entryStart = null;
+    //    DateTime? entryEnd = null;
+    //    DateTime? specificTravel = null;
+
+    //    if (!string.IsNullOrEmpty(travelDate) && DateTime.TryParse(travelDate, out DateTime pTravel))
+    //    {
+    //        specificTravel = pTravel;
+    //    }
+    //    else if (!string.IsNullOrEmpty(fromDate) && !string.IsNullOrEmpty(toDate))
+    //    {
+    //        if (DateTime.TryParse(fromDate, out DateTime pFrom)) entryStart = pFrom;
+    //        if (DateTime.TryParse(toDate, out DateTime pTo)) entryEnd = pTo;
+    //    }
+    //    else
+    //    {
+    //        entryStart = DateTime.Today;
+    //        entryEnd = DateTime.Today;
+    //    }
+    //    var attemptRecords = await _dbHelper.GetAllAttemptDetailsAsync(entryStart, entryEnd, specificTravel);
+
+    //    using (var workbook = new XLWorkbook())
+    //    {
+    //        var worksheet = workbook.Worksheets.Add("All Attempts");
+
+    //        string[] headers = { "AQ ID", "Request Id", "Org", "Des", "Travel Date", "Airline Code", "Flight Number",
+    //                         "No of Pax", "Auto Quote", "Status", "Negotiated Fare", "Confirmation Status",
+    //                         "Remarks", "PNR", "Open Remarks", "Lead" };
+
+    //        for (int i = 0; i < headers.Length; i++)
+    //        {
+    //            var cell = worksheet.Cell(1, i + 1);
+    //            cell.Value = headers[i];
+    //            cell.Style.Font.Bold = true;
+    //            cell.Style.Fill.BackgroundColor = XLColor.LightGray;
+    //        }
+
+    //        // Write Data (ExportAllAttemptsToExcel)
+    //        int row = 2;
+    //        foreach (var rec in attemptRecords)
+    //        {
+    //            worksheet.Cell(row, 1).Value = rec.AqId ?? "";
+    //            worksheet.Cell(row, 2).Value = rec.ReqId ?? "";
+    //            worksheet.Cell(row, 3).Value = rec.Origin ?? "";
+    //            worksheet.Cell(row, 4).Value = rec.Destination ?? "";
+    //            worksheet.Cell(row, 5).Value = rec.RawTravelDate.ToString("yyyy-MM-dd");
+    //            worksheet.Cell(row, 6).Value = rec.AirlineCode ?? "";
+
+    //            // Safely handles missing flight codes
+    //            worksheet.Cell(row, 7).Value = rec.FlightCode?.Replace(rec.AirlineCode ?? "", "").Trim() ?? "";
+
+    //            worksheet.Cell(row, 8).Value = rec.Pax;
+    //            worksheet.Cell(row, 9).Value = rec.AutoQuote?.Replace("₹", "").Replace(",", "") ?? "";
+
+    //            // Safely handles the Pending check
+    //            worksheet.Cell(row, 10).Value = (rec.Status == "Pending") ? "" : (rec.Status ?? "");
+
+    //            worksheet.Cell(row, 11).Value = rec.NegFare?.Replace("₹", "").Replace(",", "") ?? "";
+    //            worksheet.Cell(row, 12).Value = rec.ConfStatus ?? "";
+    //            worksheet.Cell(row, 13).Value = rec.Remarks ?? "";
+    //            worksheet.Cell(row, 14).Value = rec.PNR ?? "";
+    //            worksheet.Cell(row, 15).Value = rec.OpenRemarks ?? "";
+    //            worksheet.Cell(row, 16).Value = rec.Lead ?? "";
+    //            row++;
+    //        }
+
+    //        var hiddenSheet = workbook.Worksheets.Add("ValidationData");
+    //        hiddenSheet.Hide();
+
+    //        // Populate Status List
+    //        hiddenSheet.Cell("A1").Value = "NEGOTIATION SENT";
+    //        hiddenSheet.Cell("A2").Value = "REQUEST REJECTED";
+    //        hiddenSheet.Cell("A3").Value = "SELF REJECTED";
+    //        hiddenSheet.Cell("A4").Value = "PNR CREATED";
+
+    //        // Populate Conf Status List
+    //        hiddenSheet.Cell("B1").Value = "YES";
+    //        hiddenSheet.Cell("B2").Value = "NO";
+
+    //        // Populate Remarks List
+    //        hiddenSheet.Cell("C1").Value = "PNR CREATED";
+    //        hiddenSheet.Cell("C2").Value = "NEGOTIATION REJECTED";
+    //        hiddenSheet.Cell("C3").Value = "REQUEST REJECTED";
+    //        hiddenSheet.Cell("C4").Value = "SELF REJECTED";
+    //        hiddenSheet.Cell("C5").Value = "NEGOTIATION SATISFIED";
+    //        hiddenSheet.Cell("C6").Value = "NEGOTIATION NOT SATISFIED";
+    //        hiddenSheet.Cell("C7").Value = "NEGOTIATION PENDING";
+
+    //        // Apply to Column 10 (Status)
+    //        var statusRange = worksheet.Range(2, 10, 10000, 10);
+    //        statusRange.SetDataValidation().List("=ValidationData!$A$1:$A$4", true);
+    //        statusRange.SetDataValidation().IgnoreBlanks = true;
+
+    //        // Apply to Column 12 (Confirmation Status)
+    //        var confStatusRange = worksheet.Range(2, 12, 10000, 12);
+    //        confStatusRange.SetDataValidation().List("=ValidationData!$B$1:$B$2", true);
+    //        confStatusRange.SetDataValidation().IgnoreBlanks = true;
+
+    //        // Apply to Column 13 (Remarks)
+    //        var remarksRange = worksheet.Range(2, 13, 10000, 13);
+    //        remarksRange.SetDataValidation().List("=ValidationData!$C$1:$C$7", true);
+    //        remarksRange.SetDataValidation().IgnoreBlanks = true;
+
+    //        worksheet.Columns().AdjustToContents();
+
+    //        using (var stream = new MemoryStream())
+    //        {
+    //            workbook.SaveAs(stream);
+    //            var content = stream.ToArray();
+    //            return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"AirIQ_Master_All_Attempts.xlsx");
+    //        }
+    //    }
+    //}
+
     [HttpGet]
-    public async Task<IActionResult> ExportAllAttemptsToExcel(string fromDate, string toDate, string travelDate)
+    public async Task<IActionResult> ExportAllAttemptsToExcel(
+        string fromDate, string toDate, string travelDate,
+        string fSector, string fStation, string fAirline,
+        string fTravelDate, string fStatus, string fConfStatus,
+        string fLead, string fFlightNo, string fMonth)
     {
         DateTime? entryStart = null;
         DateTime? entryEnd = null;
@@ -990,8 +1127,85 @@ public class OccasionDetailsController : Controller
             entryStart = DateTime.Today;
             entryEnd = DateTime.Today;
         }
+
+        // Fetch Base Records
         var attemptRecords = await _dbHelper.GetAllAttemptDetailsAsync(entryStart, entryEnd, specificTravel);
 
+        // --- MAP LEADS (Required for the Lead filter to work!) ---
+        _cache.TryGetValue("FDestList", out List<FDestData> cachedFDest);
+        cachedFDest ??= new List<FDestData>();
+
+        foreach (var rec in attemptRecords)
+        {
+            var destMatch = cachedFDest.FirstOrDefault(f =>
+                string.Equals(f.FromCode, rec.Origin?.Trim(), StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(f.ToCode, rec.Destination?.Trim(), StringComparison.OrdinalIgnoreCase));
+
+            if (destMatch != null && !string.IsNullOrEmpty(destMatch.InternalOwner))
+            {
+                rec.Lead = destMatch.InternalOwner;
+            }
+            else if (string.IsNullOrEmpty(rec.Lead))
+            {
+                rec.Lead = "Unassigned";
+            }
+        }
+
+        // ==========================================================
+        // APPLY DYNAMIC UI FILTERS TO C# DATA
+        // ==========================================================
+        if (!string.IsNullOrEmpty(fSector))
+            attemptRecords = attemptRecords.Where(r => $"{r.Origin?.Trim()}-{r.Destination?.Trim()}".Equals(fSector, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        if (!string.IsNullOrEmpty(fStation))
+            attemptRecords = attemptRecords.Where(r =>
+                string.Equals(r.Origin?.Trim(), fStation, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(r.Destination?.Trim(), fStation, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        if (!string.IsNullOrEmpty(fAirline))
+            attemptRecords = attemptRecords.Where(r => string.Equals(r.AirlineCode?.Trim(), fAirline, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        if (!string.IsNullOrEmpty(fTravelDate))
+            attemptRecords = attemptRecords.Where(r => r.TravelDate == fTravelDate).ToList();
+
+        if (!string.IsNullOrEmpty(fStatus))
+        {
+            attemptRecords = attemptRecords.Where(r => {
+                string recStatus = r.Status?.ToUpper() ?? "PENDING";
+                if (recStatus != "PNR CREATED" && recStatus != "REJECTED" && recStatus != "NEGOTIATION SENT")
+                    recStatus = "PENDING";
+                return string.Equals(recStatus, fStatus, StringComparison.OrdinalIgnoreCase);
+            }).ToList();
+        }
+
+        if (!string.IsNullOrEmpty(fConfStatus))
+        {
+            attemptRecords = attemptRecords.Where(r => {
+                string recConf = r.ConfStatus?.ToUpper() ?? "";
+                if (recConf != "YES" && recConf != "NO") recConf = "";
+                return string.Equals(recConf, fConfStatus, StringComparison.OrdinalIgnoreCase);
+            }).ToList();
+        }
+
+        if (!string.IsNullOrEmpty(fLead))
+            attemptRecords = attemptRecords.Where(r => string.Equals(r.Lead, fLead, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        if (!string.IsNullOrEmpty(fFlightNo))
+            attemptRecords = attemptRecords.Where(r => r.FlightCode != null && r.FlightCode.Contains(fFlightNo, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        if (!string.IsNullOrEmpty(fMonth))
+        {
+            attemptRecords = attemptRecords.Where(r => {
+                if (DateTime.TryParse(r.TravelDate, out DateTime dt))
+                    return string.Equals(dt.ToString("MMMM"), fMonth, StringComparison.OrdinalIgnoreCase);
+                return false;
+            }).ToList();
+        }
+
+
+        // ==========================================================
+        // EXCEL GENERATION (Unchanged)
+        // ==========================================================
         using (var workbook = new XLWorkbook())
         {
             var worksheet = workbook.Worksheets.Add("All Attempts");
@@ -1011,39 +1225,36 @@ public class OccasionDetailsController : Controller
             int row = 2;
             foreach (var rec in attemptRecords)
             {
-                worksheet.Cell(row, 1).Value = rec.AqId;
-                worksheet.Cell(row, 2).Value = rec.ReqId;
-                worksheet.Cell(row, 3).Value = rec.Origin;
-                worksheet.Cell(row, 4).Value = rec.Destination;
+                worksheet.Cell(row, 1).Value = rec.AqId ?? "";
+                worksheet.Cell(row, 2).Value = rec.ReqId ?? "";
+                worksheet.Cell(row, 3).Value = rec.Origin ?? "";
+                worksheet.Cell(row, 4).Value = rec.Destination ?? "";
                 worksheet.Cell(row, 5).Value = rec.RawTravelDate.ToString("yyyy-MM-dd");
-                worksheet.Cell(row, 6).Value = rec.AirlineCode;
-                worksheet.Cell(row, 7).Value = rec.FlightCode.Replace(rec.AirlineCode, "").Trim();
+                worksheet.Cell(row, 6).Value = rec.AirlineCode ?? "";
+                worksheet.Cell(row, 7).Value = rec.FlightCode?.Replace(rec.AirlineCode ?? "", "").Trim() ?? "";
                 worksheet.Cell(row, 8).Value = rec.Pax;
-                worksheet.Cell(row, 9).Value = rec.AutoQuote?.Replace("₹", "").Replace(",", "");
-                worksheet.Cell(row, 10).Value = rec.Status == "Pending" ? "" : rec.Status;
-                worksheet.Cell(row, 11).Value = rec.NegFare?.Replace("₹", "").Replace(",", "");
-                worksheet.Cell(row, 12).Value = rec.ConfStatus;
-                worksheet.Cell(row, 13).Value = rec.Remarks;
-                worksheet.Cell(row, 14).Value = rec.PNR;
-                worksheet.Cell(row, 15).Value = rec.OpenRemarks;
-                worksheet.Cell(row, 16).Value = rec.Lead;
+                worksheet.Cell(row, 9).Value = rec.AutoQuote?.Replace("₹", "").Replace(",", "") ?? "";
+                worksheet.Cell(row, 10).Value = (rec.Status == "Pending") ? "" : (rec.Status ?? "");
+                worksheet.Cell(row, 11).Value = rec.NegFare?.Replace("₹", "").Replace(",", "") ?? "";
+                worksheet.Cell(row, 12).Value = rec.ConfStatus ?? "";
+                worksheet.Cell(row, 13).Value = rec.Remarks ?? "";
+                worksheet.Cell(row, 14).Value = rec.PNR ?? "";
+                worksheet.Cell(row, 15).Value = rec.OpenRemarks ?? "";
+                worksheet.Cell(row, 16).Value = rec.Lead ?? "";
                 row++;
             }
 
             var hiddenSheet = workbook.Worksheets.Add("ValidationData");
             hiddenSheet.Hide();
 
-            // Populate Status List
             hiddenSheet.Cell("A1").Value = "NEGOTIATION SENT";
             hiddenSheet.Cell("A2").Value = "REQUEST REJECTED";
             hiddenSheet.Cell("A3").Value = "SELF REJECTED";
             hiddenSheet.Cell("A4").Value = "PNR CREATED";
 
-            // Populate Conf Status List
             hiddenSheet.Cell("B1").Value = "YES";
             hiddenSheet.Cell("B2").Value = "NO";
 
-            // Populate Remarks List
             hiddenSheet.Cell("C1").Value = "PNR CREATED";
             hiddenSheet.Cell("C2").Value = "NEGOTIATION REJECTED";
             hiddenSheet.Cell("C3").Value = "REQUEST REJECTED";
@@ -1052,17 +1263,14 @@ public class OccasionDetailsController : Controller
             hiddenSheet.Cell("C6").Value = "NEGOTIATION NOT SATISFIED";
             hiddenSheet.Cell("C7").Value = "NEGOTIATION PENDING";
 
-            // Apply to Column 10 (Status)
             var statusRange = worksheet.Range(2, 10, 10000, 10);
             statusRange.SetDataValidation().List("=ValidationData!$A$1:$A$4", true);
             statusRange.SetDataValidation().IgnoreBlanks = true;
 
-            // Apply to Column 12 (Confirmation Status)
             var confStatusRange = worksheet.Range(2, 12, 10000, 12);
             confStatusRange.SetDataValidation().List("=ValidationData!$B$1:$B$2", true);
             confStatusRange.SetDataValidation().IgnoreBlanks = true;
 
-            // Apply to Column 13 (Remarks)
             var remarksRange = worksheet.Range(2, 13, 10000, 13);
             remarksRange.SetDataValidation().List("=ValidationData!$C$1:$C$7", true);
             remarksRange.SetDataValidation().IgnoreBlanks = true;

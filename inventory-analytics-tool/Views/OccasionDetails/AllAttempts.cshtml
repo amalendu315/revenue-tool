@@ -130,7 +130,7 @@
             </div>
         </div>
 
-        <div class="conatiner cox mt-5 position-relative" style="z-index: 1040;">
+        <div class="conatiner cox mt-5 position-relative" >
             <div class="fb-row">
 
                 <div class="fb-field" id="field-sector">
@@ -527,10 +527,38 @@
         }
 
         function exportAllToExcel() {
-            // Updated to grab the dynamically selected dates instead of hardcoding "?year=2026"
+            // 1. Grab the base date ranges
             const from = document.getElementById('serverFromDate').value || '';
             const to = document.getElementById('serverToDate').value || '';
-            window.location.href = `/OccasionDetails/ExportAllAttemptsToExcel?fromDate=${from}&toDate=${to}`;
+
+            // 2. Grab all active UI filters
+            const fSector = document.getElementById('filter-sector').textContent.trim();
+            const fStation = document.getElementById('filter-station').textContent.trim();
+            const fAirline = document.getElementById('filter-airline').textContent.trim();
+            const fTravelDate = document.getElementById('filter-travel-date').textContent.trim();
+            const fStatus = document.getElementById('filter-status').textContent.trim();
+            const fConfStatus = document.getElementById('filter-conf-status').textContent.trim();
+            const fLead = document.getElementById('filter-lead').textContent.trim();
+            const fFlightNo = document.getElementById('flight-no').value.trim();
+            const fMonth = document.getElementById('inputState').value.trim();
+
+            // 3. Build the query string dynamically
+            const params = new URLSearchParams();
+            if (from) params.append('fromDate', from);
+            if (to) params.append('toDate', to);
+
+            if (fSector !== 'Select') params.append('fSector', fSector);
+            if (fStation !== 'Select') params.append('fStation', fStation);
+            if (fAirline !== 'Select') params.append('fAirline', fAirline);
+            if (fTravelDate !== 'Select date') params.append('fTravelDate', fTravelDate);
+            if (fStatus !== 'Select') params.append('fStatus', fStatus);
+            if (fConfStatus !== 'Select') params.append('fConfStatus', fConfStatus);
+            if (fLead !== 'Select') params.append('fLead', fLead);
+            if (fFlightNo) params.append('fFlightNo', fFlightNo);
+            if (fMonth !== 'Filter By Month' && fMonth !== 'All Months') params.append('fMonth', fMonth);
+
+            // 4. Send the request to the controller with all filters attached
+            window.location.href = `/OccasionDetails/ExportAllAttemptsToExcel?${params.toString()}`;
         }
 
         // ----------------------------------------------------

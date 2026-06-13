@@ -19,6 +19,12 @@
     <!-- custom Css-->
     <link href="~/css/site.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 
+    <style>
+        .alert-hover:hover {
+        background-color: #f8f9fa !important;
+        }
+    </style>
+
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -40,6 +46,30 @@
 
                     <div class="d-flex align-items-center">
 
+                        <div class="dropdown topbar-head-dropdown ms-1 header-item" id="notificationDropdown">
+                            <button type="button" class="btn btn-icon btn-topbar material-shadow-none btn-ghost-secondary rounded-circle" id="page-header-notifications-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bell"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                                <!-- The Red Badge -->
+                                <span class="position-absolute topbar-badge fs-10 translate-middle badge rounded-pill bg-danger" id="alert-badge" style="display:none;">0</span>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end p-0" aria-labelledby="page-header-notifications-dropdown" style="width: 320px;">
+                                <div class="dropdown-head bg-primary bg-pattern rounded-top p-3">
+                                    <h6 class="m-0 fs-16 fw-semibold text-white"> Fare Drop Alerts </h6>
+                                </div>
+                                <div class="p-0 text-center" id="alert-dropdown-content">
+                                    <div class="py-4">
+                                        <div class="spinner-border text-primary spinner-border-sm" role="status"></div>
+                                        <p class="mt-2 mb-0 fs-13">Checking fares...</p>
+                                    </div>
+                                </div>
+                                <div class="p-2 border-top text-center">
+                                    <a href="/Dashboard/FareDropAlerts" class="btn btn-sm btn-link font-size-14 text-center">
+                                        <i class="mdi mdi-arrow-right-circle me-1"></i> View All Alerts Page
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="dropdown ms-sm-3 header-item topbar-user">
                             <button type="button" class="btn material-shadow-none" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="d-flex align-items-center">
@@ -56,8 +86,18 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-collection-fill text-muted fs-16 align-middle me-1" viewBox="0 0 16 16">
                                         <path d="M0 13a1.5 1.5 0 0 0 1.5 1.5h13A1.5 1.5 0 0 0 16 13V6a1.5 1.5 0 0 0-1.5-1.5h-13A1.5 1.5 0 0 0 0 6zM2 3a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 0-1h-11A.5.5 0 0 0 2 3m2-2a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 0-1h-7A.5.5 0 0 0 4 1" />
                                     </svg>
-                                    <span class="align-middle" data-key="t-logout">All Raised GRs</span>
+                                    <span class="align-middle" data-key="t-allgroupattempts">All Raised GRs</span>
                                 </a>
+                                <a class="dropdown-item" asp-controller="Dashboard" asp-action="AllSectors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-collection-fill text-muted fs-16 align-middle me-1" viewBox="0 0 16 16">
+                                        <path d="M0 13a1.5 1.5 0 0 0 1.5 1.5h13A1.5 1.5 0 0 0 16 13V6a1.5 1.5 0 0 0-1.5-1.5h-13A1.5 1.5 0 0 0 0 6zM2 3a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 0-1h-11A.5.5 0 0 0 2 3m2-2a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 0-1h-7A.5.5 0 0 0 4 1" />
+                                    </svg>
+                                    <span class="align-middle" data-key="t-allsectors">All Sectors</span>
+                                </a>
+                                @* <a class="dropdown-item" href="/pnr-tracker">
+                                    <svg width="16" height="16" fill="currentColor" version="1.1" id="Layer_1" class="text-muted fs-16 align-middle me-1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g> <path d="M270.348,227.994H30.962C13.889,227.994,0,241.884,0,258.957v124.629c0,17.073,13.889,30.962,30.962,30.962h194.172 c4.736,0,8.575-3.839,8.575-8.575c0-4.736-3.839-8.575-8.575-8.575H30.962c-7.617,0-13.812-6.196-13.812-13.812v-61.331H284.16 v61.331c0,7.617-6.196,13.812-13.812,13.812h-16.632c-4.736,0-8.575,3.839-8.575,8.575c0,4.736,3.839,8.575,8.575,8.575h16.632 c17.073,0,30.962-13.889,30.962-30.962V258.957C301.31,241.884,287.421,227.994,270.348,227.994z M284.161,305.105H17.15v-22.924 h51.353c4.736,0,8.575-3.839,8.575-8.575s-3.839-8.575-8.575-8.575H17.15v-6.074c0-7.617,6.196-13.812,13.812-13.812h239.386 c7.617,0,13.812,6.196,13.812,13.812v6.074H97.085c-4.736,0-8.575,3.839-8.575,8.575s3.839,8.575,8.575,8.575h187.077V305.105z"></path> </g> </g> <g> <g> <path d="M368.047,97.452H108.154c-4.736,0-8.575,3.839-8.575,8.575v100.177c0,4.736,3.839,8.575,8.575,8.575 c4.736,0,8.575-3.839,8.575-8.575v-39.387c27.007-3.792,48.425-25.209,52.216-52.216h199.102c4.736,0,8.575-3.839,8.575-8.575 C376.621,101.291,372.782,97.452,368.047,97.452z M116.729,149.438v-34.836h34.836 C148.108,132.136,134.264,145.98,116.729,149.438z"></path> </g> </g> <g> <g> <path d="M503.425,97.452H396.63c-4.736,0-8.575,3.839-8.575,8.575c0,4.736,3.839,8.575,8.575,8.575h46.017 c3.791,27.006,25.203,48.424,52.204,52.216v71.5c-27.001,3.792-48.413,25.21-52.204,52.216H323.095 c-4.736,0-8.575,3.839-8.575,8.575c0,4.736,3.839,8.575,8.575,8.575h180.33c4.736,0,8.575-3.839,8.575-8.575V106.027 C512,101.291,508.161,97.452,503.425,97.452z M494.85,149.437c-17.529-3.458-31.369-17.302-34.825-34.835h34.825V149.437z M494.85,290.533h-34.825c3.456-17.534,17.296-31.378,34.825-34.836V290.533z"></path> </g> </g> <g> <g> <path d="M305.79,141.389c-43.52,0-78.927,27.442-78.927,61.171c0,1.434,0.07,2.921,0.206,4.42 c0.429,4.716,4.601,8.186,9.317,7.763c4.716-0.429,8.192-4.601,7.763-9.317c-0.09-0.984-0.135-1.949-0.135-2.866 c0-24.273,27.713-44.022,61.777-44.022c34.07,0,61.789,19.748,61.789,44.022c-0.002,19.932-18.949,37.438-46.079,42.569 c-4.653,0.88-7.712,5.366-6.831,10.019c0.779,4.115,4.375,6.982,8.416,6.982c0.528,0,1.066-0.049,1.603-0.151 c35.35-6.687,60.039-31.121,60.039-59.419C384.729,168.831,349.317,141.389,305.79,141.389z"></path> </g> </g> <g> <g> <path d="M93.582,339.714H38.935c-4.736,0-8.575,3.839-8.575,8.575c0,4.736,3.839,8.575,8.575,8.575h54.647 c4.736,0,8.575-3.839,8.575-8.575C102.156,343.554,98.317,339.714,93.582,339.714z"></path> </g> </g> </g></svg>
+                                    <span class="align-middle" data-key="t-payment-tracker">PNR Payment Tracker</span>
+                                </a> *@
                                 <a class="dropdown-item" asp-controller="Login" asp-action="Logout">
                                     <i class="mdi mdi-logout text-muted fs-16 align-middle me-1"></i>
                                     <span class="align-middle" data-key="t-logout">Logout</span>
@@ -85,6 +125,42 @@
                     </div>
                 </div>
             </footer>
+        </div>
+    </div>
+    <!-- Sector Preference Modal -->
+    <div class="modal fade" id="sectorAlertModal" tabindex="-1" aria-labelledby="sectorAlertModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content rounded-4 border-0">
+                <div class="modal-header bg-primary rounded-top-4">
+                    <h5 class="modal-title text-white" id="sectorAlertModalLabel"><i class="mdi mdi-bell-ring-outline me-1"></i> Alert Preferences</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted mb-3">Select the specific sectors you want to monitor for fare drops.</p>
+
+                    <div class="position-relative mb-3">
+                        <i class="mdi mdi-magnify position-absolute text-muted fs-4" style="left: 15px; top: 50%; transform: translateY(-50%); z-index: 10;"></i>
+                        <input type="text" id="modalSectorSearch" class="form-control form-control-lg bg-light border-0 shadow-sm" placeholder="Search sectors (e.g. DEL-RUH)..." style="padding-left: 45px; font-size: 14px; height: 45px;">
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2 mt-4">
+                        <span class="fw-semibold fs-14 text-dark">Available Sectors</span>
+                        <div>
+                            <button type="button" class="btn btn-sm btn-soft-primary" onclick="selectAllSectors(true)">Select All</button>
+                            <button type="button" class="btn btn-sm btn-soft-danger" onclick="selectAllSectors(false)">Clear All</button>
+                        </div>
+                    </div>
+
+                    <div id="modalSectorList" class="border rounded-3 p-3 shadow-sm" style="max-height: 250px; overflow-y: auto; background: #f8f9fa;">
+                        <div class="text-center text-muted py-3">
+                            <div class="spinner-border spinner-border-sm text-primary mb-2"></div><br />Loading sectors...
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light rounded-bottom-4 border-top-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary shadow-sm" onclick="saveSectorPreferences()">Save Preferences</button>
+                </div>
+            </div>
         </div>
     </div>
     <!-- JAVASCRIPT -->
@@ -115,6 +191,145 @@
         });
         });
 
+        $(document).ready(function () {
+        // Load the bell state instantly
+        loadNotificationBell();
+
+        // Wire up the live search inside the modal
+        $('#modalSectorSearch').on('keyup', function () {
+        var value = $(this).val().toLowerCase();
+        $('#modalSectorList .form-check').filter(function () {
+        $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+        });
+        });
+        });
+
+        function loadNotificationBell() {
+        fetch('/Dashboard/GetActiveAlerts')
+        .then(res => res.json())
+        .then(result => {
+        if (!result.success) return;
+
+        // STATE 1: User has 0 subscriptions
+        if (result.notSubscribed) {
+        $('#alert-badge').hide();
+        $('#alert-dropdown-content').html(`
+        <div class="p-4 text-center">
+        <i class="mdi mdi-bell-cancel-outline display-5 text-muted mb-3 d-block"></i>
+        <h6 class="fs-15 text-dark">No Sectors Selected</h6>
+        <p class="text-muted fs-13 mb-3">You haven't subscribed to any fare drop alerts yet.</p>
+        <button type="button" class="btn btn-primary btn-sm shadow-sm" onclick="openPreferenceModal()">Select Sectors</button>
+        </div>
+        `);
+        return;
+        }
+
+        // STATE 2: User is subscribed and has active alerts
+        if (result.data.length > 0) {
+        $('#alert-badge').text(result.data.length).show();
+
+        let html = '<ul class="list-unstyled mb-0 text-start" style="max-height: 300px; overflow-y: auto;">';
+        let previewList = result.data.slice(0, 5);
+        previewList.forEach(a => {
+        html += `
+        <li class="p-3 border-bottom border-light cursor-pointer alert-hover" onclick="window.location.href='/OccasionDetails/FareDetails?eventId=${a.eventId}&sector=${a.sector}&sectorType=All'">
+        <h6 class="fs-14 mb-1 text-danger">⬇ Fare Dropped: ${a.sector}</h6>
+        <p class="fs-13 mb-1 text-muted">${a.eventName} - <span class="fw-medium">${a.travelDate}</span></p>
+        <div class="d-flex align-items-center gap-2 mt-2">
+        <span class="text-decoration-line-through text-muted" style="font-size: 12px;">₹${a.targetFare.toLocaleString('en-IN')}</span>
+        <span class="badge bg-success-subtle text-success fs-12 px-2 py-1">Now: ₹${a.lastOnlineFare.toLocaleString('en-IN')}</span>
+        </div>
+        </li>`;
+        });
+        html += '</ul>';
+
+        // Add the Configuration gear
+        html = `
+        <div class="p-2 border-bottom bg-light d-flex justify-content-between align-items-center">
+        <span class="fs-12 fw-semibold text-muted text-uppercase ms-2">Your Alerts</span>
+        <button class="btn btn-sm btn-link text-primary p-0 fs-12 me-2 text-decoration-none" onclick="openPreferenceModal()"><i class="mdi mdi-cog-outline"></i> Configure</button>
+        </div>
+        ` + html;
+
+        $('#alert-dropdown-content').html(html);
+        }
+        // STATE 3: User is subscribed, but no fares have dropped yet
+        else {
+        $('#alert-badge').hide();
+        $('#alert-dropdown-content').html(`
+        <div class="p-2 border-bottom bg-light text-end">
+        <button class="btn btn-sm btn-link text-primary p-0 fs-12 me-2 text-decoration-none" onclick="openPreferenceModal()"><i class="mdi mdi-cog-outline"></i> Configure</button>
+        </div>
+        <div class="p-4 text-center">
+        <i class="mdi mdi-check-circle-outline display-5 text-success mb-3 d-block"></i>
+        <h6 class="fs-15 text-dark">All clear!</h6>
+        <p class="text-muted fs-13 mb-0">No active fare drops for your selected sectors right now.</p>
+        </div>
+        `);
+        }
+        })
+        .catch(err => console.error("Alerts error:", err));
+        }
+
+        function openPreferenceModal() {
+        // Prevent dropdown from getting stuck open
+        $('#page-header-notifications-dropdown').dropdown('hide');
+
+        var myModal = new bootstrap.Modal(document.getElementById('sectorAlertModal'));
+        myModal.show();
+
+        // Simultaneously grab the total sector list and the user's specific saves
+        Promise.all([
+        fetch('/Dashboard/GetAllUniqueSectors').then(r => r.json()),
+        fetch('/Dashboard/GetAlertPreferences').then(r => r.json())
+        ]).then(([sectorsRes, prefsRes]) => {
+        let allSectors = sectorsRes.data || [];
+        let myPrefs = prefsRes.data || [];
+
+        let html = '';
+        allSectors.forEach((sec, idx) => {
+        let isChecked = myPrefs.includes(sec) ? 'checked' : '';
+        html += `
+        <div class="form-check mb-2">
+        <input class="form-check-input sector-checkbox shadow-sm" type="checkbox" value="${sec}" id="chk_${idx}" ${isChecked}>
+        <label class="form-check-label text-dark fw-medium" style="cursor:pointer;" for="chk_${idx}">${sec}</label>
+        </div>
+        `;
+        });
+        $('#modalSectorList').html(html);
+        });
+        }
+
+        function selectAllSectors(check) {
+        $('.sector-checkbox').prop('checked', check);
+        }
+
+        function saveSectorPreferences() {
+        let selected = [];
+        $('.sector-checkbox:checked').each(function () {
+        selected.push($(this).val());
+        });
+
+        let btn = $('#sectorAlertModal .modal-footer .btn-primary');
+        btn.text('Saving...').prop('disabled', true);
+
+        fetch('/Dashboard/SaveAlertPreferences', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(selected)
+        })
+        .then(res => res.json())
+        .then(result => {
+        btn.text('Save Preferences').prop('disabled', false);
+        if (result.success) {
+        bootstrap.Modal.getInstance(document.getElementById('sectorAlertModal')).hide();
+        // Instantly refresh the bell UI to reflect their new choices!
+        loadNotificationBell();
+        } else {
+        alert('Failed to save preferences.');
+        }
+        });
+        }
         function setCalView(v) {
         const cardView = document.getElementById('cal-card-view');
         const listView = document.getElementById('list-view');

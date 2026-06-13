@@ -1,0 +1,352 @@
+﻿@{
+    ViewData["Title"] = "Master Sector List";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<style>
+    .tip-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: center;
+        margin: 0;
+    }
+
+        .tip-table th {
+            font-weight: 700 !important;
+            font-size: 11px;
+            color: #64748b;
+            padding: 6px 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .tip-table td {
+            font-weight: 600;
+            font-size: 12px;
+            color: #1e293b;
+            padding: 6px 12px;
+        }
+
+        .tip-table .pct-row td {
+            color: #0b5ed7;
+            background-color: rgba(13, 110, 253, 0.05);
+            border-radius: 4px;
+        }
+
+    .tip-box {
+        position: absolute;
+        display: none;
+        z-index: 1000;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        padding: 8px;
+        min-width: 250px;
+    }
+
+    .tip-btn {
+        background: none;
+        border: none;
+        padding: 0;
+        margin-left: 4px;
+        color: #64748b;
+        cursor: pointer;
+    }
+
+        .tip-btn:hover {
+            color: #0b5ed7;
+        }
+
+    /* Custom styling to make Select2 look like Bootstrap 5 */
+    .select2-container .select2-selection--single {
+        height: 38px !important;
+        border: 1px solid #dee2e6 !important;
+        border-radius: 0.375rem !important;
+        padding: 4px 8px !important;
+        box-shadow: 0 .125rem .25rem rgba(0,0,0,.075) !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px !important;
+        right: 8px !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 28px !important;
+        color: #212529 !important;
+    }
+
+    .select2-dropdown {
+        border: 1px solid #dee2e6 !important;
+        border-radius: 0.375rem !important;
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15) !important;
+    }
+</style>
+
+<div class="page-content">
+    <div class="container-fluid">
+        <div class="conatiner cox">
+            <div class="row align-items-center mb-3">
+                <div class="col-12 col-md-3 d-flex justify-content-start align-items-center gap-3 mb-3 mb-md-0">
+                    <a href="/Dashboard/Index" class="btn btn-sm btn-light border shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" title="Back to Dashboard">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    </a>
+                    <h4 class="mb-0">Master Sector List</h4>
+                </div>
+
+                <div class="col-12 col-md-9">
+                    <div class="row g-2 justify-content-md-end align-items-center">
+                        <div class="col-12 col-sm-6 col-lg-auto" style="min-width: 150px;">
+                            <select id="sectorTypeFilter" class="form-select searchable-select text-primary fw-bold w-100">
+                                <option value="All" selected="">All Sectors</option>
+                                <option value="Domestic">Domestic</option>
+                                <option value="International">International</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 col-sm-6 col-lg-auto" style="min-width: 160px;">
+                            <select id="sectorFilter" class="form-select searchable-select w-100">
+                                <option selected="">Filter By Sector</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 col-sm-6 col-lg-auto" style="min-width: 160px;">
+                            <select id="stationFilter" class="form-select searchable-select w-100">
+                                <option selected="">Filter By Station</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 col-sm-6 col-lg-auto" style="min-width: 150px;">
+                            <select id="leadFilter" class="form-select searchable-select w-100">
+                                <option selected="">Filter By Lead</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 col-sm-12 col-lg-auto" style="min-width: 180px;">
+                            <select id="occasionFilter" class="form-select searchable-select w-100">
+                                <option selected="">Filter By Occasion</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="boxes position-relative bg-white shadow-sm rounded-4 p-4 mt-3 w-100">
+            <div id="loading-overlay" style="padding: 4rem; text-align: center;">
+                <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status"><span class="visually-hidden">Loading...</span></div>
+                <h5 class="mt-3 text-muted">Aggregating Sectors...</h5>
+                <p class="text-muted small">Crunching flight capabilities for the whole year.</p>
+            </div>
+
+            <div id="error-overlay" style="display:none; padding: 2rem; background: #fff3f3; border: 1px solid #ffcdd2; border-radius: 8px; margin: 1rem 0;">
+                <h5 class="text-danger mb-2">Failed to load data</h5>
+                <p id="error-message" class="text-danger mb-0"></p>
+            </div>
+
+            <div id="content-overlay" style="display:none; width: 100%;">
+                <table id="calendarTable" class="display responsive w-100" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Sector</th>
+                            <th>Event Name</th>
+                            <th>Event Date</th>
+                            <th>Date Range</th>
+                            <th>Airlines</th>
+                            <th>Flight Count</th>
+                            <th>Total Strength</th>
+                            <th>Target Seats</th>
+                            <th>Achieved</th>
+                            <th>Lead</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="list-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+        let allMasterData = [];
+
+        $(document).ready(function () {
+        // 1. Initialize Select2 on all filters
+        $('.searchable-select').select2({
+        width: '100%',
+        dropdownAutoWidth: true
+        });
+
+        // 2. Fetch the Data
+        fetch(`/Dashboard/GetAllSectorsData?year=2026`)
+        .then(res => res.json())
+        .then(result => {
+        $('#loading-overlay').hide();
+        if (!result.success) { showError(result.message); return; }
+
+        allMasterData = result.data || [];
+        populateFilters();
+        $('#content-overlay').show();
+        applyFilters();
+        })
+        .catch(err => {
+        $('#loading-overlay').hide();
+        showError("Network error: " + err.message);
+        });
+
+        // 3. Bind the change event specifically for Select2
+        $('.searchable-select').on('change', function () {
+        applyFilters();
+        });
+        });
+
+        function showError(msg) {
+        $('#error-overlay').show();
+        $('#error-message').html(msg);
+        }
+
+        function populateFilters() {
+        const secFilter = document.getElementById('sectorFilter');
+        const staFilter = document.getElementById('stationFilter');
+        const leadFilter = document.getElementById('leadFilter');
+        const occFilter = document.getElementById('occasionFilter');
+
+        const uniqueSec = [...new Set(allMasterData.map(i => i.sector))].filter(Boolean).sort();
+        const uniqueSta = [...new Set(allMasterData.map(i => i.station))].filter(Boolean).sort();
+        const uniqueLead = [...new Set(allMasterData.map(i => i.lead))].filter(Boolean).sort();
+        const uniqueOcc = [...new Set(allMasterData.map(i => i.eventName))].filter(Boolean).sort();
+
+        // Clear existing and Add new options
+        secFilter.innerHTML = '<option value="Filter By Sector" selected>Filter By Sector</option>';
+        uniqueSec.forEach(x => secFilter.add(new Option(x, x)));
+
+        staFilter.innerHTML = '<option value="Filter By Station" selected>Filter By Station</option>';
+        uniqueSta.forEach(x => staFilter.add(new Option(x, x)));
+
+        leadFilter.innerHTML = '<option value="Filter By Lead" selected>Filter By Lead</option>';
+        uniqueLead.forEach(x => leadFilter.add(new Option(x, x)));
+
+        occFilter.innerHTML = '<option value="Filter By Occasion" selected>Filter By Occasion</option>';
+        uniqueOcc.forEach(x => occFilter.add(new Option(x, x)));
+
+        // VERY IMPORTANT: Tell Select2 that the HTML options have been updated so it repaints the UI
+        $('.searchable-select').trigger('change.select2');
+        }
+
+        function applyFilters() {
+        let filtered = allMasterData;
+
+        // Get all filter values via jQuery to safely handle Select2 instances
+        const sType = $('#sectorTypeFilter').val();
+        const sec = $('#sectorFilter').val();
+        const sta = $('#stationFilter').val();
+        const lead = $('#leadFilter').val();
+        const occ = $('#occasionFilter').val();
+
+        // Apply filters one by one
+        if (sType !== "All") filtered = filtered.filter(e => e.sectorType === sType);
+        if (sec !== "Filter By Sector" && sec !== "") filtered = filtered.filter(e => e.sector === sec);
+        if (sta !== "Filter By Station" && sta !== "") filtered = filtered.filter(e => e.station === sta);
+        if (lead !== "Filter By Lead" && lead !== "") filtered = filtered.filter(e => e.lead === lead);
+        if (occ !== "Filter By Occasion" && occ !== "") filtered = filtered.filter(e => e.eventName === occ);
+
+        renderList(filtered);
+        }
+
+        function renderList(data) {
+        if ($.fn.DataTable.isDataTable('#calendarTable')) {
+        $('#calendarTable').DataTable().destroy();
+        }
+
+        let html = '';
+        if (data.length === 0) {
+        html = `<tr><td colspan="11" class="text-center text-muted py-4">No sector details found matching current filters.</td></tr>`;
+        document.getElementById('list-tbody').innerHTML = html;
+        } else {
+        data.forEach(item => {
+        let tipBoxHtml = '';
+        if (item.airlineAchieved && Object.keys(item.airlineAchieved).length > 0) {
+        let validAirlines = Object.entries(item.airlineAchieved).filter(([k]) => k && k.toLowerCase() !== 'total');
+        let totalAch = validAirlines.reduce((sum, [code, count]) => sum + count, 0);
+        let calcTotal = totalAch === 0 ? 1 : totalAch;
+        let ths = '', countTds = '', pctTds = '';
+
+        for (const [code, count] of validAirlines) {
+        ths += `<th>${code}</th>`;
+        countTds += `<td>${count}</td>`;
+        pctTds += `<td>${Math.round((count / calcTotal) * 100)}%</td>`;
+        }
+
+        ths += `<th>Total</th>`;
+        countTds += `<td style="font-weight: 800; color: #0b5ed7;">${totalAch}</td>`;
+        pctTds += `<td style="font-weight: 800; color: #0b5ed7;">100%</td>`;
+
+        tipBoxHtml = `<table class="tip-table"><thead><tr>${ths}</tr></thead><tbody><tr>${countTds}</tr><tr class="pct-row">${pctTds}</tr></tbody></table>`;
+        } else {
+        tipBoxHtml = `<ul>${item.airlinesBreakdown ? item.airlinesBreakdown.map(a => `<li>${a}</li>`).join('') : ''}</ul>`;
+        }
+
+        html += `
+        <tr>
+        <td class="fw-bold">${item.sector}</td>
+        <td>${item.eventName}</td>
+        <td data-sort="${new Date(item.eventDateString).getTime()}">${item.eventDateString}</td>
+        <td data-sort="${new Date(item.travelDate).getTime()}">${item.dateRange}</td>
+        <td>${item.airlinesCount}</td>
+        <td>${item.flightCount}</td>
+        <td>${item.totalStrength}</td>
+        <td>${item.target}</td>
+        <td data-sort="${item.achieved}" style="position:relative;">
+        ${item.achieved}
+        <button class="tip-btn" onclick="toggleTip(this)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-info"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+        </button>
+        <div class="tip-box">${tipBoxHtml}</div>
+        </td>
+        <td><span class="badge text-lg bg-light text-dark border shadow-sm">${item.lead}</span></td>
+        <td><a href="/OccasionDetails/FareDetails?eventId=${item.eventId}&sector=${encodeURIComponent(item.sector)}&sectorType=All" class="card-link btn btn-sm btn-light">View details →</a></td>
+        </tr>`;
+        });
+
+        document.getElementById('list-tbody').innerHTML = html;
+
+        if ($.fn.DataTable) {
+        $('#calendarTable').DataTable({
+        responsive: true, paging: true, pageLength: 15,
+        lengthMenu: [[15, 50, 100, -1], [15, 50, 100, "All"]],
+        searching: true, ordering: true,
+        dom: '<"d-flex justify-content-between align-items-center mb-3"if>rt<"d-flex justify-content-between align-items-center mt-3"lp><"clear">',
+        language: { search: "_INPUT_", searchPlaceholder: "Search list..." },
+        columnDefs: [
+        { targets: 3, render: function (data, type) { return type === 'display' ? `<div style="white-space: normal; max-width: 220px; line-height: 1.5; word-wrap: break-word;">${data}</div>` : data; } },
+        { targets: [10], orderable: false }
+        ]
+        });
+        }
+        }
+        }
+
+        function toggleTip(btn) {
+        document.querySelectorAll('.tip-box').forEach(box => { if (box !== btn.nextElementSibling) box.style.display = 'none'; });
+        let box = btn.nextElementSibling;
+        let isOpening = box.style.display !== 'block';
+        if (isOpening) {
+        box.style.display = 'block';
+        if (window.innerWidth > 768) {
+        let btnRect = btn.getBoundingClientRect(), boxWidth = box.offsetWidth, boxHeight = box.offsetHeight;
+        box.style.top = (btn.offsetTop - (boxHeight / 2) + (btn.offsetHeight / 2)) + "px";
+        if (btnRect.right + boxWidth + 30 > window.innerWidth) box.style.left = (btn.offsetLeft - boxWidth - 10) + "px";
+        else box.style.left = (btn.offsetLeft + btn.offsetWidth + 10) + "px";
+        }
+        } else { box.style.display = 'none'; }
+        }
+
+        document.addEventListener('click', function (e) { if (!e.target.closest('td')) document.querySelectorAll('.tip-box').forEach(box => box.style.display = 'none'); });
+    </script>
+}

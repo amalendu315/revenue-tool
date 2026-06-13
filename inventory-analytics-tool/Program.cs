@@ -24,6 +24,9 @@ builder.Services.AddHttpClient();
 // 3. Register the Background Worker to run automatically
 builder.Services.AddHostedService<inventory_analytics_tool.Workers.FestivalDataWorker>();
 
+builder.Services.AddReverseProxy()
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -41,6 +44,8 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapReverseProxy().RequireAuthorization();
 
 app.MapControllerRoute(
     name: "default",

@@ -53,15 +53,15 @@
     }
 
     /* Fix DataTable Column Width */
-    #calendarTable {
-        table-layout: fixed !important;
-    }
-
-        #calendarTable td:nth-child(4) { /* Target 'Date Range' column */
-            white-space: normal !important;
-            word-wrap: break-word !important;
-            max-width: 150px !important;
+    /* #calendarTable {
+            table-layout: fixed !important;
         }
+
+            #calendarTable td:nth-child(4) {
+                white-space: normal !important;
+                word-wrap: break-word !important;
+                max-width: 150px !important;
+            } */
 </style>
 
 
@@ -81,7 +81,6 @@
                             </div>
                         </div>
 
-                        <!-- DOMESTIC / INTERNATIONAL FILTER -->
                         <div class="col-lg-auto col-md-6 col-12 col-sm-6 col-md-auto">
                             <select id="sectorTypeFilter" class="form-select w-auto font-weight-bold shadow-sm text-primary">
                                 <option value="All" selected>All Sectors</option>
@@ -90,29 +89,13 @@
                             </select>
                         </div>
 
-                        <div class="col-lg-auto col-md-6 col-6 col-sm-auto">
-                            <div class="form-check mb-0">
-                                <input class="form-check-input" type="radio" name="flexRadioDefault" id="radio1" checked>
-                                <label class="form-check-label" for="radio1">All</label>
-                            </div>
-                        </div>
-                        <div class="col-lg-auto col-md-6 col-6 col-sm-auto">
-                            <div class="form-check mb-0">
-                                <input class="form-check-input" type="radio" name="flexRadioDefault" id="radio3">
-                                <label class="form-check-label" for="radio3"> Normal Blackout</label>
-                            </div>
-                        </div>
-                        <div class="col-lg-auto col-md-6 col-6 col-sm-auto">
-                            <div class="form-check mb-0">
-                                <input class="form-check-input" type="radio" name="flexRadioDefault" id="radio2">
-                                <label class="form-check-label" for="radio2">High Blackout</label>
-                            </div>
-                        </div>
-                        <div class="col-lg-auto col-md-6 col-6 col-sm-auto">
-                            <div class="form-check mb-0">
-                                <input class="form-check-input" type="radio" name="flexRadioDefault" id="radio4">
-                                <label class="form-check-label" for="radio4">Weekend</label>
-                            </div>
+                        <div class="col-lg-auto col-md-6 col-12 col-sm-auto">
+                            <select id="priorityFilter" class="form-select w-auto shadow-sm">
+                                <option value="All" selected>All Priorities</option>
+                                <option value="Normal">Normal Blackout</option>
+                                <option value="High">High Blackout</option>
+                                <option value="Weekend">Weekend</option>
+                            </select>
                         </div>
 
                         <div class="col-lg-auto col-md-6  col-6 col-sm-4">
@@ -156,7 +139,6 @@
                 </div>
             </div>
 
-            <!-- 1. LOADING STATE UI -->
             <div id="loading-overlay" style="padding: 4rem; text-align: center;">
                 <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
                     <span class="visually-hidden">Loading...</span>
@@ -165,13 +147,11 @@
                 <p class="text-muted small">Please wait while we fetch the latest events and blackout dates.</p>
             </div>
 
-            <!-- 2. ERROR FEEDBACK UI -->
             <div id="error-overlay" style="display:none; padding: 2rem; background: #fff3f3; border: 1px solid #ffcdd2; border-radius: 8px; margin: 1rem 0;">
                 <h5 class="text-danger mb-2">Failed to load data</h5>
                 <p id="error-message" class="text-danger mb-0"></p>
             </div>
 
-            <!-- 3. RENDER CONTENT OVERLAY -->
             <div id="content-overlay" style="display:none;">
                 <div id="cal-card-view" style="padding: 1rem 0;"></div>
 
@@ -209,6 +189,7 @@
             const yearFilter = document.getElementById('yearFilter');
             const monthFilter = document.getElementById('monthFilter');
             const sectorTypeFilter = document.getElementById('sectorTypeFilter');
+            const priorityFilter = document.getElementById('priorityFilter');
 
             document.getElementById('searchEventInput').addEventListener('input', applyFilters);
 
@@ -219,10 +200,8 @@
                 loadDataForYear(this.value);
             });
 
-            document.querySelectorAll('input[name="flexRadioDefault"]').forEach(radio => {
-                radio.addEventListener('change', applyFilters);
-            });
-
+            // Wire up all dropdown filters
+            priorityFilter.addEventListener('change', applyFilters);
             monthFilter.addEventListener('change', applyFilters);
             sectorTypeFilter.addEventListener('change', applyFilters);
         });
@@ -271,11 +250,14 @@
         function applyFilters() {
             let filtered = [];
             const searchQuery = document.getElementById('searchEventInput').value.toLowerCase().trim();
-            const isNormalBlackout = document.getElementById('radio3').checked;
-            const isHighBlackout = document.getElementById('radio2').checked;
-            const isWeekend = document.getElementById('radio4').checked;
             const selectedMonth = document.getElementById('monthFilter').value;
             const sectorType = document.getElementById('sectorTypeFilter').value;
+
+            // Read from the new priority dropdown
+            const prioritySelection = document.getElementById('priorityFilter').value;
+            const isNormalBlackout = prioritySelection === 'Normal';
+            const isHighBlackout = prioritySelection === 'High';
+            const isWeekend = prioritySelection === 'Weekend';
 
             allEvents.forEach(e => {
 
@@ -450,66 +432,66 @@
                     const cardClass = item.isImportant ? 'cal-event-card festival' : 'cal-event-card';
 
                     let titleHtml = item.isImportant ? `
-                                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-                                    <span class="cal-card-title">${item.name}</span>
-                                    <div class="sparkle-wrap" style="flex-shrink:0;">
-                                        <span class="sparkle">✦</span><span class="sparkle">✦</span><span class="sparkle">✦</span>
-                                        <div class="festival-badge"><span class="festival-dot"></span>Festival</div>
-                                    </div>
-                                </div>` : `<span class="cal-card-title">${item.name}</span>`;
+                                        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                                            <span class="cal-card-title">${item.name}</span>
+                                            <div class="sparkle-wrap" style="flex-shrink:0;">
+                                                <span class="sparkle">✦</span><span class="sparkle">✦</span><span class="sparkle">✦</span>
+                                                <div class="festival-badge"><span class="festival-dot"></span>Festival</div>
+                                            </div>
+                                        </div>` : `<span class="cal-card-title">${item.name}</span>`;
 
                     html += `
-                            <div class="${cardClass}">
-                                ${titleHtml}
-                                <div class="cal-divider"></div>
-                                <div class="cal-meta-row">
-                                    <div>
-                                        <div class="cal-meta-label">Occasion date</div>
-                                        <div class="cal-meta-value">${new Date(item.eventDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
-                                    </div>
-                                    <div>
-                                        <div class="cal-meta-label">Day</div>
-                                        <div class="cal-meta-value">${new Date(item.eventDate).toLocaleDateString('en-GB', { weekday: 'long' })}</div>
-                                    </div>
-                                </div>
-                                        <div class="cal-range-row" style="align-items: flex-start;">
-                                            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="flex-shrink: 0; margin-top: 2px;">
-                                                <rect x="2" y="3" width="12" height="11" rx="1.5" />
-                                                <path d="M5 2v2M11 2v2M2 7h12" />
-                                            </svg>
-                                            <span class="cal-range-text" style="white-space: normal; line-height: 1.4; flex-grow: 1; padding-right: 5px; word-break: break-word;">${item.dateRange}</span>
-                                            <span class="cal-days-pill" style="flex-shrink: 0; align-self: flex-start;">${item.daysCount} days</span>
+                                    <div class="${cardClass}">
+                                        ${titleHtml}
+                                        <div class="cal-divider"></div>
+                                        <div class="cal-meta-row">
+                                            <div>
+                                                <div class="cal-meta-label">Occasion date</div>
+                                                <div class="cal-meta-value">${new Date(item.eventDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                                            </div>
+                                            <div>
+                                                <div class="cal-meta-label">Day</div>
+                                                <div class="cal-meta-value">${new Date(item.eventDate).toLocaleDateString('en-GB', { weekday: 'long' })}</div>
+                                            </div>
                                         </div>
-                                <div class="cal-stat-row">
-                                    <div class="cal-stat-cell">
-                                        <span class="cal-meta-label">Sectors covered</span>
-                                        <span class="cal-stat-num">${item.sectorsCovered}</span>
-                                    </div>
-                                    <div class="cal-stat-cell">
-                                        <span class="cal-meta-label">Pax capacity</span>
-                                        <span class="cal-stat-num">${item.paxCapacity.toLocaleString()}</span>
-                                    </div>
-                                </div>
-                                <div class="cal-divider"></div>
-                                <div class="cal-seat-row">
-                                    <div class="cal-seat-labels">
-                                        <span class="cal-meta-label" style="margin-bottom:0;">Seats</span>
-                                        <span class="cal-seat-target ${targetColorClass}">Target: ${item.targetSeat}</span>
-                                    </div>
-                                    <div class="cal-seat-bar-bg">
-                                        <div class="cal-seat-bar-fill ${barClass}" style="width:${percentage}%"></div>
-                                    </div>
-                                    <div class="cal-seat-labels">
-                                        <span class="cal-seat-achieved">${item.achieved} achieved</span>
-                                        <span class="${pctClass}">${percentage}%</span>
-                                    </div>
-                                </div>
-                                <div class="cal-remaining-row ${bgClass}">
-                                    <span class="cal-remaining-label">Remaining</span>
-                                    <span class="cal-remaining-num ${remClass}">${remaining} seats left</span>
-                                </div>
-                                <a href="/OccasionDetails/Index/${item.id}?sectorType=${encodeURIComponent(sectorType)}" class="cal-details-link">View details →</a>
-                            </div>`;
+                                                <div class="cal-range-row" style="align-items: flex-start;">
+                                                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="flex-shrink: 0; margin-top: 2px;">
+                                                        <rect x="2" y="3" width="12" height="11" rx="1.5" />
+                                                        <path d="M5 2v2M11 2v2M2 7h12" />
+                                                    </svg>
+                                                    <span class="cal-range-text" style="white-space: normal; line-height: 1.4; flex-grow: 1; padding-right: 5px; word-break: break-word;">${item.dateRange}</span>
+                                                    <span class="cal-days-pill" style="flex-shrink: 0; align-self: flex-start;">${item.daysCount} days</span>
+                                                </div>
+                                        <div class="cal-stat-row">
+                                            <div class="cal-stat-cell">
+                                                <span class="cal-meta-label">Sectors covered</span>
+                                                <span class="cal-stat-num">${item.sectorsCovered}</span>
+                                            </div>
+                                            <div class="cal-stat-cell">
+                                                <span class="cal-meta-label">Pax capacity</span>
+                                                <span class="cal-stat-num">${item.paxCapacity.toLocaleString()}</span>
+                                            </div>
+                                        </div>
+                                        <div class="cal-divider"></div>
+                                        <div class="cal-seat-row">
+                                            <div class="cal-seat-labels">
+                                                <span class="cal-meta-label" style="margin-bottom:0;">Seats</span>
+                                                <span class="cal-seat-target ${targetColorClass}">Target: ${item.targetSeat}</span>
+                                            </div>
+                                            <div class="cal-seat-bar-bg">
+                                                <div class="cal-seat-bar-fill ${barClass}" style="width:${percentage}%"></div>
+                                            </div>
+                                            <div class="cal-seat-labels">
+                                                <span class="cal-seat-achieved">${item.achieved} achieved</span>
+                                                <span class="${pctClass}">${percentage}%</span>
+                                            </div>
+                                        </div>
+                                        <div class="cal-remaining-row ${bgClass}">
+                                            <span class="cal-remaining-label">Remaining</span>
+                                            <span class="cal-remaining-num ${remClass}">${remaining} seats left</span>
+                                        </div>
+                                        <a href="/OccasionDetails/Index/${item.id}?sectorType=${encodeURIComponent(sectorType)}" class="cal-details-link">View details →</a>
+                                    </div>`;
                 });
                 html += `</div>`;
                 isFirst = false;
@@ -547,40 +529,40 @@
                     pctTds += `<td style="font-weight: 800; color: #0b5ed7;">100%</td>`;
 
                     tipBoxHtml = `
-                            <table class="tip-table">
-                                <thead><tr>${ths}</tr></thead>
-                                <tbody>
-                                    <tr>${countTds}</tr>
-                                    <tr class="pct-row">${pctTds}</tr>
-                                </tbody>
-                            </table>`;
+                                    <table class="tip-table">
+                                        <thead><tr>${ths}</tr></thead>
+                                        <tbody>
+                                            <tr>${countTds}</tr>
+                                            <tr class="pct-row">${pctTds}</tr>
+                                        </tbody>
+                                    </table>`;
                 } else {
                     const oldBreakdown = item.airlinesBreakdown ? item.airlinesBreakdown.map(a => `<li>${a}</li>`).join('') : '';
                     tipBoxHtml = `<ul>${oldBreakdown}</ul>`;
                 }
 
                 html += `
-                        <tr>
-                            <td>${item.name}</td>
-                            <td>${new Date(item.eventDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
-                            <td>${new Date(item.eventDate).toLocaleDateString('en-GB', { weekday: 'long' })}</td>
-                            <td>${item.dateRange}</td>
-                            <td>${item.daysCount}</td>
-                            <td>${item.sectorsCovered}</td>
-                            <td>${item.flightCount}</td>
-                            <td>${item.paxCapacity.toLocaleString()}</td>
-                            <td>${item.targetSeat}</td>
-                            <td style="position:relative;">
-                                ${item.achieved}
-                                <button class="tip-btn" onclick="toggleTip(this)">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-info">
-                                        <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>
-                                    </svg>
-                                </button>
-                                <div class="tip-box overflow-hidden">${tipBoxHtml}</div>
-                            </td>
-                            <td><a href="/OccasionDetails/Index/${item.id}?sectorType=${encodeURIComponent(sectorType)}">View details →</a></td>
-                        </tr>`;
+                                <tr>
+                                    <td>${item.name}</td>
+                                    <td>${new Date(item.eventDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                                    <td>${new Date(item.eventDate).toLocaleDateString('en-GB', { weekday: 'long' })}</td>
+                                    <td>${item.dateRange}</td>
+                                    <td>${item.daysCount}</td>
+                                    <td>${item.sectorsCovered}</td>
+                                    <td>${item.flightCount}</td>
+                                    <td>${item.paxCapacity.toLocaleString()}</td>
+                                    <td>${item.targetSeat}</td>
+                                    <td style="position:relative;">
+                                        ${item.achieved}
+                                        <button class="tip-btn" onclick="toggleTip(this)">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-info">
+                                                <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                            </svg>
+                                        </button>
+                                        <div class="tip-box overflow-hidden">${tipBoxHtml}</div>
+                                    </td>
+                                    <td><a href="/OccasionDetails/Index/${item.id}?sectorType=${encodeURIComponent(sectorType)}">View details →</a></td>
+                                </tr>`;
             });
 
             document.getElementById('list-tbody').innerHTML = html;

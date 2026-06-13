@@ -12,12 +12,14 @@ namespace inventory_analytics_tool.Helpers
         Task<int> GetAttemptCountAsync(string sector, DateTime startDate, DateTime endDate);
         Task<List<AttemptRecord>> GetAttemptDetailsAsync(string sector, DateTime startDate, DateTime endDate);
         Task<List<FareTrendRecord>> GetFareTrendAsync(string sector, DateTime departureDate, string airline, string flightNo);
-        Task<Dictionary<DateTime, double>> GetLowestLatestFaresAsync(string sector, DateTime startDate, DateTime endDate);
+        Task<Dictionary<DateTime, (double LowestFare, DateTime EntryDate)>> GetLowestLatestFaresAsync(string sector, DateTime startDate, DateTime endDate);
         Task<List<FlightFareRecord>> GetFlightLatestFaresAsync(string sector, DateTime travelDate);
         Task<int?> GetLatestBlackoutFareFeedIdAsync(string sector, DateTime departureDate, string airline, string flightNo);
         Task<bool> BulkInsertGroupRaisedEntriesAsync(List<GroupRaisedEntryModel> entries);
         Task<List<AttemptRecord>> GetAllAttemptDetailsAsync(DateTime? entryStartDate, DateTime? entryEndDate, DateTime? travelDate);
         Task<int> GetOrInsertBlackoutFareFeedIdAsync(string sector, DateTime departureDate, string airline, string flightNo);
+        Task<List<string>> GetUserSectorAlertPreferencesAsync(string userName);
+        Task<bool> SaveUserSectorAlertPreferencesAsync(string userName, List<string> sectors);
     }
 
     public class DatabaseHelper : IDatabaseHelper
@@ -296,26 +298,27 @@ namespace inventory_analytics_tool.Helpers
             return results;
         }
 
-        public async Task<Dictionary<DateTime, double>> GetLowestLatestFaresAsync(string sector, DateTime startDate, DateTime endDate)
+        public async Task<Dictionary<DateTime, (double LowestFare, DateTime EntryDate)>> GetLowestLatestFaresAsync(string sector, DateTime startDate, DateTime endDate)
         {
-            var results = new Dictionary<DateTime, double>();
+            var results = new Dictionary<DateTime, (double, DateTime)>();
             if (string.IsNullOrEmpty(_connectionString)) return results;
 
             using (var connection = new SqlConnection(_connectionString))
             {
                 string query = @"
-                    WITH LatestFares AS (
-                        SELECT CAST(DepartureDate AS DATE) AS TravelDate, Airline, FlightNo, Fare,
-                               ROW_NUMBER() OVER(PARTITION BY CAST(DepartureDate AS DATE), Airline, FlightNo ORDER BY EntryDate DESC) as rn
-                        FROM [Blackout].[BlackoutFareFeed]
-                        WHERE Sector = @Sector 
-                          AND CAST(DepartureDate AS DATE) >= CAST(@StartDate AS DATE)
-                          AND CAST(DepartureDate AS DATE) <= CAST(@EndDate AS DATE)
-                    )
-                    SELECT TravelDate, MIN(Fare) AS LowestFare
-                    FROM LatestFares
-                    WHERE rn = 1
-                    GROUP BY TravelDate";
+            WITH LatestFares AS (
+                SELECT CAST(DepartureDate AS DATE) AS TravelDate, Airline, FlightNo, Fare, EntryDate,
+                       ROW_NUMBER() OVER(PARTITION BY CAST(DepartureDate AS DATE), Airline, FlightNo ORDER BY EntryDate DESC) as rn
+                FROM [Blackout].[BlackoutFareFeed]
+                WHERE Sector = @Sector
+                  AND DepartureDate >= @StartDate 
+                  AND DepartureDate < DATEADD(day, 1, @EndDate) 
+                  AND EntryDate >= CAST(CAST(DATEADD(day, -3, GETDATE()) AS DATE) AS DATETIME)
+            )
+            SELECT TravelDate, MIN(Fare) AS LowestFare, MAX(EntryDate) AS EntryDate 
+            FROM LatestFares
+            WHERE rn = 1
+            GROUP BY TravelDate";
 
                 using (var command = new SqlCommand(query, connection))
                 {
@@ -332,7 +335,12 @@ namespace inventory_analytics_tool.Helpers
                             {
                                 if (reader["TravelDate"] != DBNull.Value && reader["LowestFare"] != DBNull.Value)
                                 {
-                                    results[Convert.ToDateTime(reader["TravelDate"]).Date] = Convert.ToDouble(reader["LowestFare"]);
+                                    var travelDate = Convert.ToDateTime(reader["TravelDate"]).Date;
+                                    var lowestFare = Convert.ToDouble(reader["LowestFare"]);
+                                    var entryDate = Convert.ToDateTime(reader["EntryDate"]);
+
+                                    // Save the Tuple to the dictionary
+                                    results[travelDate] = (lowestFare, entryDate);
                                 }
                             }
                         }
@@ -576,6 +584,80 @@ namespace inventory_analytics_tool.Helpers
                 }
             }
             return 0;
+        }
+
+        public async Task<List<string>> GetUserSectorAlertPreferencesAsync(string userName)
+        {
+            var sectors = new List<string>();
+            if (string.IsNullOrEmpty(_connectionString)) return sectors;
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                string query = "SELECT [Sector] FROM [Blackout].[UserSectorAlertPreferences] WHERE [UserName] = @UserName";
+                using (var command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@UserName", userName);
+                    try
+                    {
+                        await connection.OpenAsync();
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                sectors.Add(reader["Sector"].ToString());
+                            }
+                        }
+                    }
+                    catch (Exception ex) { Console.WriteLine($"Error fetching preferences: {ex.Message}"); }
+                }
+            }
+            return sectors;
+        }
+
+        public async Task<bool> SaveUserSectorAlertPreferencesAsync(string userName, List<string> sectors)
+        {
+            if (string.IsNullOrEmpty(_connectionString)) return false;
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                // Using a transaction to wipe the old preferences and insert the new ones safely
+                using (var transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        string deleteQuery = "DELETE FROM [Blackout].[UserSectorAlertPreferences] WHERE [UserName] = @UserName";
+                        using (var deleteCmd = new SqlCommand(deleteQuery, connection, transaction))
+                        {
+                            deleteCmd.Parameters.AddWithValue("@UserName", userName);
+                            await deleteCmd.ExecuteNonQueryAsync();
+                        }
+
+                        if (sectors != null && sectors.Any())
+                        {
+                            string insertQuery = "INSERT INTO [Blackout].[UserSectorAlertPreferences] ([UserName], [Sector]) VALUES (@UserName, @Sector)";
+                            foreach (var sector in sectors)
+                            {
+                                using (var insertCmd = new SqlCommand(insertQuery, connection, transaction))
+                                {
+                                    insertCmd.Parameters.AddWithValue("@UserName", userName);
+                                    insertCmd.Parameters.AddWithValue("@Sector", sector);
+                                    await insertCmd.ExecuteNonQueryAsync();
+                                }
+                            }
+                        }
+
+                        await transaction.CommitAsync();
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        await transaction.RollbackAsync();
+                        Console.WriteLine($"Error saving preferences: {ex.Message}");
+                        return false;
+                    }
+                }
+            }
         }
     }
 }
