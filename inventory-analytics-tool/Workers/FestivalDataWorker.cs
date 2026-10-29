@@ -1,348 +1,4 @@
-﻿//using inventory_analytics_tool.Models;
-//using Microsoft.Extensions.Caching.Memory;
-//using System.Text;
-//using System.Text.Json;
-
-//namespace inventory_analytics_tool.Workers
-//{
-//    public class FestivalDataWorker : BackgroundService
-//    {
-//        private readonly IMemoryCache _cache;
-//        private readonly ILogger<FestivalDataWorker> _logger;
-//        private readonly IConfiguration _config;
-//        private readonly IHttpClientFactory _httpClientFactory;
-//        private readonly IWebHostEnvironment _env;
-
-//        private readonly TimeSpan _refreshInterval = TimeSpan.FromMinutes(30);
-//        private readonly int _primaryYear = 2026;
-
-//        public FestivalDataWorker(IMemoryCache cache, ILogger<FestivalDataWorker> logger, IConfiguration config, IHttpClientFactory httpClientFactory, IWebHostEnvironment env)
-//        {
-//            _cache = cache;
-//            _logger = logger;
-//            _config = config;
-//            _httpClientFactory = httpClientFactory;
-//            _env = env;
-//        }
-
-//        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-//        {
-//            _logger.LogInformation("Festival Data Worker started.");
-
-//            while (!stoppingToken.IsCancellationRequested)
-//            {
-//                bool fetchSuccess = false;
-//                try
-//                {
-//                    // Now checks if the fetch was completely successful
-//                    fetchSuccess = await FetchAndCacheDataAsync();
-//                }
-//                catch (Exception ex)
-//                {
-//                    _logger.LogError($"Worker failed to fetch data: {ex.Message}");
-//                }
-
-//                // THE QUICK-RETRY FIX: If the cache is empty AND the fetch failed, retry in 1 minute!
-//                if (!fetchSuccess && !_cache.TryGetValue("DashboardMasterData", out _))
-//                {
-//                    _logger.LogWarning("Cache is empty and API failed. Retrying aggressively in 1 minute...");
-//                    await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
-//                }
-//                else
-//                {
-//                    // Otherwise, safely wait 30 minutes for the next background refresh
-//                    await Task.Delay(_refreshInterval, stoppingToken);
-//                }
-//            }
-//        }
-
-//        // Changed to Task<bool> so the ExecuteAsync loop knows if it succeeded
-//        private async Task<bool> FetchAndCacheDataAsync()
-//        {
-//            var watch = System.Diagnostics.Stopwatch.StartNew();
-//            _logger.LogInformation("Worker: Fetching MASTER data from Azure API...");
-
-//            string systemToken = _config["AzureApi:SystemToken"] ?? "YOUR_PERMANENT_SYSTEM_TOKEN";
-//            if (systemToken.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
-//                systemToken = systemToken.Substring("Bearer ".Length).Trim();
-
-//            var httpClient = _httpClientFactory.CreateClient();
-//            httpClient.Timeout = TimeSpan.FromMinutes(4);
-
-//            httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", systemToken);
-//            httpClient.DefaultRequestHeaders.Add("Accept", "*/*");
-//            httpClient.DefaultRequestHeaders.Add("User-Agent", "PostmanRuntime/7.36.0");
-
-//            var jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-
-//            var masterResponse = await httpClient.GetAsync("https://shivent.azurewebsites.net/festival-master");
-//            if (!masterResponse.IsSuccessStatusCode)
-//            {
-//                _logger.LogError($"Master API Failed with status: {masterResponse.StatusCode}");
-//                return false; // Tells the worker the fetch failed
-//            }
-
-//            var masterJson = await masterResponse.Content.ReadAsStringAsync();
-//            var masterData = JsonSerializer.Deserialize<FestivalMasterResponse>(masterJson, jsonOptions);
-//            if (masterData?.Data == null) return false;
-
-//            var cumulativeProcessedEvents = new List<DashboardUiEvent>();
-//            var cumulativeRawEvents = new List<EventListData>();
-
-//            _logger.LogInformation($"PHASE 1: Fetching Essential Priority Year ({_primaryYear}) - Future Dates Only...");
-//            await ProcessSpecificYearAsync(_primaryYear, isEssentialPhase: true, masterData, httpClient, jsonOptions, cumulativeProcessedEvents, cumulativeRawEvents);
-
-//            await UpdateCacheSafelyAsync(cumulativeProcessedEvents, cumulativeRawEvents);
-//            _logger.LogInformation($"PHASE 1 COMPLETE: Website is now unlocked! ({watch.Elapsed.TotalSeconds:F1}s)");
-
-//            // --- FETCH DESTINATION CACHE ---
-//            try
-//            {
-//                var destResponse = await httpClient.GetAsync("https://shivent.azurewebsites.net/fdestination-list");
-//                if (destResponse.IsSuccessStatusCode)
-//                {
-//                    var destJson = await destResponse.Content.ReadAsStringAsync();
-//                    var destData = JsonSerializer.Deserialize<FDestApiResponse>(destJson, jsonOptions);
-
-//                    if (destData?.Data != null && destData.Data.Any())
-//                    {
-//                        var destCacheOptions = new MemoryCacheEntryOptions()
-//                            .SetAbsoluteExpiration(TimeSpan.FromDays(30))
-//                            .SetPriority(CacheItemPriority.NeverRemove);
-
-//                        _cache.Set("FDestList", destData.Data, destCacheOptions);
-//                    }
-//                }
-//            }
-//            catch (Exception ex) { _logger.LogError($"Failed to fetch FDest data: {ex.Message}"); }
-
-//            // PHASE 2
-//            _logger.LogInformation("PHASE 2: Fetching full historical background data...");
-//            int[] phase2Years = _env.IsDevelopment() ? new[] { 2026 } : new[] { 2024, 2025, 2026, 2027, 2028 };
-
-//            foreach (var year in phase2Years)
-//            {
-//                await ProcessSpecificYearAsync(year, isEssentialPhase: false, masterData, httpClient, jsonOptions, cumulativeProcessedEvents, cumulativeRawEvents);
-//                await UpdateCacheSafelyAsync(cumulativeProcessedEvents, cumulativeRawEvents);
-//                _logger.LogInformation($"Background Fetch Complete for {year}. Cache updated.");
-//            }
-
-//            return true; // Tells the worker everything succeeded!
-//        }
-
-//        private async Task ProcessSpecificYearAsync(
-//            int year, bool isEssentialPhase, FestivalMasterResponse masterData, HttpClient httpClient,
-//            JsonSerializerOptions jsonOptions, List<DashboardUiEvent> cumulativeProcessedEvents, List<EventListData> cumulativeRawEvents)
-//        {
-//            var festivalKeywords = new List<string> { "diwali", "puja", "eid", "christmas", "holi", "navratri" };
-
-//            var yearStart = new DateTime(year - 1, 12, 15);
-//            var yearEnd = new DateTime(year + 1, 1, 15);
-
-//            if (isEssentialPhase && yearStart < DateTime.Today)
-//            {
-//                yearStart = DateTime.Today;
-//            }
-
-//            var yearFilters = masterData.Data
-//                .Select(fm => new {
-//                    blackoutTypeId = fm.blackoutTypeId,
-//                    validCalendars = fm.calendars?.Where(c =>
-//                        (c.date >= yearStart && c.date <= yearEnd) ||
-//                        (c.blackoutDates != null && c.blackoutDates.Any(d => d >= yearStart && d <= yearEnd))
-//                    ).ToList()
-//                })
-//                .Where(fm => fm.validCalendars != null && fm.validCalendars.Any())
-//                .Select(fm => new {
-//                    blackoutTypeId = fm.blackoutTypeId,
-//                    calendarIds = fm.validCalendars!.Select(c => c.calendarId).ToList(),
-//                    bdates = fm.validCalendars!.SelectMany(c => c.blackoutDates ?? new List<DateTime>())
-//                                               .Where(d => d >= yearStart && d <= yearEnd)
-//                                               .Select(d => d.ToString("yyyy-MM-ddTHH:mm:ss"))
-//                                               .Distinct().ToList()
-//                })
-//                .Where(f => f.calendarIds.Any() && f.bdates.Any())
-//                .ToList();
-
-//            if (!yearFilters.Any()) return;
-
-//            var apiEventsForThisYear = new List<EventListData>();
-//            using var semaphore = new SemaphoreSlim(1);
-
-//            var fetchTasks = yearFilters.Select(async filter =>
-//            {
-//                await semaphore.WaitAsync();
-//                try
-//                {
-//                    var localEvents = new List<EventListData>();
-//                    int batchSize = 15;
-
-//                    for (int i = 0; i < filter.bdates.Count; i += batchSize)
-//                    {
-//                        var batchDates = filter.bdates.Skip(i).Take(batchSize).ToList();
-//                        int maxRetries = 3;
-//                        bool success = false;
-//                        int attempts = 0;
-
-//                        while (!success && attempts < maxRetries)
-//                        {
-//                            attempts++;
-//                            try
-//                            {
-//                                var batchFilter = new { blackoutTypeId = filter.blackoutTypeId, calendarIds = filter.calendarIds, bdates = batchDates };
-//                                var content = new StringContent(JsonSerializer.Serialize(new { filters = new[] { batchFilter } }, jsonOptions), Encoding.UTF8, "application/json");
-
-//                                var eventResponse = await httpClient.PostAsync("https://shivent.azurewebsites.net/EventLists", content);
-
-//                                if (eventResponse.IsSuccessStatusCode)
-//                                {
-//                                    var eventJson = await eventResponse.Content.ReadAsStringAsync();
-//                                    var eventData = JsonSerializer.Deserialize<EventListResponse>(eventJson, jsonOptions);
-//                                    if (eventData?.Data != null) localEvents.AddRange(eventData.Data);
-
-//                                    success = true;
-//                                    await Task.Delay(300);
-//                                }
-//                                else
-//                                {
-//                                    if ((int)eventResponse.StatusCode >= 500) await Task.Delay(2000);
-//                                    else break;
-//                                }
-//                            }
-//                            catch (TaskCanceledException) { await Task.Delay(2000); }
-//                        }
-//                    }
-//                    return localEvents;
-//                }
-//                finally { semaphore.Release(); }
-//            });
-
-//            var results = await Task.WhenAll(fetchTasks);
-//            foreach (var batch in results) apiEventsForThisYear.AddRange(batch);
-
-//            var mergedApiEventsForThisYear = apiEventsForThisYear
-//                .GroupBy(e => e.EventId)
-//                .Select(g => {
-//                    var merged = g.First();
-//                    merged.Details = g.Where(e => e.Details != null).SelectMany(e => e.Details)
-//                                      .GroupBy(s => $"{s.FromCode}-{s.ToCode}")
-//                                      .Select(sg => {
-//                                          var ms = sg.First();
-//                                          ms.Details = sg.Where(s => s.Details != null).SelectMany(s => s.Details)
-//                                                         .GroupBy(d => d.TravelDate.Date).Select(dg => dg.Last()).ToList();
-//                                          return ms;
-//                                      }).ToList();
-//                    return merged;
-//                }).ToList();
-
-//            cumulativeRawEvents.AddRange(mergedApiEventsForThisYear);
-
-//            await Task.Run(() =>
-//            {
-//                foreach (var apiEvent in mergedApiEventsForThisYear)
-//                {
-//                    var allTdd = apiEvent.Details?.SelectMany(s => s.Details ?? new List<EventTravelDateData>()).ToList() ?? new List<EventTravelDateData>();
-//                    var matchingMaster = masterData.Data.FirstOrDefault(m => m.blackoutTypeId == apiEvent.EventId);
-//                    var validCals = matchingMaster?.calendars?.Where(c =>
-//                        (c.date >= yearStart && c.date <= yearEnd) || (c.blackoutDates != null && c.blackoutDates.Any(d => d >= yearStart && d <= yearEnd))
-//                    ).ToList();
-
-//                    if (validCals == null || !validCals.Any()) continue;
-
-//                    bool isFestival = festivalKeywords.Any(k => (apiEvent.Event ?? "").Contains(k, StringComparison.OrdinalIgnoreCase));
-//                    var calendarsByYear = validCals.GroupBy(c => c.date.Year).ToList();
-
-//                    foreach (var yearGroup in calendarsByYear)
-//                    {
-//                        var primaryEventDate = yearGroup.OrderBy(c => c.date).First().date;
-
-//                        var combinedCalDates = yearGroup.SelectMany(c => c.blackoutDates ?? new List<DateTime>())
-//                                                        .Where(d => Math.Abs((d.Date - primaryEventDate.Date).TotalDays) <= 120)
-//                                                        .Select(d => d.Date).ToHashSet();
-
-//                        var calTdd = allTdd.Where(d => combinedCalDates.Contains(d.TravelDate.Date)).ToList();
-
-//                        var groupedDaily = calTdd.Where(d => d.TravelDate >= yearStart && d.TravelDate <= yearEnd)
-//                            .GroupBy(d => d.TravelDate.Date)
-//                            .Select(g => new DailyStat
-//                            {
-//                                Date = g.Key.ToString("yyyy-MM-dd"),
-//                                TargetSeat = g.Sum(x => x.TargetSeat),
-//                                Achieved = g.Sum(x => x.Achieved),
-//                                FlightCount = g.Sum(x => x.FlightCount),
-//                                Priority = g.FirstOrDefault(x => !string.IsNullOrEmpty(x.BlackoutPriority))?.BlackoutPriority ?? "Normal"
-//                            }).OrderBy(d => d.Date).ToList();
-
-//                        if (!groupedDaily.Any()) continue;
-
-
-
-//                        var airlinesBreakdown = new List<string>();
-//                        var airlineAchieved = new Dictionary<string, int>(); // NEW
-//                        if (apiEvent.Airlines != null && apiEvent.Flights != null)
-//                        {
-//                            foreach (var airline in apiEvent.Airlines)
-//                            {
-//                                airlinesBreakdown.Add($"{airline.AirlineName} ({apiEvent.Flights.Count(f => f.AirlineCode == airline.AirlineCode)})");
-//                                string code = !string.IsNullOrEmpty(airline.AirlineCode) ? airline.AirlineCode : "OAL";
-//                                airlineAchieved[code] = airline.Achieved;
-//                            }
-//                        }
-
-//                        cumulativeProcessedEvents.Add(new DashboardUiEvent
-//                        {
-//                            Id = apiEvent.EventId,
-//                            Name = apiEvent.Event!,
-//                            EventDate = primaryEventDate.ToString("yyyy-MM-dd"),
-//                            SectorsCovered = apiEvent.Details?.Count ?? 0,
-//                            IsImportant = isFestival,
-//                            AirlinesBreakdown = airlinesBreakdown,
-//                            AirlineAchieved = airlineAchieved,
-//                            DailyStats = groupedDaily
-//                        });
-//                    }
-//                }
-//            });
-//        }
-
-//        private async Task UpdateCacheSafelyAsync(List<DashboardUiEvent> rawProcessed, List<EventListData> rawEvents)
-//        {
-//            if (rawProcessed == null || !rawProcessed.Any() || rawEvents == null || !rawEvents.Any()) return;
-
-//            await Task.Run(() =>
-//            {
-//                try
-//                {
-//                    var jsonOpts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-//                    var clonedRawEvents = JsonSerializer.Deserialize<List<EventListData>>(JsonSerializer.Serialize(rawEvents, jsonOpts), jsonOpts);
-//                    var clonedProcessedEvents = JsonSerializer.Deserialize<List<DashboardUiEvent>>(JsonSerializer.Serialize(rawProcessed, jsonOpts), jsonOpts);
-
-//                    var uniqueProcessedEvents = clonedProcessedEvents!.GroupBy(e => $"{e.Id}_{e.EventDate}").Select(g => g.Last()).ToList();
-//                    var uniqueRawEvents = clonedRawEvents!.GroupBy(e => e.EventId).Select(g =>
-//                    {
-//                        var mergedEvent = g.First();
-//                        mergedEvent.Details = g.Where(e => e.Details != null).SelectMany(e => e.Details)
-//                            .GroupBy(s => $"{s.FromCode}-{s.ToCode}")
-//                            .Select(sg => {
-//                                var ms = sg.First();
-//                                ms.Details = sg.Where(s => s.Details != null).SelectMany(s => s.Details)
-//                                               .GroupBy(d => d.TravelDate.Date).Select(dg => dg.Last()).ToList();
-//                                return ms;
-//                            }).ToList();
-//                        return mergedEvent;
-//                    }).ToList();
-
-//                    var indestructibleOptions = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromDays(30)).SetPriority(CacheItemPriority.NeverRemove);
-//                    _cache.Set("DashboardMasterData", uniqueProcessedEvents, indestructibleOptions);
-//                    _cache.Set("RawEventListData", uniqueRawEvents, indestructibleOptions);
-//                }
-//                catch (Exception ex) { _logger.LogError($"Cache swap error: {ex.Message}"); }
-//            });
-//        }
-//    }
-//}
-
-using inventory_analytics_tool.Models;
+﻿using inventory_analytics_tool.Models;
 using Microsoft.Extensions.Caching.Memory;
 using System.Text;
 using System.Text.Json;
@@ -358,7 +14,7 @@ namespace inventory_analytics_tool.Workers
         private readonly IWebHostEnvironment _env;
         private readonly IServiceScopeFactory _scopeFactory;
 
-        private readonly TimeSpan _refreshInterval = TimeSpan.FromMinutes(30);
+        private readonly TimeSpan _refreshInterval = TimeSpan.FromMinutes(120);
         private readonly int _primaryYear = 2026;
 
         public FestivalDataWorker(IMemoryCache cache, ILogger<FestivalDataWorker> logger, IConfiguration config, IHttpClientFactory httpClientFactory, IWebHostEnvironment env, IServiceScopeFactory scopeFactory)
@@ -471,15 +127,17 @@ namespace inventory_analytics_tool.Workers
             _logger.LogInformation("PHASE 2: Fetching full historical background data...");
             int[] phase2Years = new[] { 2024, 2025, 2026, 2027, 2028 };
 
-            var historicalProcessedEvents = new List<DashboardUiEvent>();
-            var historicalRawEvents = new List<EventListData>();
-
             foreach (var year in phase2Years)
             {
+                // FIX: Moved INSIDE the loop so each year starts with a fresh list
+                var historicalProcessedEvents = new List<DashboardUiEvent>();
+                var historicalRawEvents = new List<EventListData>();
+
                 await ProcessSpecificYearAsync(year, isEssentialPhase: false, masterData, httpClient, jsonOptions, historicalProcessedEvents, historicalRawEvents);
 
-                // Saves strictly to the Historical Cache so it never breaks the live Phase 1 data!
-                await UpdateCacheSafelyAsync(historicalProcessedEvents, historicalRawEvents, "HistoricalDashboardMasterData", "HistoricalRawEventListData");
+                // FIX: Save to a dynamically named, year-specific cache key!
+                await UpdateCacheSafelyAsync(historicalProcessedEvents, historicalRawEvents, $"HistoricalDashboardMasterData_{year}", $"HistoricalRawEventListData_{year}");
+
                 _logger.LogInformation($"Background Fetch Complete for {year}. Cache updated.");
             }
 
@@ -492,8 +150,8 @@ namespace inventory_analytics_tool.Workers
         {
             var festivalKeywords = new List<string> { "diwali", "puja", "eid", "christmas", "holi", "navratri" };
 
-            var yearStart = new DateTime(year - 1, 12, 15);
-            var yearEnd = new DateTime(year + 1, 1, 15);
+            var yearStart = new DateTime(year - 1, 11, 20);
+            var yearEnd = new DateTime(year + 1, 2, 10);
 
             if (isEssentialPhase && yearStart < DateTime.Today)
             {
@@ -732,160 +390,106 @@ namespace inventory_analytics_tool.Workers
             });
         }
 
-        // =======================================================
-        // NEW BACKGROUND TASK: Calculates alerts silently!
-        // =======================================================
-        //private void CalculateFareDropAlertsAsync()
-        //{
-        //    _logger.LogInformation("Worker: Scanning Cache for Fare Drop Alerts...");
-        //    try
-        //    {
-        //        // Instantly grab data from the memory caches (No DB required!)
-        //        if (!_cache.TryGetValue("RawEventListData", out List<EventListData> rawEvents) || rawEvents == null) return;
-        //        if (!_cache.TryGetValue("DashboardMasterData", out List<DashboardUiEvent> dashEvents) || dashEvents == null) return;
-        //        _cache.TryGetValue("FDestList", out List<FDestData> cachedFDest);
-        //        cachedFDest ??= new List<FDestData>();
-
-        //        var alerts = new List<object>();
-        //        var today = DateTime.Today;
-
-        //        foreach (var rawEvent in rawEvents)
-        //        {
-        //            var dashEvent = dashEvents.FirstOrDefault(e => e.Id == rawEvent.EventId);
-        //            if (dashEvent == null || rawEvent.Details == null) continue;
-
-        //            foreach (var sectorData in rawEvent.Details)
-        //            {
-        //                if (sectorData.Details == null) continue;
-        //                string sectorString = $"{sectorData.FromCode}-{sectorData.ToCode}";
-
-        //                var destMatch = cachedFDest.FirstOrDefault(f =>
-        //                string.Equals(f.FromCode, sectorData.FromCode, StringComparison.OrdinalIgnoreCase) &&
-        //                string.Equals(f.ToCode, sectorData.ToCode, StringComparison.OrdinalIgnoreCase));
-        //                string leadName = !string.IsNullOrEmpty(destMatch?.InternalOwner) ? destMatch.InternalOwner : "Unassigned";
-
-        //                foreach (var tdd in sectorData.Details)
-        //                {
-        //                    // 1. Skip past dates or dates missing a Target Fare
-        //                    if (tdd.TravelDate.Date < today || tdd.TargetFare <= 0) continue;
-
-        //                    // 2. Read the online fare DIRECTLY from the API data!
-        //                    // ---> NOTE: Change 'OnlineFare' to the actual property name from your API (e.g., AvgPurchaseFare) <---
-        //                    double currentOnlineFare = tdd.LastOnlineFare;
-
-        //                    // 3. THE TRIGGER: If the online fare is valid AND dropped below the Target Fare
-        //                    if (currentOnlineFare > 0 && currentOnlineFare < tdd.TargetFare)
-        //                    {
-        //                        alerts.Add(new
-        //                        {
-        //                            eventId = rawEvent.EventId,
-        //                            eventName = dashEvent.Name,
-        //                            sector = sectorString,
-        //                            travelDate = tdd.TravelDate.ToString("dd MMM yyyy"),
-        //                            rawDate = tdd.TravelDate,
-        //                            targetFare = (int)Math.Round(tdd.TargetFare, MidpointRounding.AwayFromZero),
-        //                            lastOnlineFare = (int)Math.Round(currentOnlineFare, MidpointRounding.AwayFromZero),
-        //                            lead = leadName
-        //                        });
-        //                    }
-        //                }
-        //            }
-        //        }
-
-        //        var sortedAlerts = alerts.OrderBy(a => ((dynamic)a).rawDate).ToList();
-
-        //        // Save it to the cache permanently
-        //        var cacheOptions = new MemoryCacheEntryOptions().SetPriority(CacheItemPriority.NeverRemove);
-        //        _cache.Set("ActiveFareAlerts", sortedAlerts, cacheOptions);
-
-        //        _logger.LogInformation($"Worker: Found {sortedAlerts.Count} Fare Drop Alerts instantly without hitting the DB.");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError($"Worker Alerts Error: {ex.Message}");
-        //    }
-        //}
-
-        // =======================================================
-        // NEW BACKGROUND TASK: Calculates alerts using Live DB!
-        // =======================================================
+        
         private async Task CalculateFareDropAlertsAsync()
         {
-            _logger.LogInformation("Worker: Scanning Live DB for Fare Drop Alerts...");
+            _logger.LogInformation("Worker: Scanning Live DB for Fare Drop Alerts (All Years)...");
             try
             {
-                // Must create a scope to safely use scoped DB Helper in a singleton worker
                 using (var scope = _scopeFactory.CreateScope())
                 {
                     var dbHelper = scope.ServiceProvider.GetRequiredService<inventory_analytics_tool.Helpers.IDatabaseHelper>();
 
-                    if (!_cache.TryGetValue("RawEventListData", out List<EventListData> rawEvents) || rawEvents == null) return;
-                    if (!_cache.TryGetValue("DashboardMasterData", out List<DashboardUiEvent> dashEvents) || dashEvents == null) return;
                     _cache.TryGetValue("FDestList", out List<FDestData> cachedFDest);
                     cachedFDest ??= new List<FDestData>();
 
                     var alerts = new List<object>();
                     var today = DateTime.Today;
 
-                    foreach (var rawEvent in rawEvents)
+                    // Define the years you want to scan for active alerts (Current Year + Next 2 Years)
+                    int[] yearsToScan = new[] { _primaryYear, _primaryYear + 1, _primaryYear + 2 };
+
+                    foreach (var year in yearsToScan)
                     {
-                        var dashEvent = dashEvents.FirstOrDefault(e => e.Id == rawEvent.EventId);
-                        if (dashEvent == null || rawEvent.Details == null) continue;
+                        // Replicate the Controller's dynamic cache key logic
+                        string rawKey = (year == _primaryYear) ? "RawEventListData" : $"HistoricalRawEventListData_{year}";
+                        string dashKey = (year == _primaryYear) ? "DashboardMasterData" : $"HistoricalDashboardMasterData_{year}";
 
-                        foreach (var sectorData in rawEvent.Details)
+                        if (!_cache.TryGetValue(rawKey, out List<EventListData> rawEvents) || rawEvents == null) continue;
+                        if (!_cache.TryGetValue(dashKey, out List<DashboardUiEvent> dashEvents) || dashEvents == null) continue;
+
+                        foreach (var rawEvent in rawEvents)
                         {
-                            if (sectorData.Details == null || !sectorData.Details.Any()) continue;
-                            string sectorString = $"{sectorData.FromCode}-{sectorData.ToCode}";
+                            var dashEvent = dashEvents.FirstOrDefault(e => e.Id == rawEvent.EventId);
+                            if (dashEvent == null || rawEvent.Details == null) continue;
 
-                            var destMatch = cachedFDest.FirstOrDefault(f =>
-                                string.Equals(f.FromCode, sectorData.FromCode, StringComparison.OrdinalIgnoreCase) &&
-                                string.Equals(f.ToCode, sectorData.ToCode, StringComparison.OrdinalIgnoreCase));
-                            string leadName = !string.IsNullOrEmpty(destMatch?.InternalOwner) ? destMatch.InternalOwner : "Unassigned";
-
-                            // SMART BATCHING: Find the date range for this sector to avoid N+1 DB queries
-                            var minDate = sectorData.Details.Min(d => d.TravelDate).Date;
-                            var maxDate = sectorData.Details.Max(d => d.TravelDate).Date;
-
-                            // Fetch the live lowest fares from the DB for the entire date range at once
-                            var dbLowestFares = await dbHelper.GetLowestLatestFaresAsync(sectorString, minDate, maxDate);
-
-                            foreach (var tdd in sectorData.Details)
+                            foreach (var sectorData in rawEvent.Details)
                             {
-                                if (tdd.TravelDate.Date < today || tdd.TargetFare <= 0) continue;
+                                if (sectorData.Details == null || !sectorData.Details.Any()) continue;
+                                string sectorString = $"{sectorData.FromCode}-{sectorData.ToCode}";
 
-                                // Extract the true live DB fare instead of the stale API fare
-                                if (dbLowestFares.TryGetValue(tdd.TravelDate.Date, out var fareData))
+                                var destMatch = cachedFDest.FirstOrDefault(f =>
+                                    string.Equals(f.FromCode, sectorData.FromCode, StringComparison.OrdinalIgnoreCase) &&
+                                    string.Equals(f.ToCode, sectorData.ToCode, StringComparison.OrdinalIgnoreCase));
+                                string leadName = !string.IsNullOrEmpty(destMatch?.InternalOwner) ? destMatch.InternalOwner : "Unassigned";
+
+                                // SMART BATCHING: Find the date range
+                                var minDate = sectorData.Details.Min(d => d.TravelDate).Date;
+                                var maxDate = sectorData.Details.Max(d => d.TravelDate).Date;
+
+                                // Fetch the live lowest fares
+                                var dbLowestFares = await dbHelper.GetLowestLatestFaresAsync(sectorString, minDate, maxDate);
+
+                                foreach (var tdd in sectorData.Details)
                                 {
-                                    double currentOnlineFare = fareData.LowestFare;
-                                    DateTime fareEntryDate = fareData.EntryDate; // Successfully extracted
-                                    // THE TRIGGER
-                                    if (currentOnlineFare > 0 && currentOnlineFare < tdd.TargetFare)
+                                    if (tdd.TravelDate.Date < today || tdd.TargetFare <= 0) continue;
+
+                                    if (tdd.TravelDate.Year != year) continue;
+
+                                    if (dbLowestFares.TryGetValue(tdd.TravelDate.Date, out var fareData))
                                     {
-                                        alerts.Add(new
+                                        double currentOnlineFare = fareData.LowestFare;
+                                        DateTime fareEntryDate = fareData.EntryDate;
+                                        string lowestFareAirline = fareData.Airline;
+                                        string flightNumber = fareData.FlightNo;
+
+                                        // THE TRIGGER
+                                        if (currentOnlineFare > 0 && currentOnlineFare < tdd.TargetFare)
                                         {
-                                            eventId = rawEvent.EventId,
-                                            eventName = dashEvent.Name,
-                                            sector = sectorString,
-                                            travelDate = tdd.TravelDate.ToString("dd MMM yyyy"),
-                                            rawDate = tdd.TravelDate,
-                                            targetFare = (int)Math.Round(tdd.TargetFare, MidpointRounding.AwayFromZero),
-                                            lastOnlineFare = (int)Math.Round(currentOnlineFare, MidpointRounding.AwayFromZero),
-                                            entryDate = fareEntryDate.ToString("dd MMM yyyy HH:mm:ss"),
-                                            lead = leadName
-                                        });
+                                            alerts.Add(new
+                                            {
+                                                eventId = rawEvent.EventId,
+                                                eventName = dashEvent.Name,
+                                                sector = sectorString,
+                                                travelDate = tdd.TravelDate.ToString("dd MMM yyyy"),
+                                                rawDate = tdd.TravelDate,
+                                                targetFare = (int)Math.Round(tdd.TargetFare, MidpointRounding.AwayFromZero),
+                                                lastOnlineFare = (int)Math.Round(currentOnlineFare, MidpointRounding.AwayFromZero),
+                                                acheivedPax = tdd.Achieved,
+                                                entryDate = fareEntryDate.ToString("dd MMM yyyy HH:mm:ss"),
+                                                lead = leadName,
+                                                airline = lowestFareAirline,
+                                                flightNo = flightNumber
+                                            });
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
+                    } // End of Year Loop
 
-                    var sortedAlerts = alerts.OrderBy(a => ((dynamic)a).rawDate).ToList();
+                    // Sort ALL aggregated alerts by date
+                    var sortedAlerts = alerts
+                        .GroupBy(a => $"{((dynamic)a).eventId}_{((dynamic)a).sector}_{((dynamic)a).airline}_{((dynamic)a).flightNo}_{((dynamic)a).rawDate:yyyyMMdd}")
+                        .Select(g => g.First())
+                        .OrderBy(a => ((dynamic)a).rawDate)
+                        .ToList();
 
-                    // Save it to the cache permanently
+                    // Save the combined, deduplicated list to the cache permanently
                     var cacheOptions = new MemoryCacheEntryOptions().SetPriority(CacheItemPriority.NeverRemove);
                     _cache.Set("ActiveFareAlerts", sortedAlerts, cacheOptions);
 
-                    _logger.LogInformation($"Worker: Found {sortedAlerts.Count} Fare Drop Alerts using live DB.");
+                    _logger.LogInformation($"Worker: Found {sortedAlerts.Count} Fare Drop Alerts using live DB (Spanning {yearsToScan.Length} years).");
                 }
             }
             catch (Exception ex)

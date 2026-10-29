@@ -3,283 +3,663 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
 <style>
-    .tip-table { width: 100%; border-collapse: collapse; text-align: center; margin: 0; }
-    .tip-table th { font-weight: 700 !important; font-size: 11px; color: #64748b; padding: 6px 12px; border-bottom: 1px solid #e2e8f0; }
-    .tip-table td { font-weight: 600; font-size: 12px; color: #1e293b; padding: 6px 12px; }
-    .tip-table .pct-row td { color: #0b5ed7; background-color: rgba(13, 110, 253, 0.05); border-radius: 4px; }
-    .tip-box { position: absolute; display: none; z-index: 1000; background: #fff; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); border-radius: 8px; padding: 8px; min-width: 250px; }
-    .tip-btn { background: none; border: none; padding: 0; margin-left: 4px; color: #64748b; cursor: pointer; }
-    .tip-btn:hover { color: #0b5ed7; }
+    body[data-layout="horizontal"] .page-content, .page-content {
+        padding-top: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        padding-bottom: 60px !important;
+    }
+
+    :root {
+        --brand-blue: #1076bb;
+        --brand-red: #f16367;
+        --slate-50: #f8fafc;
+        --slate-100: #f1f5f9;
+        --slate-200: #e2e8f0;
+        --slate-300: #cbd5e1;
+        --slate-400: #94a3b8;
+        --slate-500: #64748b;
+        --slate-600: #475569;
+        --slate-700: #334155;
+        --slate-800: #1e293b;
+        --slate-900: #0f172a;
+    }
+
+    .custom-scope {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--slate-50);
+        color: var(--slate-900);
+    }
+    
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-up {
+        animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Hero Banner */
+    .hero-banner {
+        background: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-red) 100%);
+        padding-top: 2.5rem;
+        padding-bottom: 7rem;
+        position: relative;
+    }
+
+    .hero-pattern {
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0);
+        background-size: 24px 24px;
+    }
+
+    /* Modern Inputs */
+    .modern-input {
+        background-color: var(--slate-50);
+        border: 1px solid var(--slate-200);
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+        color: var(--slate-800);
+        font-size: 0.875rem;
+        font-weight: 500;
+        height: 38px;
+        transition: all 0.2s;
+        outline: none;
+        width: 100%;
+    }
+
+        .modern-input:focus {
+            background-color: #fff;
+            border-color: var(--brand-blue);
+            box-shadow: 0 0 0 4px rgba(16, 118, 187, 0.1);
+        }
+
+        .modern-input::placeholder {
+            color: var(--slate-400);
+        }
+    
+    .select2-container--default .select2-selection--single {
+        background-color: var(--slate-50) !important;
+        border: 1px solid var(--slate-200) !important;
+        border-radius: 0.5rem !important;
+        height: 38px !important;
+        display: flex;
+        align-items: center;
+        outline: none;
+        box-shadow: none !important;
+        transition: all 0.2s;
+    }
+
+    .select2-container--open .select2-selection--single {
+        background-color: #fff !important;
+        border-color: var(--brand-blue) !important;
+        box-shadow: 0 0 0 4px rgba(16, 118, 187, 0.1) !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--slate-800) !important;
+        font-weight: 500 !important;
+        font-size: 0.875rem;
+        padding-left: 0.75rem !important;
+        line-height: normal !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 38px !important;
+        right: 0.5rem !important;
+    }
+
+    .select2-dropdown {
+        border: 1px solid var(--slate-200) !important;
+        border-radius: 0.5rem !important;
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1) !important;
+        overflow: hidden;
+        font-size: 0.875rem;
+        z-index: 1060;
+    }
+    
+    .input-icon-wrapper {
+        position: relative;
+    }
+
+        .input-icon-wrapper .lucide {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--slate-400);
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .input-icon-wrapper input {
+            padding-left: 2.5rem;
+        }
+
+    /* CUSTOM LIST VIEW TABLE STYLES */
+    .modern-table-wrapper {
+        background: #ffffff;
+        border-radius: 1rem;
+        border: 1px solid var(--slate-200);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .modern-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        font-size: 0.8125rem;
+        white-space: nowrap;
+    }
+
+        .modern-table thead th {
+            background-color: var(--slate-50);
+            color: var(--slate-600);
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.75rem 0.5rem;
+            border-bottom: 1px solid var(--slate-200);
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s;
+        }
+
+            .modern-table thead th:hover {
+                background-color: #e2e8f0;
+            }
+
+        .modern-table tbody td {
+            padding: 1rem 0.5rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--slate-700);
+            font-weight: 500;
+        }
+
+        .modern-table tbody tr.main-row {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+            .modern-table tbody tr.main-row:hover {
+                background-color: var(--slate-50);
+            }
+
+        .modern-table tbody tr.expanded-row {
+            background-color: rgba(248, 250, 252, 0.6);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+    
+    .sort-icon {
+        width: 12px;
+        height: 12px;
+        transition: opacity 0.2s, color 0.2s;
+        opacity: 0.3;
+        margin-left: 4px;
+    }
+
+        .sort-icon.active {
+            opacity: 1;
+            color: var(--brand-blue);
+        }
+
+    .chevron-icon {
+        transition: transform 0.2s ease;
+    }
+
+    .text-xxs {
+        font-size: 0.65rem;
+    }
+
+    /* Tooltips */
+    .tip-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: center;
+        margin: 0;
+    }
+
+        .tip-table th {
+            font-weight: 700;
+            font-size: 11px;
+            color: #64748b;
+            padding: 6px 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .tip-table td {
+            font-weight: 600;
+            font-size: 12px;
+            color: #1e293b;
+            padding: 6px 12px;
+        }
+
+        .tip-table .pct-row td {
+            color: #0ea5e9;
+            background-color: #f0f9ff;
+            border-radius: 4px;
+        }
+
+    .tip-box {
+        position: absolute;
+        display: none;
+        z-index: 1000;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        border-radius: 12px;
+        padding: 12px;
+        min-width: 250px;
+        left: 0;
+        top: 100%;
+        margin-top: 0.5rem;
+    }
 </style>
 
-<div class="page-content">
-    <div class="container-fluid">
-
-        <div class="conatiner cox">
-            <div class="row">
-                <div class="col-6 d-flex justify-content-start align-items-center gap-3">
-                    <a href="/OccasionDetails/Index/@ViewBag.EventId?sectorType=@ViewBag.SectorType" class="btn btn-sm btn-light border shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" title="Back to Sector Details">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+<div class="page-content custom-scope pb-5">
+    
+    <!-- 1. HERO BANNER -->
+    <div class="hero-banner px-3">
+        <div class="hero-pattern"></div>
+        <div class="container-fluid position-relative z-1" style="max-width: 1800px;">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">
+                <div class="d-flex align-items-center gap-3">
+                    <a href="/OccasionDetails/Index/@ViewBag.EventId?sectorType=@ViewBag.SectorType&lead=@ViewBag.Lead&priority=@ViewBag.Priority&year=@ViewBag.Year"
+                       class="btn btn-light d-flex align-items-center justify-content-center p-0 rounded-circle shadow-sm flex-shrink-0" style="width: 3rem; height: 3rem; color: var(--brand-blue);" title="Back to Sector Details">
+                        <i data-lucide="arrow-left" style="width: 1.25rem; height: 1.25rem;"></i>
                     </a>
-                    <h4 class="mb-sm-0"> Fare Details: <span class="text-primary">@ViewBag.EventName -> @ViewBag.Sector</span> </h4>
-                </div>
-                <div class="col-6">
-                    <div class="row">
-                        <div class="col-md-12 d-flex justify-content-end align-items-center">
-                            <select id="inputState" class="form-select w-auto shadow-sm" data-choices="" data-choices-sorting="true">
-                                <option selected>Filter By Month</option>
-                                <option value="January">January</option>
-                                <option value="February">February</option>
-                                <option value="March">March</option>
-                                <option value="April">April</option>
-                                <option value="May">May</option>
-                                <option value="June">June</option>
-                                <option value=\"July\">July</option>
-                                <option value="August">August</option>
-                                <option value="September">September</option>
-                                <option value="October">October</option>
-                                <option value="November">November</option>
-                                <option value="December">December</option>
-                            </select>
-                        </div>
+                    <div class="text-white">
+                        <h1 class="fw-bolder mb-1 text-white" style="font-size: 2.25rem;">Fare Details: <span class="fw-medium opacity-75">@ViewBag.EventName &rarr; @ViewBag.Sector</span></h1>
+                        <p class="mb-0 fw-medium opacity-75" style="font-size: 1rem;">Travel date level breakdown and pricing metrics.</p>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="boxes position-relative bg-white shadow-sm rounded-4 p-4 mt-3 w-100">
-            <div id="loading-overlay" style="padding: 4rem; text-align: center;">
-                <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-                    <span class="visually-hidden">Loading...</span>
+    <!-- 2. FILTER BAR -->
+    <div class="container-fluid position-relative px-3" style="max-width: 1800px; margin-top: -3.5rem; z-index: 10;">
+        <div class="card border-0 rounded-4 shadow-sm p-4 mb-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div class="input-icon-wrapper" style="max-width: 400px; width: 100%;">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="searchInput" placeholder="Search dates or priorities..." class="form-control modern-input w-100">
                 </div>
-                <h5 class="mt-3 text-muted">Fetching Fare Details...</h5>
-                <p class="text-muted small">Loading travel date level breakdown for @ViewBag.Sector</p>
+                
+                <div style="max-width: 250px; width: 100%;">
+                    <select id="monthFilter" class="form-select searchable-select w-100">
+                        <option value="All" selected>Filter By Month</option>
+                        <option value="January">January</option>
+                        <option value="February">February</option>
+                        <option value="March">March</option>
+                        <option value="April">April</option>
+                        <option value="May">May</option>
+                        <option value="June">June</option>
+                        <option value="July">July</option>
+                        <option value="August">August</option>
+                        <option value="September">September</option>
+                        <option value="October">October</option>
+                        <option value="November">November</option>
+                        <option value="December">December</option>
+                    </select>
+                </div>
             </div>
+        </div>
 
-            <div id="error-overlay" style="display:none; padding: 2rem; background: #fff3f3; border: 1px solid #ffcdd2; border-radius: 8px; margin: 1rem 0;">
-                <h5 class="text-danger mb-2">Failed to load data</h5>
-                <p id="error-message" class="text-danger mb-0"></p>
-            </div>
+        <!-- 3. MAIN CONTENT AREA -->
+        <div id="loading-overlay" class="text-center py-5 bg-white rounded-4 border shadow-sm animate-fade-up">
+            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+            <h4 class="fw-bold" style="color: var(--slate-800);">Fetching Fare Details...</h4>
+            <p class="text-muted mb-0">Loading travel date level breakdown for @ViewBag.Sector</p>
+        </div>
+        
+        <div id="error-overlay" style="display:none;" class="alert alert-danger rounded-4 border-0 mb-4 shadow-sm">
+            <p id="error-message" class="fw-bold mb-0"></p>
+        </div>
 
-            <div id="content-overlay" style="display:none; width: 100%;">
-                <table id="calendarTable" class="display responsive nowrap w-100" style="width:100%">
-                    <thead>
-                        <tr>
-                            <th>Sector</th>
-                            <th>DOJ</th>
-                            <th>Airlines</th>
-                            <th>Flight Count</th>
-                            <th>Total Strength</th>
-                            <th>Target Seats</th>
-                            <th>Achieved</th>
-                            <th>Attempt Count</th>
-                            <th>Target Fare</th>
-                            <th>Avg. Pur. Fare</th>
-                            <th>Last Online Fare</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="list-tbody">
-                    </tbody>
-                </table>
-            </div>
+        <div id="render-container" class="animate-fade-up" style="display: none;">
+            <!-- HTML injected via JS -->
         </div>
 
     </div>
 </div>
 
 @section Scripts {
-    <script>
-        let allFares = [];
-        const currentEventId = @ViewBag.EventId;
-        const currentSector = '@ViewBag.Sector';
-        const currentSectorType = '@ViewBag.SectorType';
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-        document.addEventListener("DOMContentLoaded", function() {
-            fetch(`/OccasionDetails/GetFareData?eventId=${currentEventId}&sector=${encodeURIComponent(currentSector)}&year=2026`)
+    <script>
+        // --- DATA INJECTION & STATE ---
+        let allFares = [];
+        let filteredFares = [];
+        const currentEventId = @ViewBag.EventId;
+        const currentSector = '@Html.Raw(ViewBag.Sector)';
+        const currentSectorType = '@Html.Raw(ViewBag.SectorType)';
+        const currentLead = '@Html.Raw(ViewBag.Lead ?? "All")';
+        
+        let state = {
+            search: '',
+            month: 'All',
+            sortBy: 'doj',
+            sortOrder: 'asc'
+        };
+
+        const formatNum = (num) => (num || 0).toLocaleString('en-IN');
+
+        $(document).ready(function () {
+            lucide.createIcons();
+            $('.searchable-select').select2({ width: '100%', dropdownAutoWidth: true });
+
+            // Fetch Data
+            fetch(`/OccasionDetails/GetFareData?eventId=${currentEventId}&sector=${encodeURIComponent(currentSector)}&year=@ViewBag.Year&priority=@ViewBag.Priority`)
                 .then(res => res.json())
                 .then(result => {
-                    document.getElementById('loading-overlay').style.display = 'none';
-                    if (!result.success) {
-                        showError(result.message);
-                        return;
-                    }
+                    $('#loading-overlay').hide();
+                    if (!result.success) { showError(result.message); return; }
 
                     allFares = result.data || [];
-                    document.getElementById('content-overlay').style.display = 'block';
-                    applyFilters();
+                    $('#render-container').show();
+                    processAndRender();
                 })
                 .catch(err => {
-                    document.getElementById('loading-overlay').style.display = 'none';
+                    $('#loading-overlay').hide();
                     showError("Network error while connecting to controller: " + err.message);
                 });
 
-            document.getElementById('inputState').addEventListener('change', applyFilters);
+            // Bind Event Listeners
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                state.search = e.target.value.toLowerCase().trim();
+                processAndRender();
+            });
+
+            $('#monthFilter').on('change', function () {
+                state.month = $(this).val();
+                processAndRender();
+            });
         });
 
         function showError(msg) {
-            document.getElementById('error-overlay').style.display = 'block';
+            $('#error-overlay').show();
             let formattedMsg = msg;
             if (msg.includes("Unauthorized") || msg.includes("401")) {
                 formattedMsg += "<br><br><strong style='color:#b71c1c;'>Security Note:</strong> Your Azure session token has expired. <br><br> <a href='/Login/Logout' class='btn btn-danger btn-sm'>Refresh Token</a>";
             }
-            document.getElementById('error-message').innerHTML = formattedMsg;
+            $('#error-message').html(formattedMsg);
         }
 
-        function applyFilters() {
-            let filtered = allFares;
-            const selectedMonth = document.getElementById('inputState').value;
-
-            if (selectedMonth !== "Filter By Month") {
-                filtered = filtered.filter(e => {
-                    const eventMonth = new Date(e.travelDate).toLocaleString('en-US', { month: 'long' });
-                    return eventMonth === selectedMonth;
-                });
-            }
-
-            renderList(filtered);
-        }
-
-        function renderList(data) {
-            if (typeof $ !== 'undefined' && $.fn.DataTable.isDataTable('#calendarTable')) {
-                $('#calendarTable').DataTable().destroy();
-            }
-
-            let html = '';
-            if (data.length === 0) {
-                html = `<tr><td colspan="12" class="text-center text-muted py-4">No fare details found matching current filters.</td></tr>`;
-                document.getElementById('list-tbody').innerHTML = html;
+        // --- GLOBAL UI HANDLERS ---
+        window.handleSort = function (column) {
+            if (state.sortBy === column) {
+                state.sortOrder = state.sortOrder === 'asc' ? 'desc' : 'asc';
             } else {
-                data.forEach(item => {
-
-                    // --- NEW: Calculate Percentages and Build the Custom Tooltip Table ---
-                    let tipBoxHtml = '';
-                    if (item.airlineAchieved && Object.keys(item.airlineAchieved).length > 0) {
-                        let validAirlines = Object.entries(item.airlineAchieved).filter(([k]) => k && k.toLowerCase() !== 'total');
-                        let totalAch = validAirlines.reduce((sum, [code, count]) => sum + count, 0);
-                        let calcTotal = totalAch === 0 ? 1 : totalAch; 
-
-                        let ths = '';
-                        let countTds = '';
-                        let pctTds = '';
-
-                        for (const [code, count] of validAirlines) {
-                            ths += `<th>${code}</th>`;
-                            countTds += `<td>${count}</td>`;
-                            let pct = Math.round((count / calcTotal) * 100);
-                            pctTds += `<td>${pct}%</td>`;
-                        }
-
-                        ths += `<th>Total</th>`;
-                        countTds += `<td style="font-weight: 800; color: #0b5ed7;">${totalAch}</td>`;
-                        pctTds += `<td style="font-weight: 800; color: #0b5ed7;">100%</td>`;
-
-                        tipBoxHtml = `
-                        <table class="tip-table">
-                            <thead><tr>${ths}</tr></thead>
-                            <tbody>
-                                <tr>${countTds}</tr>
-                                <tr class="pct-row">${pctTds}</tr>
-                            </tbody>
-                        </table>`;
-                    } else {
-                        const oldBreakdown = item.airlinesBreakdown ? item.airlinesBreakdown.map(a => `<li>${a}</li>`).join('') : '';
-                        tipBoxHtml = `<ul>${oldBreakdown}</ul>`;
-                    }
-                    // ---------------------------------------------------------------------
-
-                    html += `
-                    <tr>
-                        <td>${item.sector}</td>
-                        <td data-sort="${new Date(item.travelDate).getTime()}">${item.doj}</td>
-                        <td>${item.airlinesCount}</td>
-                        <td>
-                            ${item.hasFlightData 
-                                ? item.flightCount 
-                                : '<span class="badge bg-warning text-dark">No Flight Data</span>'}
-                        </td>
-                        <td>${item.totalStrength}</td>
-                        <td>${item.target}</td>
-                        <td style="position:relative;">
-                            ${item.achieved}
-                            <button class="tip-btn" onclick="toggleTip(this)">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-info">
-                                    <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>
-                                </svg>
-                            </button>
-                            <div class="tip-box">${tipBoxHtml}</div>
-                        </td>
-                        <td>${item.attemptCount}</td>
-                        <td data-sort="${item.targetFare}">₹${item.targetFare.toLocaleString('en-IN')}</td>
-                        <td data-sort="${item.avgPurFare}">₹${item.avgPurFare.toLocaleString('en-IN')}</td>
-                        <td data-sort="${item.lastOnlineFare}">
-                            ${item.lastOnlineFare > 0 ? '₹' + item.lastOnlineFare.toLocaleString('en-IN') : '-'}
-                        </td>
-                        <td>
-                            <a href="/OccasionDetails/FareTrend?eventId=${currentEventId}&sector=${encodeURIComponent(item.sector)}&date=${encodeURIComponent(item.travelDate)}&sectorType=${encodeURIComponent(currentSectorType)}" class="card-link btn btn-sm btn-light">View details →</a>
-                        </td>
-                    </tr>`;
-                });
-                
-                document.getElementById('list-tbody').innerHTML = html;
-
-                if (typeof $ !== 'undefined' && $.fn.DataTable) {
-                    $('#calendarTable').DataTable({
-                        responsive: true,
-                        paging: true,
-                        pageLength: 10,
-                        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
-                        searching: true,
-                        ordering: true,
-                        dom: '<"d-flex justify-content-between align-items-center mb-3"if>rt<"d-flex justify-content-between align-items-center mt-3"lp><"clear">',
-                        language: {
-                            search: "_INPUT_",
-                            searchPlaceholder: "Search sectors...",
-                            info: "Showing _START_ to _END_ of _TOTAL_ entries",
-                            infoEmpty: "Showing 0 entries",
-                            lengthMenu: "Show _MENU_ entries"
-                        },
-                        columnDefs: [
-                            { targets: [8], orderable: false }
-                        ]
-                    });
-                }
+                state.sortBy = column;
+                state.sortOrder = 'asc';
             }
-        }
+            processAndRender();
+        };
 
-        // Smart Edge Detection Tooltip toggler
-        function toggleTip(btn) {
-            document.querySelectorAll('.tip-box').forEach(box => {
-                if (box !== btn.nextElementSibling) box.style.display = 'none';
-            });
+        window.toggleRow = function (index) {
+            if (window.innerWidth >= 1200) return; // Disable natively on XL
+            const expandRow = document.getElementById(`expand-${index}`);
+            const chevron = document.getElementById(`chev-${index}`);
+            if (expandRow.classList.contains('d-none')) {
+                expandRow.classList.remove('d-none');
+                if (chevron) chevron.style.transform = 'rotate(180deg)';
+            } else {
+                expandRow.classList.add('d-none');
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+            }
+        };
+
+        window.toggleTip = function (btn) {
+            document.querySelectorAll('.tip-box').forEach(box => { if (box !== btn.nextElementSibling) box.style.display = 'none'; });
             let box = btn.nextElementSibling;
             let isOpening = box.style.display !== 'block';
-
             if (isOpening) {
                 box.style.display = 'block';
                 if (window.innerWidth > 768) {
-                    let btnRect = btn.getBoundingClientRect();
-                    let boxWidth = box.offsetWidth;
-                    let boxHeight = box.offsetHeight;
-                    
+                    let btnRect = btn.getBoundingClientRect(), boxWidth = box.offsetWidth, boxHeight = box.offsetHeight;
                     box.style.top = (btn.offsetTop - (boxHeight / 2) + (btn.offsetHeight / 2)) + "px";
-                    
-                    if (btnRect.right + boxWidth + 30 > window.innerWidth) {
-                        box.style.left = (btn.offsetLeft - boxWidth - 10) + "px"; 
-                    } else {
-                        box.style.left = (btn.offsetLeft + btn.offsetWidth + 10) + "px";
-                    }
+                    if (btnRect.right + boxWidth + 30 > window.innerWidth) box.style.left = (btn.offsetLeft - boxWidth - 10) + "px";
+                    else box.style.left = (btn.offsetLeft + btn.offsetWidth + 10) + "px";
                 }
-            } else {
-                box.style.display = 'none';
-            }
-        }
+            } else { box.style.display = 'none'; }
+        };
 
         document.addEventListener('click', function (e) {
-            if (!e.target.closest('td')) {
-                document.querySelectorAll('.tip-box').forEach(box => box.style.display = 'none');
-            }
+            if (!e.target.closest('td')) document.querySelectorAll('.tip-box').forEach(box => box.style.display = 'none');
         });
+
+        // --- PROCESSING & RENDERING ---
+        function processAndRender() {
+            // 1. Filter
+            filteredFares = allFares.filter(e => {
+                if (state.month !== 'All' && state.month !== 'Filter By Month') {
+                    const eventMonth = new Date(e.travelDate).toLocaleString('en-US', { month: 'long' });
+                    if (eventMonth !== state.month) return false;
+                }
+                
+                if (state.search) {
+                    const sq = state.search;
+                    if (!(
+                        (e.sector && e.sector.toLowerCase().includes(sq)) ||
+                        (e.doj && e.doj.toLowerCase().includes(sq)) ||
+                        (e.priority && e.priority.toLowerCase().includes(sq))
+                    )) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+
+            // 2. Sort
+            filteredFares.sort((a, b) => {
+                let vA, vB;
+                switch (state.sortBy) {
+                    case 'sector': vA = (a.sector || "").toLowerCase(); vB = (b.sector || "").toLowerCase(); break;
+                    case 'doj': vA = new Date(a.travelDate || 0).getTime(); vB = new Date(b.travelDate || 0).getTime(); break;
+                    case 'priority': vA = (a.priority || "").toLowerCase(); vB = (b.priority || "").toLowerCase(); break;
+                    case 'airlinesCount': vA = a.airlinesCount; vB = b.airlinesCount; break;
+                    case 'flightCount': vA = a.hasFlightData ? a.flightCount : -1; vB = b.hasFlightData ? b.flightCount : -1; break;
+                    case 'totalStrength': vA = a.totalStrength; vB = b.totalStrength; break;
+                    case 'target': vA = a.target; vB = b.target; break;
+                    case 'achieved': vA = a.achieved; vB = b.achieved; break;
+                    case 'attemptCount': vA = a.attemptCount; vB = b.attemptCount; break;
+                    case 'targetFare': vA = a.targetFare; vB = b.targetFare; break;
+                    case 'avgPurFare': vA = a.avgPurFare; vB = b.avgPurFare; break;
+                    case 'lastOnlineFare': vA = a.lastOnlineFare; vB = b.lastOnlineFare; break;
+                    case 'entryDate': vA = new Date(a.lastOnlineFareEntryDate || 0).getTime(); vB = new Date(b.lastOnlineFareEntryDate || 0).getTime(); break;
+                    default: vA = new Date(a.travelDate || 0).getTime(); vB = new Date(b.travelDate || 0).getTime();
+                }
+                if (vA < vB) return state.sortOrder === 'asc' ? -1 : 1;
+                if (vA > vB) return state.sortOrder === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            // 3. Render
+            const container = document.getElementById('render-container');
+            if (filteredFares.length === 0) {
+                container.innerHTML = `
+                            <div class="text-center py-5 bg-white rounded-4 border shadow-sm my-5">
+                                <i data-lucide="search-x" class="text-muted mb-3" style="width: 3rem; height: 3rem; opacity: 0.5;"></i>
+                                <h4 class="fw-bold" style="color: var(--slate-800);">No fares found</h4>
+                                <p class="text-muted mb-0">Adjust your filters to see more results.</p>
+                            </div>`;
+            } else {
+                container.innerHTML = buildListView(filteredFares);
+            }
+            lucide.createIcons();
+        }
+
+        function getLink(item) {
+            return `/OccasionDetails/FareTrend?eventId=${currentEventId}&sector=${encodeURIComponent(item.sector)}&date=${encodeURIComponent(item.travelDate)}&sectorType=${encodeURIComponent(currentSectorType)}&lead=${encodeURIComponent(currentLead)}&year=@ViewBag.Year`;
+        }
+
+        // --- HTML BUILDER ---
+        // --- HTML BUILDER ---
+        function buildListView(records) {
+            const getIcon = (col) => {
+                const isActive = state.sortBy === col;
+                const icon = isActive ? (state.sortOrder === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down';
+                const activeCls = isActive ? 'active' : '';
+                return `<i data-lucide="${icon}" class="sort-icon ${activeCls}"></i>`;
+            };
+
+            let html = `
+                    <div class="d-flex justify-content-between align-items-center mb-3 px-1">
+                        <h5 class="fw-bold text-muted mb-0" style="font-size: 1rem;">
+                            Total Rows:
+                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1 ms-2 shadow-sm">${records.length}</span>
+                        </h5>
+                    </div>
+            
+                    <div class="modern-table-wrapper mb-5">
+                        <div class="table-responsive hide-scrollbar">
+                            <table class="modern-table">
+                                <thead>
+                                    <tr>
+                                        <th onclick="handleSort('sector')"><div class="d-flex align-items-center">Sector ${getIcon('sector')}</div></th>
+                                        <th onclick="handleSort('doj')"><div class="d-flex align-items-center">DOJ ${getIcon('doj')}</div></th>
+                                        <th onclick="handleSort('priority')" class="d-none d-sm-table-cell text-center"><div class="d-flex justify-content-center align-items-center">Priority ${getIcon('priority')}</div></th>
+                                        <th onclick="handleSort('airlinesCount')" class="d-none d-xl-table-cell text-center"><div class="d-flex justify-content-center align-items-center">Airlines ${getIcon('airlinesCount')}</div></th>
+                                        <th onclick="handleSort('flightCount')" class="d-none d-xl-table-cell text-center"><div class="d-flex justify-content-center align-items-center">Flight Count ${getIcon('flightCount')}</div></th>
+                                        <th onclick="handleSort('totalStrength')" class="d-none d-xxl-table-cell text-end"><div class="d-flex justify-content-end align-items-center">Strength ${getIcon('totalStrength')}</div></th>
+                                        <th onclick="handleSort('target')" class="d-none d-lg-table-cell text-end"><div class="d-flex justify-content-end align-items-center">Target ${getIcon('target')}</div></th>
+                                        <th onclick="handleSort('achieved')" class="text-end"><div class="d-flex justify-content-end align-items-center">Achieved ${getIcon('achieved')}</div></th>
+                                        <th onclick="handleSort('attemptCount')" class="d-none d-xl-table-cell text-center"><div class="d-flex justify-content-center align-items-center">Attempts ${getIcon('attemptCount')}</div></th>
+                                        <th onclick="handleSort('targetFare')" class="d-none d-xxl-table-cell text-end"><div class="d-flex justify-content-end align-items-center">Target Fare ${getIcon('targetFare')}</div></th>
+                                        <th onclick="handleSort('avgPurFare')" class="d-none d-lg-table-cell text-end"><div class="d-flex justify-content-end align-items-center">Avg Pur. Fare ${getIcon('avgPurFare')}</div></th>
+                                        <th onclick="handleSort('lastOnlineFare')" class="text-end"><div class="d-flex justify-content-end align-items-center">Online Fare ${getIcon('lastOnlineFare')}</div></th>
+                                        <th onclick="handleSort('entryDate')" class="d-none d-xxl-table-cell"><div class="d-flex align-items-center">Fare Entry Date ${getIcon('entryDate')}</div></th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+
+            records.forEach((item, index) => {
+                // Tooltip Builder
+                let tipBoxHtml = '';
+                if (item.airlineAchieved && Object.keys(item.airlineAchieved).length > 0) {
+                    let validAirlines = Object.entries(item.airlineAchieved).filter(([k]) => k && k.toLowerCase() !== 'total');
+                    let totalAch = validAirlines.reduce((sum, [code, count]) => sum + count, 0);
+                    let calcTotal = totalAch === 0 ? 1 : totalAch;
+                    let ths = '', countTds = '', pctTds = '';
+                    for (const [code, count] of validAirlines) {
+                        ths += `<th>${code}</th>`; countTds += `<td>${count}</td>`; pctTds += `<td>${Math.round((count / calcTotal) * 100)}%</td>`;
+                    }
+                    ths += `<th>Total</th>`; countTds += `<td style="font-weight: 800; color: #0ea5e9;">${totalAch}</td>`; pctTds += `<td style="font-weight: 800; color: #0ea5e9;">100%</td>`;
+                    tipBoxHtml = `<table class="tip-table"><thead><tr>${ths}</tr></thead><tbody><tr>${countTds}</tr><tr class="pct-row">${pctTds}</tr></tbody></table>`;
+                } else {
+                    const oldBreakdown = item.airlinesBreakdown ? item.airlinesBreakdown.map(a => `<li>${a}</li>`).join('') : '';
+                    tipBoxHtml = `<ul>${oldBreakdown}</ul>`;
+                }
+
+                // Priority Badge logic
+                let priorityBadgeClass = 'bg-secondary';
+                if (item.priority === 'High' || item.priority === 'P1') priorityBadgeClass = 'bg-danger text-white';
+                else if (item.priority === 'Medium' || item.priority === 'P2') priorityBadgeClass = 'bg-warning text-dark';
+                else if (item.priority === 'Weekend') priorityBadgeClass = 'bg-info text-white';
+                else priorityBadgeClass = 'bg-light text-dark border';
+                
+                // Flight count logic
+                let fCountDisp = item.hasFlightData ? item.flightCount : '<span class="badge bg-warning text-dark border">No Data</span>';
+
+                html += `
+                            <!-- Main Visible Row -->
+                            <tr class="main-row" onclick="toggleRow(${index})">
+                                <td class="fw-bolder" style="color: var(--brand-blue); font-size: 0.95rem;">${item.sector}</td>
+                                <td class="fw-bold text-dark text-nowrap">${item.doj}</td>
+                                <td class="d-none d-sm-table-cell text-center"><span class="badge ${priorityBadgeClass} px-2 py-1 shadow-sm">${item.priority || 'Normal'}</span></td>
+                                <td class="d-none d-xl-table-cell text-center text-muted fw-bold">${item.airlinesCount}</td>
+                                <td class="d-none d-xl-table-cell text-center text-muted">${fCountDisp}</td>
+                                <td class="d-none d-xxl-table-cell text-end text-muted">${formatNum(item.totalStrength)}</td>
+                                <td class="d-none d-lg-table-cell text-end fw-bold text-muted">${formatNum(item.target)}</td>
+                        
+                                <td class="text-end position-relative text-nowrap">
+                                    <div class="d-flex justify-content-end align-items-center">
+                                        <span class="fw-bolder" style="color: var(--slate-900); font-size: 1rem;">${formatNum(item.achieved)}</span>
+                                        <button class="btn btn-link p-0 ms-1 text-muted" onclick="event.stopPropagation(); toggleTip(this);"><i data-lucide="info" style="width:14px; height:14px;"></i></button>
+                                        <div class="tip-box text-start" onclick="event.stopPropagation();">${tipBoxHtml}</div>
+                                    </div>
+                                </td>
+                        
+                                <td class="d-none d-xl-table-cell text-center fw-bold text-primary">${item.attemptCount}</td>
+                                <td class="d-none d-xxl-table-cell text-end text-muted">₹${formatNum(item.targetFare)}</td>
+                                <td class="d-none d-lg-table-cell text-end fw-bold text-muted">₹${formatNum(item.avgPurFare)}</td>
+                                <td class="text-end">
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 fs-6 shadow-sm">
+                                        ${item.lastOnlineFare > 0 ? '₹' + formatNum(item.lastOnlineFare) : '-'}
+                                    </span>
+                                </td>
+                                <td class="d-none d-xxl-table-cell text-muted text-nowrap" style="font-size: 0.75rem;">${item.lastOnlineFareEntryDate || '-'}</td>
+
+                                <td class="text-center">
+                                    <a href="${getLink(item)}" class="d-none d-xl-inline-flex btn btn-sm btn-outline-primary fw-bold px-3 border border-primary text-decoration-none shadow-sm text-nowrap" onclick="event.stopPropagation();">
+                                        Chart &rarr;
+                                    </a>
+                                    <button class="d-xl-none btn btn-light btn-sm border text-muted shadow-sm px-2">
+                                        <i data-lucide="chevron-down" id="chev-${index}" class="chevron-icon" style="width: 1.25rem; height: 1.25rem;"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                    
+                            <!-- Expanded Details Row (Mobile/Tablet/Laptop Only) -->
+                            <tr id="expand-${index}" class="expanded-row d-none d-xl-none">
+                                <td colspan="14" class="p-0 border-0">
+                                    <div class="p-4" style="background-color: rgba(248, 250, 252, 0.5);">
+                                        <div class="row g-3">
+                                            <div class="col-6 d-sm-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Priority</div><span class="badge ${priorityBadgeClass}">${item.priority || 'Normal'}</span></div>
+                                            <div class="col-6 d-xl-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Airlines</div><div class="fw-bold text-dark">${item.airlinesCount}</div></div>
+                                            <div class="col-6 d-xl-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Flight Count</div><div class="fw-bold text-dark">${fCountDisp}</div></div>
+                                            <div class="col-6 d-xxl-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Total Strength</div><div class="fw-bold text-dark">${formatNum(item.totalStrength)}</div></div>
+                                            <div class="col-6 d-lg-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Target Seats</div><div class="fw-bold text-dark">${formatNum(item.target)}</div></div>
+                                            <div class="col-6 d-xl-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Attempt Count</div><div class="fw-bold text-primary">${item.attemptCount}</div></div>
+                                            <div class="col-6 d-xxl-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Target Fare</div><div class="fw-bold text-muted">₹${formatNum(item.targetFare)}</div></div>
+                                            <div class="col-6 d-lg-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Avg Pur. Fare</div><div class="fw-bold text-dark">₹${formatNum(item.avgPurFare)}</div></div>
+                                            <div class="col-6 d-xxl-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Fare Entry Date</div><div class="fw-bold text-muted" style="font-size: 0.75rem;">${item.lastOnlineFareEntryDate || '-'}</div></div>
+                                        </div>
+                                        <div class="mt-4 pt-3 border-top border-light">
+                                            <a href="${getLink(item)}" class="btn btn-white w-100 fw-bold border text-primary d-flex align-items-center justify-content-center gap-2 shadow-sm text-decoration-none py-2" style="background: white;">
+                                                View Fare Chart <i data-lucide="arrow-right" style="width: 1rem; height: 1rem;"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+            });
+
+            html += `</tbody></table></div></div>`;
+            return html;
+        }
     </script>
 }

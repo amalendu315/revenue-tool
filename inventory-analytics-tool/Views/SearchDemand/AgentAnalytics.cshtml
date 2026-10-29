@@ -1,0 +1,802 @@
+﻿@{
+    ViewData["Title"] = "Agent Analytics Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+    body[data-layout="horizontal"] .page-content, .page-content {
+        padding-top: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        padding-bottom: 60px !important;
+    }
+
+    :root {
+        --brand-blue: #1076bb;
+        --brand-red: #f16367;
+        --slate-50: #f8fafc;
+        --slate-100: #f1f5f9;
+        --slate-200: #e2e8f0;
+        --slate-300: #cbd5e1;
+        --slate-400: #94a3b8;
+        --slate-500: #64748b;
+        --slate-600: #475569;
+        --slate-700: #334155;
+        --slate-800: #1e293b;
+        --slate-900: #0f172a;
+    }
+
+    .custom-scope {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--slate-50);
+        color: var(--slate-900);
+    }
+
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-up {
+        animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Hero Banner */
+    .hero-banner {
+        background: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-red) 100%);
+        padding-top: 2.5rem;
+        padding-bottom: 7rem;
+        position: relative;
+    }
+
+    .hero-pattern {
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0);
+        background-size: 24px 24px;
+    }
+
+    /* Modern Inputs */
+    .modern-input, .modern-select {
+        background-color: var(--slate-50);
+        border: 1px solid var(--slate-200);
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+        color: var(--slate-800);
+        font-size: 0.875rem;
+        font-weight: 500;
+        height: 38px;
+        transition: all 0.2s;
+        outline: none;
+        width: 100%;
+    }
+
+        .modern-input:focus, .modern-select:focus {
+            background-color: #fff;
+            border-color: var(--brand-blue);
+            box-shadow: 0 0 0 4px rgba(16, 118, 187, 0.1);
+        }
+    
+    .input-icon-wrapper {
+        position: relative;
+    }
+
+        .input-icon-wrapper .lucide {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--slate-400);
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .input-icon-wrapper input {
+            padding-left: 2.5rem;
+        }
+
+    /* Select2 Modern Override */
+    .select2-container--default .select2-selection--single {
+        background-color: var(--slate-50) !important;
+        border: 1px solid var(--slate-200) !important;
+        border-radius: 0.5rem !important;
+        height: 38px !important;
+        display: flex;
+        align-items: center;
+        outline: none;
+        box-shadow: none !important;
+        transition: all 0.2s;
+    }
+
+    .select2-container--open .select2-selection--single {
+        background-color: #fff !important;
+        border-color: var(--brand-blue) !important;
+        box-shadow: 0 0 0 4px rgba(16, 118, 187, 0.1) !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--slate-800) !important;
+        font-weight: 500 !important;
+        font-size: 0.875rem;
+        padding-left: 0.75rem !important;
+        line-height: normal !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 38px !important;
+        right: 0.5rem !important;
+    }
+
+    .select2-dropdown {
+        border: 1px solid var(--slate-200) !important;
+        border-radius: 0.5rem !important;
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1) !important;
+        overflow: hidden;
+        font-size: 0.875rem;
+        z-index: 1060;
+    }
+
+    /* Analytics Panels & Cards */
+    .analytics-panel {
+        background: #ffffff;
+        border-radius: 1rem;
+        border: 1px solid var(--slate-200);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        padding: 1.5rem;
+        height: 100%;
+    }
+
+    .hover-card {
+        transition: all 0.3s ease;
+    }
+
+        .hover-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04) !important;
+            border-color: rgba(16, 118, 187, 0.3) !important;
+        }
+
+    .chart-container {
+        position: relative;
+        height: 320px;
+        width: 100%;
+    }
+
+    .legend-scroll {
+        max-height: 150px;
+        overflow-y: auto;
+        margin-top: 1rem;
+        font-size: 0.8125rem;
+    }
+
+    .legend-row {
+        display: flex;
+        align-items: center;
+        padding: 0.25rem 0;
+        border-bottom: 1px solid var(--slate-100);
+    }
+
+    /* Custom Table Styling */
+    .modern-table-wrapper {
+        background: #ffffff;
+        border-radius: 1rem;
+        border: 1px solid var(--slate-200);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .modern-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        font-size: 0.8125rem;
+        white-space: nowrap;
+    }
+
+        .modern-table thead th {
+            background-color: var(--slate-50);
+            color: var(--slate-600);
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--slate-200);
+            user-select: none;
+        }
+
+        .modern-table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--slate-700);
+            font-weight: 500;
+        }
+
+        .modern-table tbody tr {
+            transition: background-color 0.2s;
+        }
+
+            .modern-table tbody tr:hover {
+                background-color: var(--slate-50);
+            }
+</style>
+
+<div class="page-content custom-scope pb-5">
+    
+    <!-- 1. HERO BANNER -->
+    <div class="hero-banner px-3">
+        <div class="hero-pattern"></div>
+        <div class="container-fluid position-relative z-1" style="max-width: 1800px;">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">
+                
+                <div class="d-flex align-items-center gap-3">
+                    <!-- BACK BUTTON -->
+                    <a href="/SearchPulse/Overview" class="btn btn-light d-flex align-items-center justify-content-center p-0 rounded-circle shadow-sm flex-shrink-0" style="width: 3rem; height: 3rem; color: var(--brand-blue);" title="Back to Overview">
+                        <i data-lucide="arrow-left" style="width: 1.25rem; height: 1.25rem;"></i>
+                    </a>
+
+                    <div class="text-white">
+                        <p class="fw-bold text-uppercase mb-1" style="font-size: 0.75rem; letter-spacing: 0.05em; color: rgba(255,255,255,0.7);">Agent Analytics</p>
+                        <h1 class="fw-bolder mb-2 d-flex align-items-center gap-2 text-white" style="font-size: 2.25rem;">
+                            <i data-lucide="users" style="width: 2rem; height: 2rem; opacity: 0.9;"></i> Agent Performance
+                        </h1>
+                        <p class="mb-0 fw-medium opacity-75" style="font-size: 1.125rem; max-width: 600px;">
+                            Compare a selected account’s latency and demand with all-account behavior.
+                        </p>
+                    </div>
+                </div>
+
+                <div>
+                    <button class="btn btn-light shadow-sm fw-bold d-flex align-items-center gap-2 px-4" id="btnDownload" style="height: 38px; border-radius: 0.5rem; color: var(--brand-blue);" disabled>
+                        <i data-lucide="download" style="width: 1rem; height: 1rem;"></i> Download Log
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. FILTER BAR -->
+    <div class="container-fluid position-relative px-3" style="max-width: 1600px; margin-top: -3.5rem; z-index: 10;">
+        <div class="card border-0 rounded-4 shadow-sm p-4 mb-4">
+            
+            <form id="agentFiltersForm" class="row g-3 align-items-end">
+                <!-- Top Row: Primary Filters -->
+                <div class="col-12 col-xl-4">
+                    <label class="form-label text-muted text-xxs fw-bold text-uppercase mb-1">Account</label>
+                    <select id="filterAccount" class="modern-select" required>
+                        <option value="">Loading accounts...</option>
+                    </select>
+                </div>
+                
+                <div class="col-12 col-md-6 col-xl-4">
+                    <label class="form-label text-muted text-xxs fw-bold text-uppercase mb-1">From</label>
+                    <div class="input-icon-wrapper">
+                        <i data-lucide="calendar"></i>
+                        <input type="datetime-local" id="filterFrom" class="modern-input">
+                    </div>
+                </div>
+                
+                <div class="col-12 col-md-6 col-xl-4">
+                    <label class="form-label text-muted text-xxs fw-bold text-uppercase mb-1">To</label>
+                    <div class="input-icon-wrapper">
+                        <i data-lucide="calendar"></i>
+                        <input type="datetime-local" id="filterTo" class="modern-input">
+                    </div>
+                </div>
+
+                <!-- Bottom Row: Secondary Filters & Button -->
+                <div class="col-6 col-md-3 col-xl-2 mt-xl-3">
+                    <label class="form-label text-muted text-xxs fw-bold text-uppercase mb-1">Threshold</label>
+                    <input type="number" id="filterThreshold" class="modern-input" value="3000" min="0" placeholder="ms">
+                </div>
+                
+                <div class="col-6 col-md-3 col-xl-2 mt-xl-3">
+                    <label class="form-label text-muted text-xxs fw-bold text-uppercase mb-1">Origin</label>
+                    <input type="text" id="filterOrigin" class="modern-input text-uppercase" placeholder="DEL" maxlength="3">
+                </div>
+                
+                <div class="col-6 col-md-3 col-xl-2 mt-xl-3">
+                    <label class="form-label text-muted text-xxs fw-bold text-uppercase mb-1">Dest</label>
+                    <input type="text" id="filterDest" class="modern-input text-uppercase" placeholder="DXB" maxlength="3">
+                </div>
+                
+                <div class="col-6 col-md-3 col-xl-3 mt-xl-3">
+                    <label class="form-label text-muted text-xxs fw-bold text-uppercase mb-1">Route Type</label>
+                    <select id="filterType" class="modern-select cursor-pointer">
+                        <option value="all">All routes</option>
+                        <option value="domestic">Domestic</option>
+                        <option value="international">International</option>
+                        <option value="unknown">Unknown</option>
+                    </select>
+                </div>
+                
+                <div class="col-12 col-xl-3 mt-4 mt-xl-3 d-flex align-items-end">
+                    <button type="submit" id="btnSearch" class="btn text-white w-100 shadow-sm d-flex align-items-center justify-content-center gap-2" style="background-color: var(--brand-blue); font-weight: 700; height: 38px; border-radius: 0.5rem; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#0e65a0'" onmouseout="this.style.backgroundColor='var(--brand-blue)'" disabled>
+                        <i data-lucide="search" style="width: 1.1rem; height: 1.1rem;"></i> Search Agent
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 3. MAIN CONTENT STATES -->
+        <div id="loadingState" class="text-center py-5 bg-white rounded-4 border shadow-sm my-4 d-none animate-fade-up">
+            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+            <h4 class="fw-bold" style="color: var(--slate-800);">Loading agent analytics...</h4>
+            <p class="text-muted mb-0">Querying database for traffic and latency logs.</p>
+        </div>
+
+        <div id="errorState" class="alert alert-danger rounded-4 d-none shadow-sm fw-bold my-4 animate-fade-up" role="alert"></div>
+
+        <div id="emptyState" class="text-center py-5 bg-white rounded-4 border shadow-sm my-4 animate-fade-up">
+            <i data-lucide="user" class="text-muted mb-3" style="width: 3rem; height: 3rem; opacity: 0.5;"></i>
+            <h4 class="fw-bold" style="color: var(--slate-800);">Select an account</h4>
+            <p class="text-muted mb-0">Account IDs load automatically. Select one, optionally add filters, then click <b>Search Agent</b>.</p>
+        </div>
+
+        <!-- DASHBOARD CONTAINER -->
+        <div id="dashboardState" class="d-none animate-fade-up">
+            
+            <div class="d-flex align-items-center gap-2 mb-4 bg-white p-3 rounded-3 shadow-sm border w-100">
+                <i data-lucide="clock" class="text-primary" style="width: 1.25rem; height: 1.25rem;"></i>
+                <p class="text-muted fw-medium mb-0 fs-6">
+                    Data available: <b class="text-dark" id="txtDataFrom"></b> to <b class="text-dark" id="txtDataTo"></b>
+                    <span class="mx-2 opacity-25">•</span> <span class="fw-bold text-primary"><span id="txtInterval"></span>-minute</span> aggregation
+                </p>
+            </div>
+
+            <!-- KPI Grid -->
+            <div class="row g-4 mb-4" id="kpiGrid">
+                <!-- Injected via JS -->
+            </div>
+
+            <!-- Chart Row 1 -->
+            <div class="row g-4 mb-4">
+                <div class="col-12 col-xl-8">
+                    <div class="analytics-panel">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div>
+                                <p class="text-primary fw-bold text-uppercase mb-1" style="font-size: 0.7rem;">Time Series</p>
+                                <h4 class="fw-bold text-dark mb-0">Response time vs Network average</h4>
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2" onclick="charts.agentArea.resetZoom()">
+                                <i data-lucide="zoom-out" style="width: 14px; height: 14px;"></i> Reset Zoom
+                            </button>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chartAgentArea"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-xl-4">
+                    <div class="analytics-panel d-flex flex-column">
+                        <div class="mb-4">
+                            <p class="text-primary fw-bold text-uppercase mb-1" style="font-size: 0.7rem;">Distribution</p>
+                            <h4 class="fw-bold text-dark mb-0">Response time buckets</h4>
+                        </div>
+                        <div class="chart-container" style="height: 250px;">
+                            <canvas id="chartAgentDist"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Row 2 -->
+            <div class="row g-4 mb-4">
+                <div class="col-12">
+                    <div class="analytics-panel">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div>
+                                <h4 class="fw-bold text-dark mb-0">Search count over time</h4>
+                                <small class="text-muted">Agent search frequency</small>
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2" onclick="charts.agentCount.resetZoom()">
+                                <i data-lucide="zoom-out" style="width: 14px; height: 14px;"></i> Reset Zoom
+                            </button>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chartAgentCount"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Row 3 -->
+            <div class="row g-4 mb-4">
+                <div class="col-12">
+                    <div class="analytics-panel">
+                        <div class="mb-4">
+                            <h4 class="fw-bold text-dark mb-0">Departure date distribution (Bubble)</h4>
+                            <small class="text-muted"><i data-lucide="info" class="text-info d-inline-block align-middle" style="width:14px; height:14px;"></i> X = Departure Date, Y = Searches, Size = Response Time</small>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chartAgentBubble"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SKYSCANNER MATCH TABLE -->
+            <div id="skyscannerSection" class="analytics-panel mb-4 d-none">
+                <div class="d-flex justify-content-between align-items-start mb-4">
+                    <div>
+                        <p class="text-primary fw-bold text-uppercase mb-1" style="font-size: 0.7rem;">Skyscanner Correlation</p>
+                        <h4 class="fw-bold text-dark mb-1">Agent ↔ Skyscanner search matches</h4>
+                        <small class="text-muted fw-bold" id="skyMatchDetails">Loading...</small>
+                    </div>
+                </div>
+                <div class="modern-table-wrapper">
+                    <div class="table-responsive hide-scrollbar">
+                        <table class="modern-table w-100">
+                            <thead>
+                                <tr>
+                                    <th>Datetime</th>
+                                    <th class="text-end">Searches</th>
+                                    <th class="text-end">Match count</th>
+                                    <th class="text-center">Match %</th>
+                                    <th class="text-center">Detail</th>
+                                </tr>
+                            </thead>
+                            <tbody id="skyTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TOP 10 AGENTS CORRELATION CHART -->
+            <div class="analytics-panel mb-5">
+                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start mb-4 gap-3">
+                    <div>
+                        <p class="text-primary fw-bold text-uppercase mb-1" style="font-size: 0.7rem;">Top 10 Agents</p>
+                        <h4 class="fw-bold text-dark mb-0">Search count over time</h4>
+                    </div>
+                    <form id="topAgentsForm" class="d-flex flex-wrap gap-2">
+                        <input type="datetime-local" id="taFrom" class="modern-input" style="height: 38px; width: 200px;">
+                        <input type="datetime-local" id="taTo" class="modern-input" style="height: 38px; width: 200px;">
+                        <button type="submit" class="btn text-white fw-bold shadow-sm d-flex align-items-center gap-2" style="background-color: #10b981; height: 38px; border-radius: 0.5rem;" id="btnLoadTop">
+                            <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Load Top 10
+                        </button>
+                    </form>
+                </div>
+                <div class="chart-container d-none" id="topAgentsChartDiv">
+                    <canvas id="chartTopAgents"></canvas>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Skyscanner Detail -->
+<div class="modal fade" id="skyDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content rounded-4 border-0 shadow-lg p-3">
+            <div class="modal-header border-0 pb-0">
+                <div>
+                    <p class="text-primary fw-bold text-uppercase mb-1" style="font-size: 0.7rem;">Skyscanner match detail</p>
+                    <h4 class="modal-title fw-bold text-dark" id="skyModalTitle"></h4>
+                </div>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="skyModalLoader" class="text-center py-4">
+                    <div class="spinner-border text-primary"></div>
+                    <p class="text-muted mt-2 mb-0">Loading events...</p>
+                </div>
+                <p id="skyModalCount" class="text-muted fw-bold mb-3 d-none"></p>
+                
+                <div class="modern-table-wrapper d-none" id="skyModalTableDiv">
+                    <div class="table-responsive hide-scrollbar">
+                        <table class="modern-table w-100">
+                            <thead>
+                                <tr>
+                                    <th>Event time</th>
+                                    <th>Route</th>
+                                    <th>Departure date</th>
+                                    <th class="text-center">Skyscanner matched</th>
+                                    <th>Skyscanner search time</th>
+                                    <th class="text-end">Diff (ms)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="skyModalBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+    <script>
+        let charts = { agentArea: null, agentDist: null, agentCount: null, agentBubble: null, topAgents: null };
+        const palette = ["#4f46e5", "#0ea5e9", "#10b981", "#f59e0b", "#f43f5e", "#8b5cf6", "#06b6d4", "#84cc16", "#f97316", "#ec4899"];
+
+        const numFormat = (val) => new Intl.NumberFormat('en-IN').format(val || 0);
+        const compFormat = (val) => new Intl.NumberFormat('en-IN', { notation: "compact", maximumFractionDigits: 2 }).format(val || 0);
+        const msFormat = (val) => val != null ? `${numFormat(val)} ms` : "—";
+        const parseDate = (isoStr) => isoStr ? new Date(isoStr).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : "—";
+
+        $(document).ready(function () {
+            lucide.createIcons();
+
+            // Load 59k Agents efficiently into Select2
+            $.get('/SearchPulse/api/agents', function (res) {
+                const selectData = res.accounts.map(a => ({ id: a.accountId, text: `${a.accountName || 'Account ' + a.accountId} (${a.accountId})` }));
+                $('#filterAccount').empty().select2({
+                    data: selectData,
+                    placeholder: "Search by name or ID",
+                    allowClear: true
+                });
+                $('#btnSearch').prop('disabled', false);
+            });
+
+            $('#agentFiltersForm').on('submit', function (e) {
+                e.preventDefault();
+                fetchAgentData();
+            });
+
+            $('#topAgentsForm').on('submit', function (e) {
+                e.preventDefault();
+                fetchTopAgents();
+            });
+        });
+
+        function fetchAgentData() {
+            $('#emptyState, #dashboardState, #errorState, #skyscannerSection').addClass('d-none');
+            $('#loadingState').removeClass('d-none');
+            $('#btnSearch').prop('disabled', true).html('<div class="spinner-border spinner-border-sm me-2"></div> Loading...');
+
+            const accountId = $('#filterAccount').val();
+            const payload = {
+                from_date: $('#filterFrom').val(),
+                to_date: $('#filterTo').val(),
+                threshold: $('#filterThreshold').val(),
+                origin: $('#filterOrigin').val(),
+                destination: $('#filterDest').val(),
+                journeyType: $('#filterType').val()
+            };
+
+            $.ajax({
+                url: `/SearchPulse/api/agents/${accountId}/kpis`,
+                type: 'GET',
+                data: payload,
+                success: function (response) {
+                    $('#loadingState').addClass('d-none');
+                    $('#btnSearch').prop('disabled', false).html('<i data-lucide="search" style="width: 1.1rem; height: 1.1rem;"></i> Search Agent');
+                    if (!response.data_availability.has_data) {
+                        $('#emptyState').removeClass('d-none').find('h4').text("No results").siblings('p').text("This account has no data for the selected filters.");
+                    } else {
+                        renderDashboard(response);
+                        fetchSkyscannerMatch(accountId, payload.from_date, payload.to_date);
+                    }
+                    lucide.createIcons();
+                },
+                error: function (xhr) {
+                    $('#loadingState').addClass('d-none');
+                    $('#btnSearch').prop('disabled', false).html('<i data-lucide="search" style="width: 1.1rem; height: 1.1rem;"></i> Search Agent');
+                    $('#errorState').removeClass('d-none').text(xhr.responseJSON?.detail || "Failed to load agent data.");
+                    lucide.createIcons();
+                }
+            });
+        }
+
+        function renderDashboard(data) {
+            $('#dashboardState').removeClass('d-none');
+
+            $('#txtDataFrom').text(parseDate(data.data_availability.data_start_datetime));
+            $('#txtDataTo').text(parseDate(data.data_availability.data_end_datetime));
+            $('#txtInterval').text(data.chart_aggregation.interval_minutes);
+
+            const kpis = data.kpis;
+            $('#kpiGrid').html(`
+                        ${buildKpi("Total searches", compFormat(kpis.total_search_count), `Account ${data.account_id} · ${numFormat(kpis.total_search_count)}`)}
+                        ${buildKpi("Success rate", `${kpis.success_percentage}%`, `${numFormat(kpis.successful_search_count)} successful`)}
+                        ${buildKpi("P50 response time", msFormat(kpis.p50_response_time_ms), "Median latency")}
+                        ${buildKpi("P99 response time", msFormat(kpis.p99_response_time_ms), "99th percentile latency")}
+                        ${buildKpi("Max response time", msFormat(kpis.max_response_time_ms), parseDate(kpis.max_response_time_event_time))}
+                        ${buildKpi("Threshold exceeded", numFormat(kpis.threshold_exceeded_count), `Over ${data.filters.threshold_ms} ms`)}
+                        ${buildKpi("Most searched route", kpis.max_searched_route || "—", "For selected filters")}
+                    `);
+
+            Object.keys(charts).forEach(key => { if (charts[key]) charts[key].destroy(); });
+
+            renderAreaChart(data.response_time_series);
+            renderDistChart(data.response_time_distribution);
+            renderCountChart(data.search_count_series);
+            renderBubbleChart(data.departure_date_series);
+        }
+
+        function buildKpi(label, value, detail) {
+            return `
+                        <div class="col-12 col-sm-6 col-lg-3">
+                            <article class="bg-white border border-slate-200 rounded-4 p-4 shadow-sm h-100 d-flex flex-column justify-content-between hover-card">
+                                <div>
+                                    <p class="text-muted fw-bold text-uppercase mb-2" style="font-size: 0.7rem; letter-spacing: 0.05em;">${label}</p>
+                                    <div class="fw-bolder text-dark mb-1" style="font-size: 1.75rem; line-height: 1.2;">${value}</div>
+                                </div>
+                                <span class="text-muted fw-medium" style="font-size: 0.75rem;">${detail}</span>
+                            </article>
+                        </div>`;
+        }
+
+        const commonZoomOpts = {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 12 } } },
+                zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' } }
+            },
+            scales: {
+                x: { type: 'time', time: { unit: 'hour' }, grid: { color: 'rgba(226, 232, 240, 0.5)' }, ticks: { font: { family: 'Inter' } } },
+                y: { grid: { color: 'rgba(226, 232, 240, 1)' }, ticks: { font: { family: 'Inter' } } }
+            }
+        };
+
+        function renderAreaChart(series) {
+            const ctx = document.getElementById('chartAgentArea').getContext('2d');
+            charts.agentArea = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        { label: "Account Max", data: series.map(s => ({ x: new Date(s.event_time), y: s.max_response_time_ms })), borderColor: "#4f46e5", backgroundColor: "rgba(79, 70, 229, 0.16)", fill: true, tension: 0.2, pointRadius: 0 },
+                        { label: "Network Avg", data: series.map(s => ({ x: new Date(s.event_time), y: s.all_accounts_avg_response_time_ms })), borderColor: "#f59e0b", fill: false, tension: 0.2, pointRadius: 0 }
+                    ]
+                },
+                options: commonZoomOpts
+            });
+        }
+
+        function renderDistChart(dist) {
+            const ctx = document.getElementById('chartAgentDist').getContext('2d');
+            charts.agentDist = new Chart(ctx, {
+                type: 'doughnut',
+                data: { labels: dist.map(d => d.bucket), datasets: [{ data: dist.map(d => d.count), backgroundColor: palette, borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { family: 'Inter', size: 12 } } } }, cutout: '70%' }
+            });
+        }
+
+        function renderCountChart(series) {
+            const ctx = document.getElementById('chartAgentCount').getContext('2d');
+            charts.agentCount = new Chart(ctx, {
+                type: 'line',
+                data: { datasets: [{ label: "Searches", data: series.map(s => ({ x: new Date(s.event_time), y: s.search_count })), borderColor: "#10b981", backgroundColor: "rgba(16, 185, 129, 0.16)", fill: true, tension: 0.2, pointRadius: 0 }] },
+                options: commonZoomOpts
+            });
+        }
+
+        function renderBubbleChart(series) {
+            const ctx = document.getElementById('chartAgentBubble').getContext('2d');
+            charts.agentBubble = new Chart(ctx, {
+                type: 'bubble',
+                data: {
+                    datasets: [{
+                        label: 'Departure Volume',
+                        data: series.map(s => ({ x: new Date(s.departure_date), y: s.search_count, r: Math.min(Math.max(s.bubble_size / 50, 3), 20) })),
+                        backgroundColor: "rgba(236, 72, 153, 0.6)"
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { labels: { font: { family: 'Inter' } } } },
+                    scales: {
+                        x: { type: 'time', time: { unit: 'day' }, grid: { color: 'rgba(226, 232, 240, 0.5)' }, ticks: { font: { family: 'Inter' } } },
+                        y: { grid: { color: 'rgba(226, 232, 240, 1)' }, ticks: { font: { family: 'Inter' } } }
+                    }
+                }
+            });
+        }
+
+        function fetchSkyscannerMatch(accountId, from, to) {
+            $('#skyMatchDetails').html('<span class="spinner-border spinner-border-sm me-1"></span> Checking for Skyscanner matches...');
+            $('#skyscannerSection').removeClass('d-none');
+            
+            $.get(`/SearchPulse/api/agents/${accountId}/skyscanner-match`, { from_date: from, to_date: to }, function (data) {
+                $('#skyMatchDetails').text(`Match window: ${data.match_window_ms} ms · ${data.totals.match_percentage}% overall`);
+                let tbody = '';
+                data.buckets.forEach(b => {
+                    tbody += `<tr>
+                                        <td class="fw-bold text-dark">${parseDate(b.bucket_start)}</td>
+                                        <td class="text-end fw-bold text-muted">${numFormat(b.total_searches)}</td>
+                                        <td class="text-end fw-bold text-muted">${numFormat(b.matched_count)}</td>
+                                        <td class="text-center"><span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1">${b.match_percentage}%</span></td>
+                                        <td class="text-center"><button class="btn btn-sm btn-outline-primary fw-bold px-3 shadow-sm" onclick="openSkyModal(${accountId}, '${b.bucket_start}', ${data.chart_aggregation.interval_minutes})">View</button></td>
+                                    </tr>`;
+                });
+                $('#skyTableBody').html(tbody);
+            });
+        }
+
+        function openSkyModal(accountId, bucketStart, bucketMinutes) {
+            $('#skyModalTitle').text(parseDate(bucketStart));
+            $('#skyModalLoader').removeClass('d-none');
+            $('#skyModalTableDiv, #skyModalCount').addClass('d-none');
+            new bootstrap.Modal(document.getElementById('skyDetailModal')).show();
+
+            $.get(`/SearchPulse/api/agents/${accountId}/skyscanner-match/detail`, { bucket_start: bucketStart, bucket_minutes: bucketMinutes }, function (res) {
+                $('#skyModalLoader').addClass('d-none');
+                $('#skyModalCount').text(`Showing ${numFormat(res.events.length)} of ${numFormat(res.total_count)} searches ${res.truncated ? '(truncated)' : ''}`).removeClass('d-none');
+                
+                let tbody = '';
+                res.events.forEach(e => {
+                    const matchBadge = e.is_skyscanner_matched
+                        ? '<span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">Yes</span>'
+                        : '<span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1">No</span>';
+
+                    tbody += `<tr>
+                                        <td class="fw-bold text-dark">${parseDate(e.event_time)}</td>
+                                        <td class="fw-bolder text-primary">${e.route}</td>
+                                        <td class="fw-bold text-muted">${parseDate(e.departure_date)}</td>
+                                        <td class="text-center">${matchBadge}</td>
+                                        <td class="fw-bold text-muted">${e.skyscanner_search_time ? parseDate(e.skyscanner_search_time) : "—"}</td>
+                                        <td class="text-end fw-bold text-dark">${e.diff_ms == null ? "—" : numFormat(e.diff_ms)}</td>
+                                    </tr>`;
+                });
+                $('#skyModalBody').html(tbody);
+                $('#skyModalTableDiv').removeClass('d-none');
+            });
+        }
+
+        function fetchTopAgents() {
+            const btn = $('#btnLoadTop');
+            btn.prop('disabled', true).html('<div class="spinner-border spinner-border-sm me-2"></div> Loading...');
+            
+            $.get('/SearchPulse/api/agents/top-search-count', { from_date: $('#taFrom').val(), to_date: $('#taTo').val() }, function (data) {
+                btn.prop('disabled', false).html('<i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Load Top 10');
+                $('#topAgentsChartDiv').removeClass('d-none');
+                
+                let datasets = data.top_agents.map((agent, i) => {
+                    return {
+                        label: agent.account_name,
+                        data: data.series.filter(s => s.account_id === agent.account_id).map(s => ({ x: new Date(s.bucket_start), y: s.search_count })),
+                        borderColor: palette[i % palette.length],
+                        tension: 0.2, fill: false, pointRadius: 0
+                    };
+                });
+
+                if (data.skyscanner_series && data.skyscanner_series.length > 0) {
+                    datasets.push({
+                        label: "Skyscanner",
+                        data: data.skyscanner_series.map(s => ({ x: new Date(s.bucket_start), y: s.search_count })),
+                        borderColor: "#64748b", borderDash: [6, 4], fill: false, pointRadius: 0
+                    });
+                }
+
+                if (charts.topAgents) charts.topAgents.destroy();
+                const ctx = document.getElementById('chartTopAgents').getContext('2d');
+                charts.topAgents = new Chart(ctx, { type: 'line', data: { datasets }, options: commonZoomOpts });
+                lucide.createIcons();
+            });
+        }
+    </script>
+}

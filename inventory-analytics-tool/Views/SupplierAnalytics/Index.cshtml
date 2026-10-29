@@ -1,0 +1,612 @@
+﻿@model inventory_analytics_tool.Models.ViewModels.SupplierDashboardViewModel
+@{
+    ViewData["Title"] = "Supplier Sales & Inventory Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Select2 CSS (if needed elsewhere) & DataTables CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+
+    body[data-layout="horizontal"] .page-content, .page-content {
+        padding-top: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        padding-bottom: 60px !important;
+    }
+
+    :root {
+        --brand-blue: #1076bb;
+        --brand-red: #f16367;
+        --slate-50: #f8fafc;
+        --slate-100: #f1f5f9;
+        --slate-200: #e2e8f0;
+        --slate-300: #cbd5e1;
+        --slate-400: #94a3b8;
+        --slate-500: #64748b;
+        --slate-600: #475569;
+        --slate-700: #334155;
+        --slate-800: #1e293b;
+        --slate-900: #0f172a;
+    }
+
+    .custom-scope {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--slate-50);
+        color: var(--slate-900);
+    }
+    
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-up {
+        animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Hero Banner */
+    .hero-banner {
+        background: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-red) 100%);
+        padding-top: 2.5rem;
+        padding-bottom: 7rem;
+        position: relative;
+    }
+
+    .hero-pattern {
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0);
+        background-size: 24px 24px;
+    }
+
+    /* Preset Button Group Styling */
+    .preset-group .btn {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        padding: 0.5rem 1.25rem;
+        border: 1px solid var(--slate-200);
+        color: var(--slate-600);
+        background-color: #fff;
+    }
+
+        .preset-group .btn:hover {
+            background-color: var(--slate-50);
+        }
+
+        .preset-group .btn.active {
+            background-color: var(--brand-blue);
+            border-color: var(--brand-blue);
+            color: #fff;
+        }
+
+    /* Date Filter Box Styling */
+    .date-filter-box {
+        background-color: var(--slate-50);
+        border-radius: 0.75rem;
+        padding: 1rem;
+        height: 100%;
+    }
+
+    .date-label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: var(--slate-500);
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+        display: block;
+        letter-spacing: 0.05em;
+    }
+
+    .custom-date-wrap {
+        background-color: #fff;
+        border: 1px solid var(--slate-200);
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+    }
+
+        .custom-date-wrap input[type="date"] {
+            border: none;
+            box-shadow: none;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            color: var(--slate-700);
+            cursor: pointer;
+            height: 38px;
+            flex-grow: 1;
+        }
+
+            .custom-date-wrap input[type="date"]:focus {
+                background-color: var(--slate-50);
+                outline: none;
+            }
+
+        .custom-date-wrap .separator {
+            color: var(--slate-400);
+            font-size: 0.8125rem;
+            padding: 0 0.75rem;
+            font-weight: 600;
+        }
+    
+    .vs-circle {
+        width: 2.25rem;
+        height: 2.25rem;
+        background-color: var(--slate-800);
+        color: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 800;
+        margin: 0 auto;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    @@media (max-width: 1199.98px) {
+        .vs-container {
+            margin: 15px 0;
+        }
+
+        .generate-btn-container {
+            margin-top: 15px;
+        }
+    }
+
+    /* Summary Card Table */
+    .summary-card-wrapper {
+        background: #ffffff;
+        border-radius: 1rem;
+        border: 1px solid var(--slate-200);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+
+    .summary-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: center;
+        font-size: 0.875rem;
+        white-space: nowrap;
+    }
+
+        .summary-table thead th {
+            background-color: var(--slate-50);
+            color: var(--slate-600);
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1rem 0.75rem;
+            border-bottom: 1px solid var(--slate-200);
+        }
+
+        .summary-table tbody td {
+            padding: 1.25rem 0.75rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--slate-700);
+            font-weight: 500;
+        }
+    
+    /* DATATABLES SAAS OVERRIDES */
+    .modern-table-wrapper {
+        background: #ffffff;
+        border-radius: 1rem;
+        border: 1px solid var(--slate-200);
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        padding: 1.5rem;
+        overflow: hidden;
+    }
+
+    table.dataTable {
+        border-collapse: collapse !important;
+        width: 100% !important;
+        margin: 1rem 0 !important;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.875rem;
+    }
+
+        table.dataTable thead th {
+            background-color: var(--slate-50) !important;
+            color: var(--slate-600) !important;
+            font-size: 0.7rem !important;
+            font-weight: 700 !important;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.75rem 0.5rem !important;
+            border-bottom: 1px solid var(--slate-200) !important;
+            border-top: none !important;
+            text-align: center;
+        }
+
+        table.dataTable tbody td {
+            padding: 1rem 0.5rem !important;
+            vertical-align: middle !important;
+            border-bottom: 1px solid #f1f5f9 !important;
+            color: var(--slate-700) !important;
+            font-weight: 500;
+        }
+
+        table.dataTable tbody tr:hover td {
+            background-color: var(--slate-50) !important;
+        }
+
+        table.dataTable.no-footer {
+            border-bottom: none !important;
+        }
+    
+    .dataTables_info {
+        color: var(--slate-500) !important;
+        font-size: 0.8rem;
+        padding-top: 0 !important;
+        font-weight: 500;
+    }
+
+    .dataTables_length select, .dataTables_filter input {
+        border: 1px solid var(--slate-200);
+        border-radius: 0.5rem;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+        outline: none;
+        color: var(--slate-700);
+        background-color: var(--slate-50);
+        margin-left: 0.5rem;
+    }
+
+        .dataTables_filter input:focus {
+            border-color: var(--brand-blue);
+            box-shadow: 0 0 0 3px rgba(16,118,187,0.1);
+            background-color: #fff;
+        }
+
+    .dataTables_paginate .paginate_button {
+        padding: 0.25rem 0.75rem !important;
+        margin-left: 0.25rem !important;
+        border-radius: 0.5rem !important;
+        border: 1px solid var(--slate-200) !important;
+        background: white !important;
+        font-weight: 600 !important;
+        font-size: 0.75rem !important;
+        color: var(--slate-600) !important;
+    }
+
+        .dataTables_paginate .paginate_button:hover {
+            background: var(--slate-50) !important;
+            color: var(--brand-blue) !important;
+            border-color: var(--slate-300) !important;
+        }
+
+        .dataTables_paginate .paginate_button.current {
+            background: var(--brand-blue) !important;
+            color: white !important;
+            border-color: var(--brand-blue) !important;
+        }
+
+        .dataTables_paginate .paginate_button.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+    
+    .type-api {
+        color: var(--brand-blue);
+        background: #e0f2fe;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 0.7rem;
+        border: 1px solid #bae6fd;
+    }
+
+    .type-offline {
+        color: #10b981;
+        background: #ecfdf5;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 0.7rem;
+        border: 1px solid #a7f3d0;
+    }
+
+    .badge-r1 {
+        background-color: var(--slate-100);
+        color: var(--slate-700);
+        border: 1px solid var(--slate-200);
+    }
+
+    .badge-r2 {
+        background-color: #e0f2fe;
+        color: var(--brand-blue);
+        border: 1px solid #bae6fd;
+    }
+</style>
+
+<div class="page-content custom-scope pb-5">
+    
+    <!-- 1. HERO BANNER -->
+    <div class="hero-banner px-3">
+        <div class="hero-pattern"></div>
+        <div class="container-fluid position-relative z-1" style="max-width: 1800px;">
+            <div class="row align-items-center justify-content-between g-3">
+                <div class="col-12 col-lg-auto d-flex gap-3 align-items-center">
+                    <a href="/Dashboard/Index" class="btn btn-light d-flex align-items-center justify-content-center p-0 rounded-circle shadow-sm flex-shrink-0" style="width: 3rem; height: 3rem; color: var(--brand-blue);" title="Back to Dashboard">
+                        <i data-lucide="arrow-left" style="width: 1.25rem; height: 1.25rem;"></i>
+                    </a>
+                    <div class="text-white">
+                        <h1 class="fw-bolder mb-1 text-white" style="font-size: 2.25rem;">Supplier Performance: <span class="fw-medium opacity-75">Master Report</span></h1>
+                        <p class="mb-0 fw-medium opacity-75" style="font-size: 1rem;">Compare inventory availability against booked sales across multiple periods.</p>
+                    </div>
+                </div>
+                
+                <div class="col-12 col-lg-auto d-flex flex-wrap align-items-center gap-3 mt-3 mt-lg-0">
+                    <a href="/SupplierAnalytics/SectorInventoryReport" class="btn btn-light d-flex align-items-center shadow-sm fw-bold text-primary" style="height: 38px; padding: 0 1.5rem; border-radius: 0.5rem; gap: 0.5rem;">
+                        <i data-lucide="plane-takeoff" style="width: 1.1rem; height: 1.1rem;"></i> Sector Inventory
+                    </a>
+                    <div class="d-none d-md-block" style="width: 2px; height: 30px; background-color: rgba(255,255,255,0.2);"></div>
+                    <div class="btn-group preset-group shadow-sm" role="group" style="border-radius: 0.5rem; overflow: hidden; height: 38px;">
+                        <button type="button" id="btnDay" class="btn preset-btn" onclick="applyPreset('day', this)">Day Wise</button>
+                        <button type="button" id="btnWeek" class="btn preset-btn" onclick="applyPreset('week', this)">Week Wise</button>
+                        <button type="button" id="btnMonth" class="btn preset-btn" onclick="applyPreset('month', this)">Month Wise</button>
+                        <button type="button" id="btnCustom" class="btn preset-btn" onclick="toggleCustomMode(this)">Custom</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. CONTROL BAR (Custom Dates & Top Summary) -->
+    <div class="container-fluid position-relative px-3" style="max-width: 1600px; margin-top: -3.5rem; z-index: 10;">
+        
+        <!-- Custom Date Filter Form -->
+        <form id="filterForm" method="get" action="/SupplierAnalytics/Index">
+            <div id="customDateSection" style="display: none;" class="card border-0 rounded-4 shadow-sm p-4 mb-4">
+                <div class="row g-3 align-items-center">
+                    <div class="col-12 col-xl-5">
+                        <div class="date-filter-box mb-0">
+                            <span class="date-label">Compare Range 1</span>
+                            <div class="custom-date-wrap shadow-sm">
+                                <input type="date" id="r1Start" name="r1Start" value="@Context.Request.Query["r1Start"]" required />
+                                <span class="separator">to</span>
+                                <input type="date" id="r1End" name="r1End" value="@Context.Request.Query["r1End"]" required />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-xl-auto text-center mx-xl-2 vs-container">
+                        <div class="vs-circle">VS</div>
+                    </div>
+                    <div class="col-12 col-xl-4">
+                        <div class="date-filter-box mb-0">
+                            <span class="date-label">Compare Range 2</span>
+                            <div class="custom-date-wrap shadow-sm">
+                                <input type="date" id="r2Start" name="r2Start" value="@Context.Request.Query["r2Start"]" required />
+                                <span class="separator">to</span>
+                                <input type="date" id="r2End" name="r2End" value="@Context.Request.Query["r2End"]" required />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-xl-2 mt-4 mt-xl-0 text-end flex-grow-1 generate-btn-container">
+                        <button type="submit" class="btn text-white w-100 shadow-sm d-flex flex-column align-items-center justify-content-center" style="background-color: var(--brand-blue); font-weight: 700; height: 100%; min-height: 80px; border-radius: 0.75rem; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#0e65a0'" onmouseout="this.style.backgroundColor='var(--brand-blue)'">
+                            <i data-lucide="bar-chart-2" style="width: 1.5rem; height: 1.5rem; margin-bottom: 4px;"></i> Generate Comparison
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <!-- Top Level Summary Box -->
+        <div class="summary-card-wrapper animate-fade-up">
+            <div class="table-responsive hide-scrollbar">
+                <table class="summary-table" style="min-width: 700px;">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" class="align-middle border-end text-dark" style="font-size: 0.875rem;">Suppliers Sales</th>
+                            <th colspan="3" class="border-end text-dark fw-bold py-3" style="background-color: #f8fafc;">@Model.DateRange1Label</th>
+                            <th colspan="3" class="border-end text-dark fw-bold py-3" style="background-color: #e0f2fe;">@Model.DateRange2Label</th>
+                            <th rowspan="2" class="align-middle text-dark">Action</th>
+                        </tr>
+                        <tr>
+                            <th class="text-muted fw-bold py-2 bg-light">Pax</th>
+                            <th class="text-muted fw-bold py-2 bg-light">Amount (₹)</th>
+                            <th class="text-muted fw-bold border-end py-2 bg-light">Active Suppliers</th>
+                            <th class="text-muted fw-bold py-2" style="background-color: #f0f9ff;">Pax</th>
+                            <th class="text-muted fw-bold py-2" style="background-color: #f0f9ff;">Amount (₹)</th>
+                            <th class="text-muted fw-bold border-end py-2" style="background-color: #f0f9ff;">Active Suppliers</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="text-start fw-bolder text-primary border-end px-4">API</td>
+                            <td class="fw-bold text-muted">@Model.R1ApiPax</td>
+                            <td class="fw-bold text-muted">@Model.R1ApiAmount.ToString("N0")</td>
+                            <td class="border-end"><span class="badge badge-r1 px-2 py-1 fs-6">@Model.R1ApiActiveCount</span></td>
+                            <td class="fw-bolder text-dark">@Model.R2ApiPax</td>
+                            <td class="fw-bolder text-success">@Model.R2ApiAmount.ToString("N0")</td>
+                            <td class="border-end"><span class="badge badge-r2 px-2 py-1 fs-6">@Model.R2ApiActiveCount</span></td>
+                            <td>
+                                <a href="/SupplierAnalytics/SupplierList?type=API&r1Start=@Context.Request.Query["r1Start"]&r1End=@Context.Request.Query["r1End"]&r2Start=@Context.Request.Query["r2Start"]&r2End=@Context.Request.Query["r2End"]" class="btn btn-sm btn-outline-primary fw-bold px-3 rounded-pill d-inline-flex align-items-center gap-1 shadow-sm">
+                                    View API List <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-start fw-bolder text-success border-end px-4">OFFLINE</td>
+                            <td class="fw-bold text-muted">@Model.R1OfflinePax</td>
+                            <td class="fw-bold text-muted">@Model.R1OfflineAmount.ToString("N0")</td>
+                            <td class="border-end"><span class="badge badge-r1 px-2 py-1 fs-6">@Model.R1OfflineActiveCount</span></td>
+                            <td class="fw-bolder text-dark">@Model.R2OfflinePax</td>
+                            <td class="fw-bolder text-success">@Model.R2OfflineAmount.ToString("N0")</td>
+                            <td class="border-end"><span class="badge badge-r2 px-2 py-1 fs-6">@Model.R2OfflineActiveCount</span></td>
+                            <td>
+                                <a href="/SupplierAnalytics/SupplierList?type=Offline&r1Start=@Context.Request.Query["r1Start"]&r1End=@Context.Request.Query["r1End"]&r2Start=@Context.Request.Query["r2Start"]&r2End=@Context.Request.Query["r2End"]" class="btn btn-sm btn-outline-success fw-bold px-3 rounded-pill d-inline-flex align-items-center gap-1 shadow-sm">
+                                    View Offline List <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            lucide.createIcons();
+
+            // Initialize Original DataTables Plugin with Modern UI layout
+            $('#supplierTable').DataTable({
+                responsive: true,
+                paging: true,
+                pageLength: 25,
+                ordering: true,
+                dom: '<"row align-items-center mb-3"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6 text-md-end"f>>rt<"row align-items-center mt-3"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>><"clear">',
+                language: {
+                    search: "",
+                    searchPlaceholder: "Search suppliers..."
+                },
+                columnDefs: [
+                    { orderable: false, targets: -1 } // Disable sorting on Action column
+                ]
+            });
+
+            // If user manually edits a date, switch the preset badge to Custom
+            $('#filterForm input[type="date"]').on('change', function () {
+                $('.preset-btn').removeClass('active');
+                $('#btnCustom').addClass('active');
+            });
+            
+            // Check query params on load to determine what should be visible
+            determineActivePresetOnLoad();
+        });
+
+        // 1. Show inputs only for Custom Mode
+        function toggleCustomMode(btnElement) {
+            $('.preset-btn').removeClass('active');
+            $(btnElement).addClass('active');
+            $('#customDateSection').slideDown(); // Smoothly reveal the inputs
+        }
+
+        // 2. Functional Date Calculation & Auto-Submit
+        function applyPreset(type, btnElement) {
+            $('.preset-btn').removeClass('active');
+            $(btnElement).addClass('active');
+            $('#customDateSection').slideUp(); // Hide inputs if they were open
+
+            const today = new Date();
+            let r1Start, r1End, r2Start, r2End;
+
+            if (type === 'day') {
+                const yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+                r1Start = yesterday;
+                r1End = yesterday;
+                r2Start = today;
+                r2End = today;
+            }
+            else if (type === 'week') {
+                const currentDay = today.getDay() || 7;
+                r2Start = new Date(today);
+                r2Start.setDate(today.getDate() - currentDay + 1);
+                r2End = new Date(r2Start);
+                r2End.setDate(r2Start.getDate() + 6);
+
+                r1Start = new Date(r2Start);
+                r1Start.setDate(r1Start.getDate() - 7);
+                r1End = new Date(r2Start);
+                r1End.setDate(r1End.getDate() - 1);
+            }
+            else if (type === 'month') {
+                r2Start = new Date(today.getFullYear(), today.getMonth(), 1);
+                r2End = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                r1Start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                r1End = new Date(today.getFullYear(), today.getMonth(), 0);
+            }
+
+            // Set inputs
+            document.getElementById('r1Start').value = formatDate(r1Start);
+            document.getElementById('r1End').value = formatDate(r1End);
+            document.getElementById('r2Start').value = formatDate(r2Start);
+            document.getElementById('r2End').value = formatDate(r2End);
+
+            // Because the inputs are hidden, auto-submit the form instantly for them
+            document.getElementById('filterForm').submit();
+        }
+
+        // 3. Helper to format JS dates
+        function formatDate(dateObj) {
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // 4. Logic to read URL parameters and highlight the correct state on load
+        function determineActivePresetOnLoad() {
+            const params = new URLSearchParams(window.location.search);
+            const r1Start = params.get('r1Start');
+            const r2Start = params.get('r2Start');
+            
+            if (!r1Start || !r2Start) {
+                $('#btnMonth').addClass('active');
+                return; // Default state: Month selected, inputs hidden
+            }
+            
+            const today = new Date();
+            
+            const expectedThisMonthStart = formatDate(new Date(today.getFullYear(), today.getMonth(), 1));
+            if (r2Start === expectedThisMonthStart) {
+                $('#btnMonth').addClass('active');
+                return;
+            }
+
+            const currentDay = today.getDay() || 7;
+            const expectedThisWeekStart = new Date(today);
+            expectedThisWeekStart.setDate(today.getDate() - currentDay + 1);
+            if (r2Start === formatDate(expectedThisWeekStart)) {
+                $('#btnWeek').addClass('active');
+                return;
+            }
+
+            if (r2Start === formatDate(today)) {
+                $('#btnDay').addClass('active');
+                return;
+            }
+
+            // If it doesn't match standard presets, it was a custom search. Show the boxes!
+            $('#btnCustom').addClass('active');
+            $('#customDateSection').show();
+        }
+    </script>
+}

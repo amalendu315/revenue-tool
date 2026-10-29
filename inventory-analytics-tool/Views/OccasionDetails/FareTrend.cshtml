@@ -4,562 +4,802 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
 <style>
-    [data-layout=horizontal] .page-content {
-        margin-top: 20px;
-        margin-bottom: 20px;
+    body[data-layout="horizontal"] .page-content, .page-content {
+        padding-top: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        padding-bottom: 60px !important;
     }
 
-    .clickable-row {
-        cursor: pointer;
-        transition: background-color 0.2s ease;
+    :root {
+        --brand-blue: #1076bb;
+        --brand-red: #f16367;
+        --slate-50: #f8fafc;
+        --slate-100: #f1f5f9;
+        --slate-200: #e2e8f0;
+        --slate-300: #cbd5e1;
+        --slate-400: #94a3b8;
+        --slate-500: #64748b;
+        --slate-600: #475569;
+        --slate-700: #334155;
+        --slate-800: #1e293b;
+        --slate-900: #0f172a;
     }
 
-        .clickable-row:hover {
-            background-color: #f1f5f9 !important;
+    .custom-scope {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--slate-50);
+        color: var(--slate-900);
+    }
+
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
         }
 
-    /* --- SLEEK DATE PICKER FIXES --- */
-    .date-picker-wrapper {
-        cursor: pointer;
-        background-color: #fff;
-        transition: all 0.2s ease;
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
-        .date-picker-wrapper:hover {
-            border-color: #0b5ed7 !important;
-            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15) !important;
+    .animate-fade-up {
+        animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Hero Banner */
+    .hero-banner {
+        background: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-red) 100%);
+        padding-top: 2.5rem;
+        padding-bottom: 7rem;
+        position: relative;
+    }
+
+    .hero-pattern {
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0);
+        background-size: 24px 24px;
+    }
+
+    /* Modern Inputs */
+    .modern-input {
+        background-color: var(--slate-50);
+        border: 1px solid var(--slate-200);
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+        color: var(--slate-800);
+        font-size: 0.875rem;
+        font-weight: 500;
+        height: 38px;
+        transition: all 0.2s;
+        outline: none;
+        width: 100%;
+    }
+
+        .modern-input:focus {
+            background-color: #fff;
+            border-color: var(--brand-blue);
+            box-shadow: 0 0 0 4px rgba(16, 118, 187, 0.1);
         }
 
-        .date-picker-wrapper input[type="date"] {
+        .modern-input::placeholder {
+            color: var(--slate-400);
+        }
+    
+    .input-icon-wrapper {
+        position: relative;
+    }
+
+        .input-icon-wrapper .lucide {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--slate-400);
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .input-icon-wrapper input {
+            padding-left: 2.5rem;
+        }
+    
+    /* CUSTOM LIST VIEW TABLE STYLES */
+    .modern-table-wrapper {
+        background: #ffffff;
+        border-radius: 1rem;
+        border: 1px solid var(--slate-200);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .modern-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        font-size: 0.8125rem;
+        white-space: nowrap;
+    }
+
+        .modern-table thead th {
+            background-color: var(--slate-50);
+            color: var(--slate-600);
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--slate-200);
             cursor: pointer;
-            background-color: transparent;
+            user-select: none;
+            transition: background-color 0.2s;
         }
 
-            .date-picker-wrapper input[type="date"]:focus {
-                outline: none;
-                box-shadow: none;
+            .modern-table thead th:hover {
+                background-color: #e2e8f0;
             }
 
-            .date-picker-wrapper input[type="date"]::-webkit-calendar-picker-indicator,
-            .date-picker-wrapper input[type="date"]::-webkit-inner-spin-button,
-            .date-picker-wrapper input[type="date"]::-webkit-clear-button {
-                display: none;
-                -webkit-appearance: none;
+        .modern-table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--slate-700);
+            font-weight: 500;
+        }
+
+        .modern-table tbody tr.main-row {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+            .modern-table tbody tr.main-row:hover {
+                background-color: var(--slate-50);
             }
+
+        .modern-table tbody tr.expanded-row {
+            background-color: rgba(248, 250, 252, 0.6);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+    
+    .sort-icon {
+        width: 12px;
+        height: 12px;
+        transition: opacity 0.2s, color 0.2s;
+        opacity: 0.3;
+        margin-left: 4px;
+    }
+
+        .sort-icon.active {
+            opacity: 1;
+            color: var(--brand-blue);
+        }
+
+    .chevron-icon {
+        transition: transform 0.2s ease;
+    }
+
+    .text-xxs {
+        font-size: 0.65rem;
+    }
+
+    /* Chart specific styling */
+    .chart-card {
+        background: #ffffff;
+        border-radius: 1rem;
+        border: 1px solid var(--slate-200);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        position: relative;
+        z-index: 10;
+        margin-top: -3.5rem;
+    }
+
+    .flight-toggle-box {
+        background-color: var(--slate-50);
+        border: 1px solid var(--slate-200);
+        border-radius: 20px;
+        padding: 6px 15px 6px 40px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .flight-toggle-box:hover {
+            background-color: #fff;
+            border-color: var(--brand-blue);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
 </style>
 
-<div class="page-content">
-    <div class="container-fluid">
-
-        <div class="conatiner cox">
-            <div class="row">
-                <div class="col-12 d-flex justify-content-start align-items-center gap-3">
-                    <a href="/OccasionDetails/FareDetails?eventId=@ViewBag.EventId&sector=@Uri.EscapeDataString(ViewBag.Sector)&sectorType=@ViewBag.SectorType" class="btn btn-sm btn-light border shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" title="Back to Fare Details">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+<div class="page-content custom-scope pb-5">
+    
+    <!-- 1. HERO BANNER -->
+    <div class="hero-banner px-3">
+        <div class="hero-pattern"></div>
+        <div class="container-fluid position-relative z-1" style="max-width: 1800px;">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">
+                <div class="d-flex align-items-center gap-3">
+                    <a href="/OccasionDetails/FareDetails?eventId=@ViewBag.EventId&sector=@Uri.EscapeDataString(ViewBag.Sector)&sectorType=@ViewBag.SectorType&lead=@ViewBag.Lead"
+                       class="btn btn-light d-flex align-items-center justify-content-center p-0 rounded-circle shadow-sm flex-shrink-0" style="width: 3rem; height: 3rem; color: var(--brand-blue);" title="Back to Fare Details">
+                        <i data-lucide="arrow-left" style="width: 1.25rem; height: 1.25rem;"></i>
                     </a>
-                    <h4 class="mb-sm-0"> Flight Data: <span class="text-primary">@ViewBag.Sector</span> <small class="text-muted fs-5">(@Convert.ToDateTime(ViewBag.TravelDate).ToString("dd MMM yyyy"))</small></h4>
+                    <div class="text-white">
+                        <h1 class="fw-bolder mb-1 text-white" style="font-size: 2.25rem;">Flight Data: <span class="fw-medium opacity-75">@ViewBag.Sector</span></h1>
+                        <p class="mb-0 fw-medium opacity-75 d-flex align-items-center gap-2" style="font-size: 1rem;">
+                            <i data-lucide="calendar" style="width: 1rem; height: 1rem;"></i> @Convert.ToDateTime(ViewBag.TravelDate).ToString("dd MMM yyyy")
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="boxes position-relative bg-white shadow-sm rounded-4 p-4 mt-3 w-100">
+    <div class="container-fluid px-3" style="max-width: 1600px;">
+        
+        <!-- INITIAL LOADING OVERLAY -->
+        <div id="loading-overlay" class="text-center py-5 bg-white rounded-4 border shadow-sm my-4" style="position: relative; z-index: 10; margin-top: -3.5rem !important;">
+            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+            <h4 class="fw-bold" style="color: var(--slate-800);">Analyzing Flights...</h4>
+            <p class="text-muted mb-0">Fetching available airlines for @ViewBag.Sector on this date.</p>
+        </div>
 
-            <div id="loading-overlay" style="padding: 4rem; text-align: center;">
-                <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <h5 class="mt-3 text-muted">Analyzing Flights...</h5>
-                <p class="text-muted small">Fetching available airlines for @ViewBag.Sector on this date.</p>
-            </div>
+        <div id="error-overlay" style="display:none;" class="alert alert-danger rounded-4 border-0 shadow-sm mt-4">
+            <h5 class="fw-bold mb-2">Failed to load data</h5>
+            <p id="error-message" class="mb-0"></p>
+        </div>
 
-            <div id="error-overlay" style="display:none; padding: 2rem; background: #fff3f3; border: 1px solid #ffcdd2; border-radius: 8px; margin: 1rem 0;">
-                <h5 class="text-danger mb-2">Failed to load data</h5>
-                <p id="error-message" class="text-danger mb-0"></p>
-            </div>
-
-            <div id="flight-table-overlay" style="display:none; margin-bottom: 40px; width: 100%;">
-                <table id="flightTable" class="display responsive nowrap w-100" style="width:100%">
-                    <thead>
-                        <tr>
-                            <th>Sector</th>
-                            <th>DOJ</th>
-                            <th>Airline Code</th>
-                            <th>Flight Number</th>
-                            <th>Target Fare</th>
-                            <th>Latest Fare</th>
-                            <th>Latest Entry Date</th>
-                        </tr>
-                    </thead>
-                    <tbody id="flight-tbody">
-                    </tbody>
-                </table>
-            </div>
-
-            <div id="chart-loading" style="display:none; padding: 4rem; text-align: center;">
-                <div class="spinner-border text-success" style="width: 3rem; height: 3rem;" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <h5 class="mt-3 text-muted" id="chart-loading-text">Building Master Chart...</h5>
-                <p class="text-muted small">Extracting historical entry logs from database for all flights.</p>
-            </div>
-
-            <div id="chart-overlay" style="display:none; padding-top:20px; border-top: 2px dashed #e2e8f0; width: 100%;">
-                <h4 id="chartTitle" class="mb-3 text-dark fw-bold">Combined Fare Trend</h4>
-
-                <div class="bg-light border rounded-4 p-4 mb-4">
-                    <div class="row g-3 align-items-end justify-content-start">
-                        <div class="col-lg-3 col-md-4">
-                            <label class="form-label fw-bold text-muted small text-uppercase mb-2">From Entry Date</label>
-                            <div class="input-group shadow-sm date-picker-wrapper d-flex align-items-center" style="border-radius: 8px; overflow: hidden; border: 1px solid #dee2e6;" onclick="document.getElementById('startDate').showPicker()">
-                                <span class="input-group-text bg-white border-0 text-primary pe-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                                </span>
-                                <input type="date" id="startDate" class="form-control border-0 ps-2 fw-bold text-dark" style="height: 45px;" onclick="this.showPicker(); event.stopPropagation();">
-                            </div>
+        <!-- 2. REIMAGINED CHART SECTION (At the top) -->
+        <div id="main-content-overlay" style="display:none;" class="animate-fade-up">
+            
+            <div class="chart-card">
+                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-4 gap-3">
+                    <h4 class="mb-0 text-dark fw-bold d-flex align-items-center gap-2">
+                        <i data-lucide="line-chart" class="text-primary" style="width: 1.5rem; height: 1.5rem;"></i> Combined Fare Trend
+                    </h4>
+                    
+                    <!-- Chart Date Filters -->
+                    <div class="d-flex flex-wrap align-items-center gap-2 bg-light p-2 rounded-3 border">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="text-muted fw-bold text-xxs text-uppercase">From:</span>
+                            <input type="date" id="startDate" class="modern-input border-0 shadow-sm" style="height: 2.25rem; padding: 0.25rem 0.5rem;">
                         </div>
-                        <div class="col-lg-3 col-md-4">
-                            <label class="form-label fw-bold text-muted small text-uppercase mb-2">To Entry Date</label>
-                            <div class="input-group shadow-sm date-picker-wrapper d-flex align-items-center" style="border-radius: 8px; overflow: hidden; border: 1px solid #dee2e6;" onclick="document.getElementById('endDate').showPicker()">
-                                <span class="input-group-text bg-white border-0 text-primary pe-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                                </span>
-                                <input type="date" id="endDate" class="form-control border-0 ps-2 fw-bold text-dark" style="height: 45px;" onclick="this.showPicker(); event.stopPropagation();">
-                            </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="text-muted fw-bold text-xxs text-uppercase">To:</span>
+                            <input type="date" id="endDate" class="modern-input border-0 shadow-sm" style="height: 2.25rem; padding: 0.25rem 0.5rem;">
                         </div>
-                        <div class="col-lg-auto col-md-4">
-                            <button id="btnFilterChart" class="btn btn-primary w-100 shadow-sm d-flex align-items-center justify-content-center gap-2" style="border-radius: 8px; font-weight: 600; padding: 10px 20px; height: 45px;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"></path></svg>
-                                Reload Chart
-                            </button>
-                        </div>
+                        <button id="btnFilterChart" class="btn btn-primary shadow-sm d-flex align-items-center justify-content-center px-3" style="height: 2.25rem; font-weight: 600; font-size: 0.8rem; border-radius: 0.5rem;">
+                            Reload
+                        </button>
                     </div>
+                </div>
+                
+                <div class="d-flex align-items-center text-muted small mb-4">
+                    <i data-lucide="info" class="me-2 text-info" style="width: 1rem; height: 1rem;"></i>
+                    <span>Showing the latest <strong>15 unique entry days</strong> of recorded fare history by default. Fares plotted at ₹0 ensure no data drops are hidden.</span>
+                </div>
 
-                    <div class="mt-3 text-muted small d-flex align-items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2 text-info"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                        <span>Showing the latest <strong>15 unique entry days</strong> of recorded fare history by default. Fares plotted at ₹0 ensure no data drops are hidden.</span>
+                <!-- Flight Checkboxes -->
+                <div class="border-top pt-3 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <label class="form-label fw-bold text-muted text-xxs text-uppercase mb-0">Toggle Flights</label>
+                        <button id="btnToggleAll" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold px-3" onclick="toggleAllFlights()" style="font-size: 0.75rem;">
+                            Deselect All
+                        </button>
                     </div>
-
-                    <div class="mt-4 pt-3 border-top">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <label class="form-label fw-bold text-muted small text-uppercase mb-0">Toggle Flights</label>
-
-                            <button id="btnToggleAll" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold px-3" onclick="toggleAllFlights()" style="font-size: 12px; transition: all 0.2s;">
-                                Deselect All
-                            </button>
-                        </div>
-                        <div class="flight-toggles d-flex flex-wrap gap-2" id="flightTogglesContainer">
-                        </div>
+                    <div class="d-flex flex-wrap gap-2" id="flightTogglesContainer">
+                        <!-- Checkboxes injected via JS -->
                     </div>
                 </div>
 
-                <div class="chart-container w-100" style="position: relative; min-height: 500px; width: 100%;">
+                <!-- Chart Canvas -->
+                <div id="chart-loading" style="display:none; padding: 4rem; text-align: center;">
+                    <div class="spinner-border text-success mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+                    <h5 class="fw-bold" style="color: var(--slate-800);" id="chart-loading-text">Building Master Chart...</h5>
+                    <p class="text-muted mb-0">Extracting historical entry logs from database for all flights.</p>
+                </div>
+
+                <div id="chart-wrapper" style="position: relative; min-height: 400px; width: 100%;">
                     <canvas id="myChart"></canvas>
                 </div>
             </div>
-        </div>
 
+            <!-- 3. FLIGHT DATA TABLE (Below Chart) -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0 text-dark fw-bold d-flex align-items-center gap-2">
+                    <i data-lucide="plane" class="text-primary" style="width: 1.5rem; height: 1.5rem;"></i> Available Flights
+                </h4>
+                <div class="input-icon-wrapper" style="max-width: 300px; width: 100%;">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="tableSearch" placeholder="Search flights..." class="form-control modern-input w-100">
+                </div>
+            </div>
+
+            <div id="table-render-container" class="mb-5">
+                <!-- Table injected via JS -->
+            </div>
+            
+        </div>
     </div>
 </div>
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
+        // --- STATE & VARIABLES ---
+        let allFares = [];
+        let filteredFares = [];
         let globalRawData = [];
         let myChart = null;
 
         const currentEventId = @ViewBag.EventId;
-        const currentSector = '@ViewBag.Sector';
-        const currentTravelDate = '@ViewBag.TravelDate';
+        const currentSector = '@Html.Raw(ViewBag.Sector)';
+        const currentTravelDate = '@Html.Raw(ViewBag.TravelDate)';
         let allFlightsSelected = true;
-
         const chartColors = ['#1076bb', '#f16367', '#28a745', '#ffc107', '#6f42c1', '#fd7e14', '#20c997', '#e83e8c', '#0dcaf0'];
         function getColor(index) { return chartColors[index % chartColors.length]; }
 
-        // --- CREATE CUSTOM GRAPH PAPER MARKER (Dot + Outer Circle) ---
+        let tableState = {
+            search: '',
+            sortBy: 'flight',
+            sortOrder: 'asc'
+        };
+
+        const formatNum = (num) => (num || 0).toLocaleString('en-IN');
+        const formatYMD = (dateObj) => {
+            const y = dateObj.getFullYear();
+            const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const d = String(dateObj.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        };
+
+        // --- CUSTOM CANVAS MARKER FOR CHART ---
         const attemptMarkerCanvas = document.createElement('canvas');
         attemptMarkerCanvas.width = 18;
         attemptMarkerCanvas.height = 18;
         const ctxMarker = attemptMarkerCanvas.getContext('2d');
+        ctxMarker.beginPath(); ctxMarker.arc(9, 9, 7, 0, 2 * Math.PI);
+        ctxMarker.strokeStyle = '#dc3545'; ctxMarker.lineWidth = 1.5; ctxMarker.stroke();
+        ctxMarker.beginPath(); ctxMarker.arc(9, 9, 2.5, 0, 2 * Math.PI);
+        ctxMarker.fillStyle = '#dc3545'; ctxMarker.fill();
 
-        // Outer Circle
-        ctxMarker.beginPath();
-        ctxMarker.arc(9, 9, 7, 0, 2 * Math.PI);
-        ctxMarker.strokeStyle = '#dc3545'; // Bootstrap Danger Red so it stands out globally
-        ctxMarker.lineWidth = 1.5;
-        ctxMarker.stroke();
+        $(document).ready(function () {
+            lucide.createIcons();
 
-        // Inner Dot
-        ctxMarker.beginPath();
-        ctxMarker.arc(9, 9, 2.5, 0, 2 * Math.PI);
-        ctxMarker.fillStyle = '#dc3545';
-        ctxMarker.fill();
+            // Fetch Flight Data
+            fetch(`/OccasionDetails/GetFlightLevelFares?eventId=${currentEventId}&sector=${encodeURIComponent(currentSector)}&date=${encodeURIComponent(currentTravelDate)}&year=@ViewBag.Year`)
+                .then(res => res.json())
+                .then(result => {
+                    $('#loading-overlay').hide();
 
-        document.addEventListener('DOMContentLoaded', function () {
-        fetch(`/OccasionDetails/GetFlightLevelFares?eventId=${currentEventId}&sector=${encodeURIComponent(currentSector)}&date=${encodeURIComponent(currentTravelDate)}&year=2026`)
-        .then(res => res.json())
-        .then(result => {
-        document.getElementById('loading-overlay').style.display = 'none';
+                    if (!result.success || !result.data) { showError("Failed to fetch flight list from API."); return; }
+                    if (result.data.length === 0) { showError("No specific flight numbers available for this sector on the selected travel date."); return; }
 
-        if (!result.success || !result.data) {
-        showError("Failed to fetch flight list from API.");
-        return;
-        }
+                    allFares = result.data;
+                    $('#main-content-overlay').show();
+                    
+                    // Render Table
+                    processAndRenderTable();
 
-        if (result.data.length === 0) {
-        showError("No specific flight numbers available for this sector on the selected travel date.");
-        return;
-        }
+                    // Fetch Chart Data Bulk
+                    loadAllChartData(allFares);
+                })
+                .catch(err => {
+                    $('#loading-overlay').hide();
+                    showError("Network error: " + err.message);
+                });
 
-        document.getElementById('flight-table-overlay').style.display = 'block';
-        renderFlightTable(result.data);
+            // Bind Event Listeners
+            document.getElementById('tableSearch').addEventListener('input', (e) => {
+                tableState.search = e.target.value.toLowerCase().trim();
+                processAndRenderTable();
+            });
 
-        // Immediately bulk fetch history for all flights returned
-        loadAllChartData(result.data);
-        })
-        .catch(err => {
-        document.getElementById('loading-overlay').style.display = 'none';
-        showError("Network error: " + err.message);
+            document.getElementById('btnFilterChart').addEventListener('click', updateChartFilters);
         });
 
-        document.getElementById('btnFilterChart').addEventListener('click', updateChartFilters);
-        });
-
-        function renderFlightTable(data) {
-        if ($.fn.DataTable.isDataTable('#flightTable')) {
-        $('#flightTable').DataTable().destroy();
+        function showError(msg) {
+            $('#error-overlay').show();
+            let formattedMsg = msg;
+            if (msg.includes("Unauthorized") || msg.includes("401")) {
+                formattedMsg += "<br><br><strong style='color:#b71c1c;'>Security Note:</strong> Your Azure session token has expired. <br><br> <a href='/Login/Logout' class='btn btn-danger btn-sm'>Refresh Token</a>";
+            }
+            $('#error-message').html(formattedMsg);
         }
 
-        let table = $('#flightTable').DataTable({
-        responsive: true,
-        paging: false,
-        scrollY: "400px",
-        scrollCollapse: true,
-        language: { search: "_INPUT_", searchPlaceholder: "Search flights..." },
-        columnDefs: [
-        {
-        targets: 4,
-        render: function (data, type, row) {
-        if (type === 'display' || type === 'filter') {
-        return data > 0 ? '₹' + data.toLocaleString('en-IN') : 'N/A';
-        }
-        return data;
-        }
-        },
-        {
-        targets: 5,
-        render: function (data, type, row) {
-        if (type === 'display' || type === 'filter') {
-        return data > 0 ? '₹' + data.toLocaleString('en-IN') : 'N/A';
-        }
-        return data;
-        }
-        }
-        ]
-        });
-        table.clear();
+        // ==========================================
+        //         CUSTOM LIST TABLE ENGINE
+        // ==========================================
+        window.handleSort = function (column) {
+            if (tableState.sortBy === column) {
+                tableState.sortOrder = tableState.sortOrder === 'asc' ? 'desc' : 'asc';
+            } else {
+                tableState.sortBy = column;
+                tableState.sortOrder = 'asc';
+            }
+            processAndRenderTable();
+        };
 
-        const rowData = [];
-        data.forEach(item => {
-        rowData.push([
-        item.sector,
-        item.doj,
-        item.airlineCode,
-        item.flightNo,
-        item.targetFare,
-        item.latestFare,
-        item.entryDate
-        ]);
-        });
-        table.rows.add(rowData).draw();
+        window.toggleRow = function (index) {
+            if (window.innerWidth >= 1200) return;
+            const expandRow = document.getElementById(`expand-${index}`);
+            const chevron = document.getElementById(`chev-${index}`);
+            if (expandRow.classList.contains('d-none')) {
+                expandRow.classList.remove('d-none');
+                if (chevron) chevron.style.transform = 'rotate(180deg)';
+            } else {
+                expandRow.classList.add('d-none');
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+            }
+        };
+
+        function processAndRenderTable() {
+            filteredFares = allFares.filter(row => {
+                if (!tableState.search) return true;
+                const sq = tableState.search;
+                return (
+                    (row.airlineCode && row.airlineCode.toLowerCase().includes(sq)) ||
+                    (row.flightNo && row.flightNo.toLowerCase().includes(sq)) ||
+                    (row.sector && row.sector.toLowerCase().includes(sq))
+                );
+            });
+
+            filteredFares.sort((a, b) => {
+                let vA, vB;
+                switch (tableState.sortBy) {
+                    case 'sector': vA = (a.sector || "").toLowerCase(); vB = (b.sector || "").toLowerCase(); break;
+                    case 'doj': vA = new Date(a.doj || 0).getTime(); vB = new Date(b.doj || 0).getTime(); break;
+                    case 'airline': vA = (a.airlineCode || "").toLowerCase(); vB = (b.airlineCode || "").toLowerCase(); break;
+                    case 'flight': vA = (a.flightNo || "").toLowerCase(); vB = (b.flightNo || "").toLowerCase(); break;
+                    case 'target': vA = a.targetFare || 0; vB = b.targetFare || 0; break;
+                    case 'latest': vA = a.latestFare || 0; vB = b.latestFare || 0; break;
+                    case 'entry': vA = new Date(a.entryDate || 0).getTime(); vB = new Date(b.entryDate || 0).getTime(); break;
+                    default: vA = (a.flightNo || "").toLowerCase(); vB = (b.flightNo || "").toLowerCase();
+                }
+                if (vA < vB) return tableState.sortOrder === 'asc' ? -1 : 1;
+                if (vA > vB) return tableState.sortOrder === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            const container = document.getElementById('table-render-container');
+            if (filteredFares.length === 0) {
+                container.innerHTML = `<div class="text-center py-4 bg-white rounded-4 border text-muted">No flights match your search.</div>`;
+            } else {
+                container.innerHTML = buildFlightTable(filteredFares);
+            }
+            lucide.createIcons();
         }
 
-        function formatYMD(dateObj) {
-        const y = dateObj.getFullYear();
-        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-        const d = String(dateObj.getDate()).padStart(2, '0');
-        return `${y}-${m}-${d}`;
+        function buildFlightTable(records) {
+            const getIcon = (col) => {
+                const isActive = tableState.sortBy === col;
+                const icon = isActive ? (tableState.sortOrder === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down';
+                const activeCls = isActive ? 'active' : '';
+                return `<i data-lucide="${icon}" class="sort-icon ${activeCls}"></i>`;
+            };
+
+            let html = `
+                    <div class="modern-table-wrapper">
+                        <div class="table-responsive hide-scrollbar">
+                            <table class="modern-table">
+                                <thead>
+                                    <tr>
+                                        <th onclick="handleSort('sector')" class="d-none d-md-table-cell"><div class="d-flex align-items-center">Sector ${getIcon('sector')}</div></th>
+                                        <th onclick="handleSort('doj')" class="d-none d-lg-table-cell text-center"><div class="d-flex justify-content-center align-items-center">DOJ ${getIcon('doj')}</div></th>
+                                        <th onclick="handleSort('airline')" class="text-center"><div class="d-flex justify-content-center align-items-center">Airline Code ${getIcon('airline')}</div></th>
+                                        <th onclick="handleSort('flight')"><div class="d-flex align-items-center">Flight Number ${getIcon('flight')}</div></th>
+                                        <th onclick="handleSort('target')" class="text-end"><div class="d-flex justify-content-end align-items-center">Target Fare ${getIcon('target')}</div></th>
+                                        <th onclick="handleSort('latest')" class="text-end"><div class="d-flex justify-content-end align-items-center">Latest Fare ${getIcon('latest')}</div></th>
+                                        <th onclick="handleSort('entry')" class="d-none d-xl-table-cell"><div class="d-flex align-items-center">Latest Entry Date ${getIcon('entry')}</div></th>
+                                        <th class="text-center d-xl-none">More</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+
+            records.forEach((row, index) => {
+                const latestDisp = row.latestFare > 0 ? `<span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 fs-6 shadow-sm">₹${formatNum(row.latestFare)}</span>` : '<span class="text-muted fw-bold">N/A</span>';
+                const targetDisp = row.targetFare > 0 ? `₹${formatNum(row.targetFare)}` : 'N/A';
+                
+                html += `
+                            <tr class="main-row" onclick="toggleRow(${index})">
+                                <td class="d-none d-md-table-cell fw-bolder text-primary">${row.sector || '-'}</td>
+                                <td class="d-none d-lg-table-cell text-center text-muted fw-bold">${row.doj || '-'}</td>
+                                <td class="text-center fw-bold text-dark">${row.airlineCode || '-'}</td>
+                                <td class="fw-bolder" style="color: var(--slate-800);">${row.flightNo || '-'}</td>
+                                <td class="text-end text-muted fw-bold text-decoration-line-through">${targetDisp}</td>
+                                <td class="text-end">${latestDisp}</td>
+                                <td class="d-none d-xl-table-cell text-muted text-nowrap" style="font-size: 0.75rem;">${row.entryDate || '-'}</td>
+                                <td class="text-center d-xl-none">
+                                    <button class="btn btn-light btn-sm border text-muted shadow-sm px-2">
+                                        <i data-lucide="chevron-down" id="chev-${index}" class="chevron-icon" style="width: 1.25rem; height: 1.25rem;"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                    
+                            <tr id="expand-${index}" class="expanded-row d-none d-xl-none">
+                                <td colspan="8" class="p-0 border-0">
+                                    <div class="p-4" style="background-color: rgba(248, 250, 252, 0.5);">
+                                        <div class="row g-3">
+                                            <div class="col-6 d-md-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Sector</div><div class="fw-bold text-dark">${row.sector || '-'}</div></div>
+                                            <div class="col-6 d-lg-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">DOJ</div><div class="fw-bold text-dark">${row.doj || '-'}</div></div>
+                                            <div class="col-12 d-xl-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Latest Entry Date</div><div class="fw-bold text-muted" style="font-size: 0.75rem;">${row.entryDate || '-'}</div></div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+            });
+            html += `</tbody></table></div></div>`;
+            return html;
         }
 
-        // --- BULK FETCH CHART DATA ---
+        // ==========================================
+        //         CHART ENGINE
+        // ==========================================
         function loadAllChartData(flights) {
-        document.getElementById('chart-loading').style.display = 'block';
+            $('#chart-loading').show();
+            $('#chart-wrapper').hide();
 
-        // Map each flight to an individual fetch Promise
-        const fetchPromises = flights.map(f => {
-        const url = `/OccasionDetails/GetFareTrendChartData?sector=${encodeURIComponent(currentSector)}&date=${encodeURIComponent(currentTravelDate)}&airline=${encodeURIComponent(f.airlineCode)}&flightNo=${encodeURIComponent(f.flightNo)}`;
-        return fetch(url).then(r => r.json()).then(res => ({
-        flight: `${f.airlineCode} ${f.flightNo}`,
-        targetFare: f.targetFare,
-        success: res.success,
-        data: res.data || []
-        })).catch(() => ({ success: false })); // Failsafe
-        });
+            const fetchPromises = flights.map(f => {
+                const url = `/OccasionDetails/GetFareTrendChartData?sector=${encodeURIComponent(currentSector)}&date=${encodeURIComponent(currentTravelDate)}&airline=${encodeURIComponent(f.airlineCode)}&flightNo=${encodeURIComponent(f.flightNo)}`;
+                return fetch(url).then(r => r.json()).then(res => ({
+                    flight: `${f.airlineCode} ${f.flightNo}`,
+                    targetFare: f.targetFare,
+                    success: res.success,
+                    data: res.data || []
+                })).catch(() => ({ success: false }));
+            });
 
-        // Wait for all flight histories to download
-        Promise.all(fetchPromises).then(results => {
-        document.getElementById('chart-loading').style.display = 'none';
-        processChartData(results);
-        });
+            Promise.all(fetchPromises).then(results => {
+                $('#chart-loading').hide();
+                $('#chart-wrapper').show();
+                processChartData(results);
+            });
         }
 
         function processChartData(results) {
-        const validResults = results.filter(r => r.success && r.data.length > 0);
+            const validResults = results.filter(r => r.success && r.data.length > 0);
+            if (validResults.length === 0) {
+                $('#chart-loading-text').text("No historic fare entries found for any flights.");
+                $('#chart-loading').show();
+                $('#chart-loading .spinner-border').hide();
+                $('#chart-wrapper').hide();
+                return;
+            }
 
-        if (validResults.length === 0) {
-        document.getElementById('chart-loading-text').innerText = "No historic fare entries found for any flights.";
-        document.getElementById('chart-loading').style.display = 'block';
-        document.querySelector('#chart-loading .spinner-border').style.display = 'none';
-        return;
+            globalRawData = validResults.map(r => {
+                return {
+                    flight: r.flight,
+                    targetFare: r.targetFare,
+                    history: r.data.map(item => {
+                        const edStr = item.entryDate;
+                        const datePart = edStr.split('T')[0];
+                        const stableDateObj = new Date(datePart + 'T12:00:00');
+                        const ed = new Date(edStr.replace('T', ' '));
+                        return {
+                            label: ed.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ' ' + ed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                            date: datePart,
+                            rawDateObj: stableDateObj,
+                            fare: item.fare,
+                            attemptCount: item.attemptCount || 0
+                        };
+                    })
+                };
+            });
+
+            renderFlightToggles();
+
+            // Setup Dates
+            let allDates = [];
+            globalRawData.forEach(r => r.history.forEach(h => allDates.push(h.rawDateObj)));
+            allDates.sort((a, b) => a - b);
+            const maxDateObj = allDates[allDates.length - 1];
+            const minDateObj = allDates[0];
+            let targetStartObj = new Date(maxDateObj);
+            targetStartObj.setDate(targetStartObj.getDate() - 15);
+            if (targetStartObj < minDateObj) targetStartObj = minDateObj;
+
+            document.getElementById('startDate').min = formatYMD(minDateObj);
+            document.getElementById('startDate').max = formatYMD(maxDateObj);
+            document.getElementById('startDate').value = formatYMD(targetStartObj);
+            document.getElementById('endDate').min = formatYMD(minDateObj);
+            document.getElementById('endDate').max = formatYMD(maxDateObj);
+            document.getElementById('endDate').value = formatYMD(maxDateObj);
+
+            initChart();
+            updateChartFilters();
         }
 
-        globalRawData = validResults.map(r => {
-        return {
-        flight: r.flight,
-        targetFare: r.targetFare,
-        history: r.data.map(item => {
-        const edStr = item.entryDate;
-        const datePart = edStr.split('T')[0];
-        const stableDateObj = new Date(datePart + 'T12:00:00');
-        const ed = new Date(edStr.replace('T', ' '));
-        return {
-        label: ed.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ' ' + ed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        date: datePart,
-        rawDateObj: stableDateObj,
-        fare: item.fare,
-        attemptCount: item.attemptCount || 0
-        };
-        })
-        };
-        });
-
-        renderFlightToggles();
-
-        // Calculate Universal Start and End Dates
-        let allDates = [];
-        globalRawData.forEach(r => {
-        r.history.forEach(h => allDates.push(h.rawDateObj));
-        });
-        allDates.sort((a, b) => a - b);
-
-        const maxDateObj = allDates[allDates.length - 1];
-        const minDateObj = allDates[0];
-
-        let targetStartObj = new Date(maxDateObj);
-        targetStartObj.setDate(targetStartObj.getDate() - 15); // Changed to past 15 days
-
-        if (targetStartObj < minDateObj) {
-        targetStartObj = minDateObj;
-        }
-
-        document.getElementById('startDate').min = formatYMD(minDateObj);
-        document.getElementById('startDate').max = formatYMD(maxDateObj);
-        document.getElementById('startDate').value = formatYMD(targetStartObj);
-
-        document.getElementById('endDate').min = formatYMD(minDateObj);
-        document.getElementById('endDate').max = formatYMD(maxDateObj);
-        document.getElementById('endDate').value = formatYMD(maxDateObj);
-
-        document.getElementById('chart-overlay').style.display = 'block';
-
-        initChart();
-        updateChartFilters();
-        }
-
-        // Checkbox UI Generation
         function renderFlightToggles() {
-        const container = document.getElementById('flightTogglesContainer');
-        let html = '';
-        globalRawData.forEach((f, index) => {
-        const color = getColor(index);
-        html += `
-        <div class="form-check form-switch custom-switch" style="border: 1px solid #dee2e6; padding: 6px 15px 6px 40px; border-radius: 20px; background: #fff; cursor: pointer;">
-        <input class="form-check-input" type="checkbox" id="toggle_${index}" checked onchange="toggleFlight(${index})" style="cursor: pointer;">
-        <label class="form-check-label fw-bold" for="toggle_${index}" style="color: ${color}; cursor: pointer;">${f.flight}</label>
-        </div>`;
-        });
-        container.innerHTML = html;
+            const container = document.getElementById('flightTogglesContainer');
+            let html = '';
+            globalRawData.forEach((f, index) => {
+                const color = getColor(index);
+                html += `
+                        <div class="form-check form-switch custom-switch flight-toggle-box">
+                            <input class="form-check-input" type="checkbox" id="toggle_${index}" checked onchange="toggleFlight(${index})" style="cursor: pointer;">
+                            <label class="form-check-label fw-bold" for="toggle_${index}" style="color: ${color}; cursor: pointer; font-size: 0.8125rem;">${f.flight}</label>
+                        </div>`;
+            });
+            container.innerHTML = html;
         }
 
-        // Toggles visibility without reloading data
         function toggleFlight(index) {
-        if (myChart) {
-        const isChecked = document.getElementById(`toggle_${index}`).checked;
-        myChart.setDatasetVisibility(index, isChecked);
-        myChart.update();
-        }
+            if (myChart) {
+                const isChecked = document.getElementById(`toggle_${index}`).checked;
+                myChart.setDatasetVisibility(index, isChecked);
+                myChart.update();
+            }
         }
 
         function toggleAllFlights() {
-        allFlightsSelected = !allFlightsSelected;
+            allFlightsSelected = !allFlightsSelected;
+            const btn = document.getElementById('btnToggleAll');
+            btn.innerText = allFlightsSelected ? "Deselect All" : "Select All";
+            if (allFlightsSelected) btn.classList.replace('btn-outline-primary', 'btn-outline-secondary');
+            else btn.classList.replace('btn-outline-secondary', 'btn-outline-primary');
 
-        const btn = document.getElementById('btnToggleAll');
-        btn.innerText = allFlightsSelected ? "Deselect All" : "Select All";
-
-        if (allFlightsSelected) {
-        btn.classList.replace('btn-outline-primary', 'btn-outline-secondary');
-        } else {
-        btn.classList.replace('btn-outline-secondary', 'btn-outline-primary');
-        }
-
-        globalRawData.forEach((f, index) => {
-        const cb = document.getElementById(`toggle_${index}`);
-        if (cb) {
-        cb.checked = allFlightsSelected;
-        if (myChart) {
-        myChart.setDatasetVisibility(index, allFlightsSelected);
-        }
-        }
-        });
-
-        if (myChart) myChart.update();
+            globalRawData.forEach((f, index) => {
+                const cb = document.getElementById(`toggle_${index}`);
+                if (cb) {
+                    cb.checked = allFlightsSelected;
+                    if (myChart) myChart.setDatasetVisibility(index, allFlightsSelected);
+                }
+            });
+            if (myChart) myChart.update();
         }
 
         function initChart() {
-        const ctx = document.getElementById('myChart').getContext('2d');
-        if (myChart) myChart.destroy();
+            const ctx = document.getElementById('myChart').getContext('2d');
+            if (myChart) myChart.destroy();
 
-        myChart = new Chart(ctx, {
-        type: 'line',
-        data: { labels: [], datasets: [] },
-        options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-
-        onClick: (e, activeElements) => {
-        if (activeElements.length > 0) {
-        const element = activeElements[0];
-        const dataset = myChart.data.datasets[element.datasetIndex];
-        const attemptCount = dataset.attemptData[element.index];
-
-        if (attemptCount > 0) {
-        window.location.href = `/OccasionDetails/AttemptDetails?eventId=${currentEventId}&sector=${encodeURIComponent(currentSector)}&travelDate=${encodeURIComponent(currentTravelDate)}`;
-        }
-        }
-        },
-
-        onHover: (e, activeElements) => {
-        if (activeElements.length > 0) {
-        const ds = myChart.data.datasets[activeElements[0].datasetIndex];
-        if (ds.attemptData && ds.attemptData[activeElements[0].index] > 0) {
-        e.native.target.style.cursor = 'pointer';
-        return;
-        }
-        }
-        e.native.target.style.cursor = 'default';
-        },
-
-        plugins: {
-        tooltip: {
-        callbacks: {
-        label: (context) => {
-        let label = ` ${context.dataset.label}: ₹${context.raw ? context.raw.toLocaleString('en-IN') : '0'}`;
-        if (context.dataset.attemptData && context.dataset.attemptData[context.dataIndex] > 0) {
-        label += `  🎯 (${context.dataset.attemptData[context.dataIndex]} Attempts Logged! Click to view)`;
-        }
-        return label;
-        }
-        }
-        }
-        },
-        scales: {
-        y: {
-        beginAtZero: true,
-        ticks: { callback: (value) => '₹' + value.toLocaleString('en-IN') }
-        }
-        }
-        }
-        });
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: [], datasets: [] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    onClick: (e, activeElements) => {
+                        if (activeElements.length > 0) {
+                            const element = activeElements[0];
+                            const dataset = myChart.data.datasets[element.datasetIndex];
+                            const attemptCount = dataset.attemptData[element.index];
+                            if (attemptCount > 0) {
+                                window.location.href = `/OccasionDetails/AttemptDetails?eventId=${currentEventId}&sector=${encodeURIComponent(currentSector)}&travelDate=${encodeURIComponent(currentTravelDate)}&lead=${encodeURIComponent('@Html.Raw(ViewBag.Lead)')}`;
+                            }
+                        }
+                    },
+                    onHover: (e, activeElements) => {
+                        if (activeElements.length > 0) {
+                            const ds = myChart.data.datasets[activeElements[0].datasetIndex];
+                            if (ds.attemptData && ds.attemptData[activeElements[0].index] > 0) {
+                                e.native.target.style.cursor = 'pointer'; return;
+                            }
+                        }
+                        e.native.target.style.cursor = 'default';
+                    },
+                    plugins: {
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleFont: { family: 'Inter', size: 13 },
+                            bodyFont: { family: 'Inter', size: 12 },
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: (context) => {
+                                    let label = ` ${context.dataset.label}: ₹${context.raw ? context.raw.toLocaleString('en-IN') : '0'}`;
+                                    if (context.dataset.attemptData && context.dataset.attemptData[context.dataIndex] > 0) {
+                                        label += `  🎯 (${context.dataset.attemptData[context.dataIndex]} Attempts Logged! Click to view)`;
+                                    }
+                                    return label;
+                                }
+                            }
+                        },
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { grid: { color: 'rgba(226, 232, 240, 0.5)' }, ticks: { font: { family: 'Inter', size: 11 }, color: '#64748b' } },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(226, 232, 240, 1)' },
+                            ticks: { font: { family: 'Inter', size: 11 }, color: '#64748b', callback: (value) => '₹' + value.toLocaleString('en-IN') }
+                        }
+                    }
+                }
+            });
         }
 
         function updateChartFilters() {
-        if (!myChart) return;
-        const start = document.getElementById('startDate').value;
-        const end = document.getElementById('endDate').value;
+            if (!myChart) return;
+            const start = document.getElementById('startDate').value;
+            const end = document.getElementById('endDate').value;
 
-        if (start && end && start > end) {
-        alert("End date cannot be before start date");
-        return;
-        }
+            if (start && end && start > end) { alert("End date cannot be before start date"); return; }
 
-        let filteredLabelsSet = new Set();
-        let labelToRawDate = {};
+            let filteredLabelsSet = new Set();
+            let labelToRawDate = {};
 
-        globalRawData.forEach(flight => {
-        flight.history.forEach(h => {
-        if ((!start || h.date >= start) && (!end || h.date <= end)) {
-        filteredLabelsSet.add(h.label);
-        labelToRawDate[h.label] = h.rawDateObj;
-        }
-        });
-        });
+            globalRawData.forEach(flight => {
+                flight.history.forEach(h => {
+                    if ((!start || h.date >= start) && (!end || h.date <= end)) {
+                        filteredLabelsSet.add(h.label);
+                        labelToRawDate[h.label] = h.rawDateObj;
+                    }
+                });
+            });
 
-        let sortedLabels = Array.from(filteredLabelsSet).sort((a, b) => labelToRawDate[a] - labelToRawDate[b]);
-        myChart.data.labels = sortedLabels;
-        myChart.data.datasets = [];
+            let sortedLabels = Array.from(filteredLabelsSet).sort((a, b) => labelToRawDate[a] - labelToRawDate[b]);
+            myChart.data.labels = sortedLabels;
+            myChart.data.datasets = [];
 
-        globalRawData.forEach((flight, index) => {
-        let dataPoints = [];
-        let attemptPoints = [];
+            globalRawData.forEach((flight, index) => {
+                let dataPoints = [];
+                let attemptPoints = [];
+                sortedLabels.forEach(lbl => {
+                    const match = flight.history.find(h => h.label === lbl);
+                    dataPoints.push(match ? match.fare : null);
+                    attemptPoints.push(match ? match.attemptCount : 0);
+                });
 
-        sortedLabels.forEach(lbl => {
-        const match = flight.history.find(h => h.label === lbl);
-        dataPoints.push(match ? match.fare : null);
-        attemptPoints.push(match ? match.attemptCount : 0);
-        });
+                const color = getColor(index);
+                myChart.data.datasets.push({
+                    label: flight.flight,
+                    data: dataPoints,
+                    attemptData: attemptPoints,
+                    borderColor: color,
+                    backgroundColor: color + '1A',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: false,
+                    spanGaps: true,
+                    pointStyle: (ctx) => ctx.dataset.attemptData[ctx.dataIndex] > 0 ? attemptMarkerCanvas : 'circle',
+                    pointRadius: (ctx) => ctx.dataset.attemptData[ctx.dataIndex] > 0 ? 8 : 4,
+                    pointHoverRadius: (ctx) => ctx.dataset.attemptData[ctx.dataIndex] > 0 ? 10 : 6,
+                    pointBackgroundColor: (ctx) => ctx.dataset.attemptData[ctx.dataIndex] > 0 ? '#dc3545' : '#ffffff',
+                    pointBorderColor: (ctx) => ctx.dataset.attemptData[ctx.dataIndex] > 0 ? '#dc3545' : color,
+                    pointBorderWidth: 2
+                });
+            });
 
-        const color = getColor(index);
-        myChart.data.datasets.push({
-        label: flight.flight,
-        data: dataPoints,
-        attemptData: attemptPoints,
-        borderColor: color,
-        backgroundColor: color + '1A',
-        borderWidth: 2,
-        tension: 0.3,
-        fill: false,
-        spanGaps: true,
+            let avgTarget = globalRawData.length > 0 ? globalRawData[0].targetFare : 0;
+            myChart.data.datasets.push({
+                label: 'Sector Target Fare',
+                data: sortedLabels.map(() => avgTarget),
+                borderColor: '#334155',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                fill: false,
+                pointRadius: 0,
+                hidden: false
+            });
 
-        // DYNAMIC STYLING: Normal dots use 'circle', attempts use the custom graph-paper canvas!
-        pointStyle: (ctx) => ctx.dataset.attemptData[ctx.dataIndex] > 0 ? attemptMarkerCanvas : 'circle',
-        pointRadius: (ctx) => ctx.dataset.attemptData[ctx.dataIndex] > 0 ? 8 : 4,
-        pointHoverRadius: (ctx) => ctx.dataset.attemptData[ctx.dataIndex] > 0 ? 10 : 6,
-        pointBackgroundColor: (ctx) => ctx.dataset.attemptData[ctx.dataIndex] > 0 ? '#dc3545' : '#ffffff',
-        pointBorderColor: (ctx) => ctx.dataset.attemptData[ctx.dataIndex] > 0 ? '#dc3545' : color,
-        pointBorderWidth: 2
-        });
-        });
+            globalRawData.forEach((flight, index) => {
+                const cb = document.getElementById(`toggle_${index}`);
+                if (cb) myChart.setDatasetVisibility(index, cb.checked);
+            });
 
-        // Benchmark Target Fare Line
-        let avgTarget = globalRawData.length > 0 ? globalRawData[0].targetFare : 0;
-        myChart.data.datasets.push({
-        label: 'Sector Target Fare',
-        data: sortedLabels.map(() => avgTarget),
-        borderColor: '#343a40',
-        borderWidth: 2,
-        borderDash: [5, 5],
-        fill: false,
-        pointRadius: 0,
-        hidden: false
-        });
-
-        // Restore Checkbox Visibility
-        globalRawData.forEach((flight, index) => {
-        const cb = document.getElementById(`toggle_${index}`);
-        if (cb) myChart.setDatasetVisibility(index, cb.checked);
-        });
-
-        myChart.update();
-        }
-
-        function showError(msg) {
-        document.getElementById('error-overlay').style.display = 'block';
-        let formattedMsg = msg;
-        if (msg.includes("Unauthorized") || msg.includes("401")) {
-        formattedMsg += "<br><br><strong style='color:#b71c1c;'>Security Note:</strong> Your Azure session token has expired. <br><br> <a href='/Login/Logout' class='btn btn-danger btn-sm'>Refresh Token</a>";
-        }
-        document.getElementById('error-message').innerHTML = formattedMsg;
+            myChart.update();
         }
     </script>
 }

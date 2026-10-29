@@ -1,0 +1,466 @@
+﻿@{
+    ViewData["Title"] = "Sector Level Audit Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml"; 
+}
+
+<style>
+    .cox { max-width: 1400px; margin: auto; }
+    .fb-row { display: flex; flex-wrap: wrap; gap: 15px; align-items: center; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 1px 2px rgba(56,65,74,.15); margin-bottom: 20px; }
+    .fb-field { position: relative; display: flex; flex-direction: column; min-width: 180px; flex: 1; }
+    .fb-label { font-size: 11px; text-transform: uppercase; color: #878a99; font-weight: 600; margin-bottom: 5px; }
+    .dd-trigger, .cal-trigger { display: flex; justify-content: space-between; align-items: center; border: 1px solid #ced4da; padding: 8px 12px; border-radius: 4px; cursor: pointer; background: #fff; }
+    .dd-val { font-size: 14px; color: #495057; }
+    .dd-val.placeholder { color: #adb5bd; }
+    .dd-icon { width: 16px; height: 16px; stroke: #495057; }
+    
+    .dd-panel, .cal-panel, .filter-panel { display: none; position: absolute; top: 100%; left: 0; background: #fff; border: 1px solid #ced4da; border-radius: 4px; box-shadow: 0 5px 10px rgba(30,32,37,.12); z-index: 1000; margin-top: 5px; }
+    .dd-panel, .cal-panel { right: 0; max-height: 250px; overflow-y: auto; }
+    .filter-panel { right: 0; left: auto; width: 250px; padding: 15px; }
+    .dd-panel.show, .cal-panel.show, .filter-panel.show { display: block; }
+    
+    .dd-search-wrap { padding: 10px; border-bottom: 1px solid #ced4da; position: sticky; top: 0; background: #fff; z-index: 2; }
+    .dd-search { width: 100%; border: 1px solid #ced4da; padding: 6px; border-radius: 4px; outline: none; }
+    .dd-list { position: relative; }
+    .dd-empty { padding: 8px 12px; font-size: 14px; color: #adb5bd; text-align: center; }
+    .dd-item { padding: 8px 12px; cursor: pointer; font-size: 14px; color: #495057; transition: background-color 0.2s; }
+    .dd-item:hover, .dd-item.selected { background: #f3f6f9; color: #0b5ed7; font-weight: 500; }
+    
+    .btn-search { background-color: #f06548; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; display: flex; align-items: center; gap: 5px; cursor: pointer; font-weight: 500; height: 38px; margin-top: 19px; }
+    .btn-search:hover { background-color: #cc563d; color: #fff; }
+    .filter-container { position: relative; display: inline-block; margin-top: 19px; margin-left: 10px; }
+    .btn-filter { background-color: #fff; color: #495057; border: 1px solid #ced4da; padding: 8px 16px; border-radius: 4px; display: flex; align-items: center; gap: 5px; cursor: pointer; font-weight: 500; height: 38px; }
+    .filter-section label { display: block; margin-bottom: 8px; font-size: 14px; color: #495057; cursor: pointer; }
+    .filter-section label input { margin-right: 8px; }
+    .boxes { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 1px 2px rgba(56,65,74,.15); }
+    
+    .cal-header { display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #eee; font-weight:bold; }
+    .cal-nav { background:none; border:none; cursor:pointer; font-size:18px; line-height:1; padding:0 10px; }
+    .cal-grid { display:grid; grid-template-columns:repeat(7, 1fr); gap:5px; padding:10px; text-align:center; }
+    .cal-dow { font-size:12px; color:#878a99; font-weight:600; }
+    .cal-day { padding:5px; border-radius:4px; cursor:pointer; font-size:13px; }
+    .cal-day:not(.empty):hover { background:#f3f6f9; }
+    .cal-day.selected { background:#0b5ed7; color:#fff; }
+    .cal-day.today { font-weight:bold; color:#0b5ed7; }
+</style>
+
+<div class="page-content">
+    <div class="container-fluid">
+        <!-- Filter Section -->
+        <div class="container cox">
+            <div class="fb-row">
+                <div class="fb-field">
+                    <span class="fb-label">Travel date</span>
+                    <div class="dd-trigger cal-trigger" tabindex="0">
+                        <span class="dd-val placeholder">Select date</span>
+                        <svg class="dd-icon" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="2" stroke="#1a1a1a" stroke-width="1.3"/><path d="M5 1.5v2M11 1.5v2M2 7h12" stroke="#1a1a1a" stroke-width="1.3" stroke-linecap="round"/></svg>
+                    </div>
+                    <div class="cal-panel"></div>
+                </div>
+
+                <div class="fb-field">
+                    <span class="fb-label">Lead</span>
+                    <div class="dd-trigger" tabindex="0">
+                        <span class="dd-val placeholder">Select</span>
+                        <svg class="dd-icon dd-arrow" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                    <div class="dd-panel">
+                        <div class="dd-search-wrap"><input class="dd-search" type="text" placeholder="Search..."></div>
+                        <div class="dd-list" id="leadFilterList">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fb-field">
+                    <span class="fb-label">Sector</span>
+                    <div class="dd-trigger" tabindex="0">
+                        <span class="dd-val placeholder">Sector </span>
+                        <svg class="dd-icon dd-arrow" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                    <div class="dd-panel">
+                        <div class="dd-search-wrap"><input class="dd-search" type="text" placeholder="Search..."></div>
+                        <div class="dd-list" id="sectorFilterList">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fb-field">
+                    <span class="fb-label">Sector type</span>
+                    <div class="dd-trigger" tabindex="0">
+                        <span class="dd-val placeholder">Select</span>
+                        <svg class="dd-icon dd-arrow" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                    <div class="dd-panel">
+                        <div class="dd-search-wrap"><input class="dd-search" type="text" placeholder="Search..."></div>
+                        <div class="dd-list">
+                            <div class="dd-item">Domestic </div>
+                            <div class="dd-item">International</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fb-actions mt-2 d-flex">
+                    <button class="btn btn-search">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="margin-right:5px;">
+                            <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M10.5 10.5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                        Search
+                    </button>
+
+                    <div class="filter-container">
+                        <button class="btn btn-filter" id="filterBtn">
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="margin-right:5px;">
+                                <path d="M1.5 2.5h13l-5 6v5l-3-2v-3l-5-6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>FILTERS
+                        </button>
+                        
+                        <div class="filter-panel" id="filterPanel">
+                            <div class="filter-section airlines">
+                                <input type="text" id="filterSearch" placeholder="Search filters..." style="width: 100%; margin-bottom: 10px; padding: 5px; box-sizing: border-box;">
+                                <label><input type="checkbox" id="selectAllCheckbox" checked>Select All</label>
+                                <label><input type="checkbox" class="col-toggle" data-target-col="7" checked>Open Till Date</label>
+                                <label><input type="checkbox" class="col-toggle" data-target-col="8" checked>No of Days Open</label>
+                                <label><input type="checkbox" class="col-toggle" data-target-col="9" checked>Avg PNR/Day</label>
+                                <label><input type="checkbox" class="col-toggle" data-target-col="10" checked>Avg PNR Open/Day</label>
+                                <label><input type="checkbox" class="col-toggle" data-target-col="11" checked>Total PNRs</label>
+                                <label><input type="checkbox" class="col-toggle" data-target-col="12" checked>Live PNR count</label>
+                                <label><input type="checkbox" class="col-toggle" data-target-col="13" checked>Hidden PNR Count</label>
+                                <label><input type="checkbox" class="col-toggle" data-target-col="14" checked>Hidden %</label>
+                                <label><input type="checkbox" class="col-toggle" data-target-col="15" checked>Fare Error PNRs</label>
+                                <label><input type="checkbox" class="col-toggle" data-target-col="16" checked>Managed Fares</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+              
+        <!-- Data Table Section -->
+        <div class="container cox boxes">
+            <div class="table-responsive">
+                <table id="sectorAuditTable" class="display" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Sector</th> 
+                            <th>Leads</th> 
+                            <th>Assigned Sector</th>
+                            <th>Purchased Sector</th>
+                            <th>Live Sector</th> 
+                            <th>Fare Supportive</th>
+                            <th>D-7 Seats Not Live </th>
+                            <th>Open Till Date</th>
+                            <th>Days Open</th>
+                            <th>Avg PNR/Day</th>
+                            <th>Avg PNR Open/Day</th>
+                            <th>Total PNRs</th>
+                            <th>Live PNR count</th>
+                            <th>Hidden PNR Count</th>
+                            <th>Hidden %</th> 
+                            <th>Fare Error PNRs</th>
+                            <th>Managed Fares</th> 
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sectorAuditTbody">
+                        <!-- Dynamic Rows -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+
+    <!-- CORE DATA LOGIC -->
+    <script>
+        let table = null;
+
+        document.addEventListener("DOMContentLoaded", function () {
+            loadSectorDashboardData();
+            setupFilterSearch();
+        });
+
+        // Search within the checkbox filter menu
+        function setupFilterSearch() {
+            document.getElementById('filterSearch').addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const labels = document.querySelectorAll('#filterPanel .airlines label');
+                labels.forEach(label => {
+                    if (label.textContent.includes("Select All")) return; 
+                    label.style.display = label.textContent.toLowerCase().includes(searchTerm) ? "" : "none"; 
+                });
+            });
+        }
+
+        function loadSectorDashboardData() {
+            // NOTE: We will need a new API endpoint in the controller to return SECTOR level data
+            fetch('/FareAudit/GetSectorLevelDashboardData')
+                .then(res => res.json())
+                .then(result => {
+                    if (!result.success) {
+                        console.error("Error fetching data:", result.message);
+                        return;
+                    }
+                    renderSectorTable(result.data || []);
+                })
+                .catch(err => console.error("Network error:", err));
+        }
+
+        function renderSectorTable(data) {
+            if ($.fn.DataTable.isDataTable('#sectorAuditTable')) {
+                $('#sectorAuditTable').DataTable().destroy();
+            }
+
+            let html = '';
+            let leadsSet = new Set();
+            let sectorsSet = new Set();
+
+            data.forEach(item => {
+                leadsSet.add(item.leadName);
+                sectorsSet.add(item.sectorCode);
+
+                html += `
+                    <tr>
+                        <td class="fw-bold text-primary">${item.sectorCode}</td>
+                        <td>${item.leadName}</td>
+                        <td>${item.assignedSectors}</td>
+                        <td>${item.purchasedSectors}</td>
+                        <td>${item.liveSectors}</td>
+                        <td>${item.fareSupportiveCount}</td> 
+                        <td>${item.d7NotLiveCount}</td>
+                        <td>${item.openTillDate || 'N/A'}</td>
+                        <td>${item.daysOpen}</td>
+                        <td>${item.avgPnrPerDay}</td>
+                        <td>${item.avgPnrOpenPerDay}</td>
+                        <td>${item.totalPnrs}</td>
+                        <td>${item.livePnrCount}</td>
+                        <td>${item.hiddenPnrCount}</td>
+                        <td>${item.hiddenPercentage}%</td>
+                        <td class="${item.fareErrorPnrs > 0 ? 'text-danger fw-bold' : ''}">${item.fareErrorPnrs}</td>
+                        <td>${item.managedFares}</td>
+                        <td>
+    <a href="/FareAudit/SectorDetails?sector=${encodeURIComponent(item.sectorCode)}" class="btn btn-sm" style="background-color: #f3f6f9; color: #0b5ed7; text-decoration: none; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600;">View Details →</a>
+</td>
+                    </tr>`;
+            });
+
+            document.getElementById('sectorAuditTbody').innerHTML = html;
+
+            // Populate Lead Filter Dropdown
+            let leadFilterHtml = '<div class="dd-item">All Leads</div>';
+            Array.from(leadsSet).sort().forEach(lead => { leadFilterHtml += `<div class="dd-item">${lead}</div>`; });
+            document.getElementById('leadFilterList').innerHTML = leadFilterHtml;
+
+            // Populate Sector Filter Dropdown
+            let sectorFilterHtml = '<div class="dd-item">All Sectors</div>';
+            Array.from(sectorsSet).sort().forEach(sector => { sectorFilterHtml += `<div class="dd-item">${sector}</div>`; });
+            document.getElementById('sectorFilterList').innerHTML = sectorFilterHtml;
+
+            table = $('#sectorAuditTable').DataTable({
+                responsive: true,
+                pageLength: 10,
+                lengthChange: false,
+                language: { search: "_INPUT_", searchPlaceholder: "Search sectors..." }
+            });
+
+            setupCustomUI();
+            const urlParams = new URLSearchParams(window.location.search);
+            const preSelectedLead = urlParams.get('lead');
+
+            if (preSelectedLead) {
+                // Apply DataTable filter to the Leads column (Column Index 1)
+                table.column(1).search(preSelectedLead).draw();
+
+                // Update the Dropdown UI to show the selected lead
+                const leadPanel = document.getElementById('leadFilterList');
+                if (leadPanel) {
+                    const fbField = leadPanel.closest('.fb-field');
+                    if (fbField) {
+                        const valDisplay = fbField.querySelector('.dd-val');
+                        valDisplay.textContent = preSelectedLead;
+                        valDisplay.classList.remove('placeholder');
+
+                        // Mark the item as selected in the dropdown menu
+                        leadPanel.querySelectorAll('.dd-item').forEach(i => {
+                            if (i.textContent === preSelectedLead) i.classList.add('selected');
+                        });
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- UI INTERACTION LOGIC (Dropdowns & Checkboxes) -->
+    <script>
+        function setupCustomUI() {
+            // -- COLUMN VISIBILITY CHECKBOXES --
+            const selectAllBox = $('#selectAllCheckbox');
+            const columnBoxes = $('.col-toggle');
+            table.columns([6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]).visible(true);
+
+            columnBoxes.off('change').on('change', function() {
+                const colIdx = parseInt($(this).attr('data-target-col'));
+                table.column(colIdx).visible($(this).is(':checked'));
+                table.columns.adjust().draw(false); 
+                selectAllBox.prop('checked', columnBoxes.filter(':checked').length === columnBoxes.length);
+            });
+
+            selectAllBox.off('change').on('change', function() {
+                const isChecked = $(this).is(':checked');
+                columnBoxes.prop('checked', isChecked);
+                columnBoxes.each(function() {
+                    table.column(parseInt($(this).attr('data-target-col'))).visible(isChecked);
+                });
+                table.columns.adjust().draw(false);
+            });
+
+            // -- CUSTOM HTML DROPDOWNS --
+            function closeAllPopups() {
+                document.querySelectorAll('.dd-panel.show, .cal-panel.show, .filter-panel.show').forEach(p => p.classList.remove('show'));
+            }
+
+            document.querySelectorAll('.fb-field').forEach(field => {
+                const trigger = field.querySelector('.dd-trigger');
+                const panel = field.querySelector('.dd-panel');
+                const searchInput = field.querySelector('.dd-search');
+                const valDisplay = field.querySelector('.dd-val');
+                if (!trigger || !panel) return;
+
+                const newTrigger = trigger.cloneNode(true);
+                trigger.parentNode.replaceChild(newTrigger, trigger);
+
+                newTrigger.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isOpening = !panel.classList.contains('show');
+                    closeAllPopups();
+                    if (isOpening) {
+                        panel.classList.add('show');
+                        if (searchInput) {
+                            searchInput.value = '';
+                            filterListItems(panel, '');
+                            setTimeout(() => searchInput.focus(), 40);
+                        }
+                    }
+                });
+
+                if (searchInput) {
+                    searchInput.addEventListener('input', (e) => filterListItems(panel, e.target.value.toLowerCase()));
+                }
+                
+                panel.addEventListener('click', (e) => {
+                    const item = e.target.closest('.dd-item');
+                    if (item) {
+                        e.stopPropagation();
+                        panel.querySelectorAll('.dd-item').forEach(i => i.classList.remove('selected'));
+                        item.classList.add('selected');
+                        valDisplay.textContent = item.textContent;
+                        valDisplay.classList.remove('placeholder');
+                        panel.classList.remove('show');
+                        
+                        // DataTables Filter Mapping
+                        if (panel.id === 'leadFilterList') {
+                            table.column(1).search(item.textContent === 'All Leads' ? '' : item.textContent).draw();
+                        } else if (panel.id === 'sectorFilterList') {
+                            table.column(0).search(item.textContent === 'All Sectors' ? '' : item.textContent).draw();
+                        }
+                    }
+                });
+            });
+
+            // -- CALENDAR LOGIC --
+            const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            const DOWS   = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+
+            document.querySelectorAll('.fb-field:has(.cal-panel)').forEach(field => {
+                const trigger = field.querySelector('.cal-trigger');
+                const panel   = field.querySelector('.cal-panel');
+                const val     = field.querySelector('.dd-val');
+                if(!trigger || !panel) return;
+                
+                const newTrigger = trigger.cloneNode(true);
+                trigger.parentNode.replaceChild(newTrigger, trigger);
+                let view = new Date(), selected = null;
+
+                function renderCal() {
+                    const y = view.getFullYear(), m = view.getMonth();
+                    const today = new Date(); today.setHours(0,0,0,0);
+                    let html = DOWS.map(d => `<div class="cal-dow">${d}</div>`).join('');
+                    
+                    for (let i = 0; i < new Date(y,m,1).getDay(); i++) html += `<div class="cal-day empty"></div>`;
+                    
+                    for (let d = 1; d <= new Date(y,m+1,0).getDate(); d++) {
+                        const date = new Date(y,m,d);
+                        const cls = 'cal-day' + (selected?.toDateString()===date.toDateString() ? ' selected' : date.toDateString()===today.toDateString() ? ' today' : '');
+                        html += `<div class="${cls}" data-ts="${date.getTime()}">${d}</div>`;
+                    }
+                    
+                    panel.innerHTML = `
+                        <div class="cal-header">
+                            <button class="cal-nav" data-dir="-1">&#8249;</button>
+                            <span class="cal-title">${MONTHS[m]} ${y}</span>
+                            <button class="cal-nav" data-dir="1">&#8250;</button>
+                        </div>
+                        <div class="cal-grid">${html}</div>`;
+
+                    panel.querySelectorAll('.cal-nav').forEach(btn => btn.addEventListener('click', e => {
+                        e.stopPropagation(); view = new Date(y, m + +btn.dataset.dir, 1); renderCal();
+                    }));
+                    
+                    panel.querySelectorAll('.cal-day:not(.empty)').forEach(day => day.addEventListener('click', e => {
+                        e.stopPropagation();
+                        selected = new Date(+day.dataset.ts);
+                        val.textContent = selected.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
+                        val.classList.remove('placeholder');
+                        closeAllPopups();
+                    }));
+                }
+
+                newTrigger.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isOpening = !panel.classList.contains('show');
+                    closeAllPopups();
+                    if (isOpening) { renderCal(); panel.classList.add('show'); }
+                });
+            });
+
+            // -- FILTER PANEL TOGGLE --
+            const filterBtn = document.getElementById("filterBtn");
+            const filterPanel = document.getElementById("filterPanel");
+            if (filterBtn && filterPanel) {
+                filterBtn.replaceWith(filterBtn.cloneNode(true));
+                document.getElementById("filterBtn").addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const isOpening = !filterPanel.classList.contains('show');
+                    closeAllPopups(); 
+                    if(isOpening) filterPanel.classList.add("show");
+                });
+            }
+
+            document.addEventListener("click", (e) => {
+                if (!e.target.closest('.fb-field') && !e.target.closest('.filter-container')) {
+                    closeAllPopups();
+                }
+            });
+
+            function filterListItems(panel, query) {
+                const items = panel.querySelectorAll('.dd-item');
+                let any = false;
+                items.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    const show = text.includes(query);
+                    item.style.display = show ? 'block' : 'none';
+                    any ||= show;
+                });
+                let empty = panel.querySelector('.dd-empty');
+                if (!any && !empty) panel.querySelector('.dd-list').insertAdjacentHTML('beforeend', '<div class="dd-empty">No results found</div>');
+                else if (any && empty) empty.remove();
+            }
+        }
+    </script>
+}

@@ -1,0 +1,497 @@
+﻿@{
+    ViewData["Title"] = "Sector Details";
+    Layout = "~/Views/Shared/_Layout.cshtml"; 
+}
+
+<style>
+    .cox { max-width: 1400px; margin: auto; }
+    .fb-row { display: flex; flex-wrap: wrap; gap: 15px; align-items: center; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 1px 2px rgba(56,65,74,.15); margin-bottom: 20px; }
+    .fb-field { position: relative; display: flex; flex-direction: column; min-width: 180px; flex: 1; }
+    .fb-label { font-size: 11px; text-transform: uppercase; color: #878a99; font-weight: 600; margin-bottom: 5px; }
+    .dd-trigger, .cal-trigger { display: flex; justify-content: space-between; align-items: center; border: 1px solid #ced4da; padding: 8px 12px; border-radius: 4px; cursor: pointer; background: #fff; }
+    .dd-val { font-size: 14px; color: #495057; }
+    .dd-val.placeholder { color: #adb5bd; }
+    .dd-icon { width: 16px; height: 16px; stroke: #495057; }
+    
+    .dd-panel, .cal-panel, .filter-panel { display: none; position: absolute; top: 100%; left: 0; background: #fff; border: 1px solid #ced4da; border-radius: 4px; box-shadow: 0 5px 10px rgba(30,32,37,.12); z-index: 1000; margin-top: 5px; }
+    .dd-panel, .cal-panel { right: 0; max-height: 250px; overflow-y: auto; }
+    .filter-panel { right: 0; left: auto; width: 300px; padding: 15px; max-height: 400px; overflow-y: auto; }
+    .dd-panel.show, .cal-panel.show, .filter-panel.show { display: block; }
+    
+    .dd-search-wrap { padding: 10px; border-bottom: 1px solid #ced4da; position: sticky; top: 0; background: #fff; z-index: 2; }
+    .dd-search { width: 100%; border: 1px solid #ced4da; padding: 6px; border-radius: 4px; outline: none; }
+    .dd-list { position: relative; }
+    .dd-item { padding: 8px 12px; cursor: pointer; font-size: 14px; color: #495057; transition: background-color 0.2s; }
+    .dd-item:hover, .dd-item.selected { background: #f3f6f9; color: #0b5ed7; font-weight: 500; }
+    
+    .btn-search { background-color: #f06548; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; display: flex; align-items: center; gap: 5px; cursor: pointer; font-weight: 500; height: 38px; margin-top: 19px; }
+    .filter-container { position: relative; display: inline-block; margin-top: 19px; margin-left: 10px; }
+    .btn-filter { background-color: #fff; color: #495057; border: 1px solid #ced4da; padding: 8px 16px; border-radius: 4px; display: flex; align-items: center; gap: 5px; cursor: pointer; font-weight: 500; height: 38px; }
+    
+    .filter-section label { display: flex; margin-bottom: 8px; font-size: 13px; color: #495057; cursor: pointer; align-items: center; }
+    .filter-section label input { margin-right: 8px; }
+    .boxes { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 1px 2px rgba(56,65,74,.15); }
+    
+    .cal-header { display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #eee; font-weight:bold; }
+    .cal-nav { background:none; border:none; cursor:pointer; font-size:18px; line-height:1; padding:0 10px; }
+    .cal-grid { display:grid; grid-template-columns:repeat(7, 1fr); gap:5px; padding:10px; text-align:center; }
+    .cal-dow { font-size:12px; color:#878a99; font-weight:600; }
+    .cal-day { padding:5px; border-radius:4px; cursor:pointer; font-size:13px; }
+    .cal-day:not(.empty):hover { background:#f3f6f9; }
+    
+    /* Native Table Styles */
+    .native-table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+    .native-table th, .native-table td { padding: 8px 12px; border: 1px solid #e9ebec; font-size: 13px; }
+    .native-table th { background: #f3f6f9; font-weight: 600; color: #495057; }
+    
+    /* CRITICAL: The class your native JS toggle logic relies on */
+    .hide-column { display: none !important; }
+</style>
+
+<div class="page-content">
+    <div class="container-fluid">
+        <!-- Filter Section -->
+        <div class="container cox">
+            <div class="fb-row">
+                <div class="fb-field">
+                    <span class="fb-label">Travel date</span>
+                    <div class="dd-trigger cal-trigger" tabindex="0">
+                        <span class="dd-val placeholder">Select date</span>
+                        <svg class="dd-icon" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="2" stroke="#1a1a1a" stroke-width="1.3"/><path d="M5 1.5v2M11 1.5v2M2 7h12" stroke="#1a1a1a" stroke-width="1.3" stroke-linecap="round"/></svg>
+                    </div>
+                    <div class="cal-panel"></div>
+                </div>
+
+                <div class="fb-field">
+                    <span class="fb-label">Lead</span>
+                    <div class="dd-trigger" tabindex="0">
+                        <span class="dd-val placeholder">Select</span>
+                        <svg class="dd-icon dd-arrow" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                    <div class="dd-panel">
+                        <div class="dd-search-wrap"><input class="dd-search" type="text" placeholder="Search..."></div>
+                        <div class="dd-list">
+                            <div class="dd-item">Sudipto</div>
+                            <div class="dd-item">Mangaldeep</div>
+                            <div class="dd-item">Rahul</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fb-field">
+                    <span class="fb-label">Sector</span>
+                    <div class="dd-trigger" tabindex="0">
+                        <span class="dd-val placeholder">Sector</span>
+                        <svg class="dd-icon dd-arrow" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                    <div class="dd-panel">
+                        <div class="dd-search-wrap"><input class="dd-search" type="text" placeholder="Search..."></div>
+                        <div class="dd-list">
+                            <!-- Can be dynamically populated later -->
+                            <div class="dd-item">IXB-DEL</div>
+                            <div class="dd-item">CCU-BLR</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fb-actions mt-2 d-flex">
+                    <button class="btn btn-search text-white fw-medium">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="margin-right:5px;">
+                            <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M10.5 10.5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>Search
+                    </button>
+
+                    <div class="filter-container">
+                        <button class="btn btn-filter" id="filterBtn">
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="margin-right:5px;">
+                                <path d="M1.5 2.5h13l-5 6v5l-3-2v-3l-5-6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>FILTERS
+                        </button>
+                        
+                        <div class="filter-panel" id="filterPanel">
+                            <input type="text" id="filterSearch" placeholder="Search filters..." class="dd-search mb-2">
+                            <div class="filter-section airlines">
+                                <label id="selectAllLabel"><input type="checkbox" id="selectAllCheckbox" checked>Select All</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="5" checked>Fare Supportive, No Seat Opening</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="6" checked>D-7 Seats Not Live</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="7" checked>Airlines</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="8" checked>PNR</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="9" checked>Travel Date</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="10" checked>Flight No.</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="11" checked>Dep Time</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="12" checked>Pax Count</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="13" checked>Cost Fare</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="14" checked>Sold Fare</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="15" checked>AIR iQ Manage Fare</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="16" checked>FS Same Flight Fare</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="17" checked>FS Lowest Flight Fare</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="18" checked>FS Lowest Flight Number</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="19" checked>FS Lowest Flight Dep Time</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="20" checked>FS Window lowest fare</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="21" checked>FS Window lowest flight no</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="22" checked>FS Window lowest Dep time</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="23" checked>FS Remarks</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="24" checked>AO Same Flight Fare</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="25" checked>AO Lowest Flight Fare</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="26" checked>AO Lowest Flight Number</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="27" checked>AO Lowest Flight Dep Time</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="28" checked>AO Window lowest fare</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="29" checked>AO Window lowest flight no</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="30" checked>AO Window lowest dep time</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="31" checked>AO Remarks</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="32" checked>Last Loop Run Date & Time</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="33" checked>Managed By</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="34" checked>Fare Manage Remarks</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="35" checked>Log Type</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="36" checked>Source</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="37" checked>Flight wise total seat purchase</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="38" checked>Flight wise total seat sold</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="39" checked>Flight wise total seat left</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="40" checked>Route wise total seat purchase</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="41" checked>Route wise total seat sold</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="42" checked>Route wise total seat left</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="43" checked>Route wise avg cost</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="44" checked>Avg sell fare</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="45" checked>Entry Date</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="46" checked>Status</label>
+                                <label><input type="checkbox" class="col-toggle" data-col-index="47" checked>Remarks</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+              
+        <!-- Native Data Table Section -->
+        <div class="container cox boxes">
+            <div class="table-responsive">
+                <table id="sectorDetailsTable" class="native-table">
+                    <thead>
+                        <tr>
+                            <!-- 0-4 -->
+                            <th>Ref No</th>
+                            <th>Booking Date</th>
+                            <th>Agency</th>
+                            <th>Airport</th> 
+                            <th>Sector</th> 
+                            <!-- 5-9 -->
+                            <th>Fare Supportive</th>
+                            <th>D-7 Seats Not Live</th> 
+                            <th>Airlines</th>
+                            <th>PNR</th>
+                            <th>Travel Date</th>
+                            <!-- 10-14 -->
+                            <th>Flight No.</th>
+                            <th>Dep Time</th> 
+                            <th>Pax Count</th> 
+                            <th>Cost Fare</th> 
+                            <th>Sold Fare</th> 
+                            <!-- 15-19 -->
+                            <th>AIR iQ Manage Fare</th>
+                            <th>FS Same Flight Fare</th>
+                            <th>FS Lowest Flight Fare</th>
+                            <th>FS Lowest Flight Number</th>
+                            <th>FS Lowest Flight Dep Time</th>
+                            <!-- 20-24 -->
+                            <th>FS Window lowest fare</th>
+                            <th>FS Window lowest flight no</th>
+                            <th>FS Window lowest dep time</th>
+                            <th>FS Remarks</th>
+                            <th>AO Same Flight Fare</th>
+                            <!-- 25-29 -->
+                            <th>AO Lowest Flight Fare</th>
+                            <th>AO Lowest Flight Number</th>
+                            <th>AO Lowest Flight Dep Time</th>
+                            <th>AO Window lowest fare</th>
+                            <th>AO Window lowest flight no</th>
+                            <!-- 30-34 -->
+                            <th>AO Window lowest dep time</th>
+                            <th>AO Remarks</th> 
+                            <th>Last Loop Run Date & Time</th>
+                            <th>Managed By</th> 
+                            <th>Fare Manage Remarks</th>
+                            <!-- 35-39 -->
+                            <th>Log Type</th>
+                            <th>Source</th> 
+                            <th>Flight seat purchase</th>
+                            <th>Flight seat sold</th>
+                            <th>Flight seat left</th>
+                            <!-- 40-44 -->
+                            <th>Flight Avg. Cost</th>
+                            <th>Route seat purchase</th>
+                            <th>Route seat sold</th>
+                            <th>Route seat left</th>
+                            <th>Route avg cost</th>
+                            <!-- 45-48 -->
+                            <th>Avg sell fare</th>
+                            <th>Entry Date</th>
+                            <th>Status</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sectorDetailsTbody">
+                        <!-- Content loaded dynamically via JS -->
+                        <tr><td colspan="49" class="text-center py-4">Waiting for data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+    <!-- UI INTERACTION LOGIC (Native Table Hide/Show) -->
+    <script>
+        $(document).ready(function() {
+            // URL Param Pre-Filter Logic
+            const urlParams = new URLSearchParams(window.location.search);
+            const passedSector = urlParams.get('sector');
+            
+            if (passedSector) {
+                // Correct way to find and update the Sector dropdown text without crashing
+                document.querySelectorAll('.fb-field').forEach(field => {
+                    const label = field.querySelector('.fb-label');
+                    if (label && label.textContent.trim() === 'Sector') {
+                        const valDisplay = field.querySelector('.dd-val');
+                        if (valDisplay) {
+                            valDisplay.textContent = passedSector;
+                            valDisplay.classList.remove('placeholder');
+                        }
+                    }
+                });
+
+                // Fetch dynamic data
+                loadDetailedSectorData(passedSector);
+            }
+
+            function loadDetailedSectorData(sector) {
+                $('#sectorDetailsTbody').html('<tr><td colspan="49" class="text-center py-4"><div class="spinner-border text-primary spinner-border-sm me-2"></div> Loading Sector Details...</td></tr>');
+
+                const endpointUrl = `@Url.Action("GetSectorDetailsData", "FareAudit")?sector=${encodeURIComponent(sector)}`;
+
+                fetch(endpointUrl)
+                    .then(res => {
+                        // FIX 2: Catch if IIS returns a 200 OK HTML page instead of JSON
+                        const contentType = res.headers.get("content-type");
+                        if (!contentType || !contentType.includes("application/json")) {
+                            throw new TypeError("Server returned HTML instead of JSON. Check routing.");
+                        }
+                        return res.json();
+                    })
+                    .then(result => {
+                        if (!result.success) {
+                            $('#sectorDetailsTbody').html(`<tr><td colspan="49" class="text-center text-danger">${result.message}</td></tr>`);
+                            return;
+                        }
+                        renderDetailedTable(result.data || []);
+                    })
+                    .catch(err => {
+                        $('#sectorDetailsTbody').html(`<tr><td colspan="49" class="text-center text-danger">Network Error: ${err.message}</td></tr>`);
+                    });
+            }
+                    // Bind the Search button to trigger the data fetch
+        $('.btn-search').on('click', function(e) {
+            e.preventDefault();
+
+            let selectedSector = null;
+
+            // Find the currently selected sector from your custom dropdown UI
+            document.querySelectorAll('.fb-field').forEach(field => {
+                const label = field.querySelector('.fb-label');
+                if (label && label.textContent.trim() === 'Sector') {
+                    const valDisplay = field.querySelector('.dd-val');
+                    if (valDisplay && !valDisplay.classList.contains('placeholder')) {
+                        selectedSector = valDisplay.textContent.trim();
+                    }
+                }
+            });
+
+            if (selectedSector) {
+                // Trigger the fetch!
+                loadDetailedSectorData(selectedSector);
+            } else {
+                alert("Please select a Sector from the dropdown first.");
+            }
+        });
+            }
+
+            function renderDetailedTable(data) {
+                if (data.length === 0) {
+                    $('#sectorDetailsTbody').html('<tr><td colspan="49" class="text-center text-muted py-4">No audit logs found for this sector in the last 30 days.</td></tr>');
+                    return;
+                }
+
+                // Helper to format values elegantly
+                const fVal = (val) => val === null || val === undefined || val === '' ? '<span class="text-muted">-</span>' : val;
+                const fDate = (dateStr) => dateStr ? new Date(dateStr).toLocaleDateString('en-GB') : '<span class="text-muted">-</span>';
+                const fTime = (dateStr) => dateStr ? new Date(dateStr).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '<span class="text-muted">-</span>';
+
+                let html = '';
+                data.forEach(row => {
+                    html += `<tr> 
+                        <td>${fVal(row.id)}</td>
+                        <td>${fDate(row.requestDateTime)}</td>
+                        <td><span class="text-muted">-</span></td> <!-- Agency (N/A in DB) -->
+                        <td><span class="text-muted">-</span></td> <!-- Airport (N/A in DB) -->
+                        <td class="fw-bold text-primary">${fVal(row.flightSector)}</td> 
+                        <td><span class="text-muted">-</span></td> <!-- Fare Supportive -->
+                        <td><span class="text-muted">-</span></td> <!-- D-7 -->
+                        <td>${fVal(row.flightNumber).substring(0, 2)}</td> 
+                        <td class="fw-bold">${fVal(row.pnr)}</td> 
+                        <td>${fDate(row.travelDateTime)}</td>
+                        <td>${fVal(row.flightNumber)}</td>
+                        <td>${fTime(row.travelDateTime)}</td>
+                        <td>${fVal(row.bookedPaxQty)}</td>
+                        <td>${fVal(row.flightWiseAverageCost)}</td>
+                        <td>${fVal(row.averageSellFare)}</td>
+                        <td class="text-primary fw-bold">${fVal(row.actualManagedFare)}</td>
+                        
+                        <!-- FS Columns -->
+                        <td>${fVal(row.fsSameFlightFare)}</td>
+                        <td class="${row.fsLowestFlightFare > 0 ? 'text-danger fw-bold' : ''}">${fVal(row.fsLowestFlightFare)}</td>
+                        <td>${fVal(row.fsLowestFareFlightNumber)}</td>
+                        <td>${fVal(row.fsLowestFareFlightDepartureTime)}</td>
+                        <td>${fVal(row.fsWindowedLowestFare)}</td>
+                        <td>${fVal(row.fsWindowedLowestFareFlightNumber)}</td>
+                        <td>${fVal(row.fsWindowedLowestFareDepartureTime)}</td>
+                        <td><small>${fVal(row.fsErrorMessage)}</small></td>
+                        
+                        <!-- AO Columns -->
+                        <td>${fVal(row.aoSameFlightFare)}</td>
+                        <td class="${row.aoLowestFare > 0 ? 'text-danger fw-bold' : ''}">${fVal(row.aoLowestFare)}</td>
+                        <td>${fVal(row.aoLowestFareFlightNumber)}</td>
+                        <td>${fVal(row.aoLowestFareFlightDepartureTime)}</td>
+                        <td>${fVal(row.aoWindowedLowestFare)}</td>
+                        <td>${fVal(row.aoWindowedLowestFareFlightNumber)}</td>
+                        <td>${fVal(row.aoWindowedLowestFareDepartureTime)}</td>
+                        <td><small>${fVal(row.aoErrorMessage)}</small></td> 
+                        
+                        <!-- System Data -->
+                        <td>${fDate(row.taskCompletedDateTime)} ${fTime(row.taskCompletedDateTime)}</td>
+                        <td><span class="text-muted">-</span></td> <!-- Managed By -->
+                        <td><small>${fVal(row.fareAuditRemarks)}</small></td>
+                        <td><span class="badge bg-light text-dark border">${fVal(row.logType)}</span></td>
+                        <td>${fVal(row.source)}</td> 
+                        
+                        <!-- Economics -->
+                        <td>${fVal(row.flightWiseTotalSeatsPurchased)}</td>
+                        <td>${fVal(row.flightWiseTotalSeatsSold)}</td>
+                        <td>${fVal(row.flightWiseTotalSeatsLeft)}</td>
+                        <td>${fVal(row.flightWiseAverageCost)}</td>
+                        <td>${fVal(row.routeWiseSeatsPurchased)}</td>
+                        <td>${fVal(row.routeWiseSeatsSold)}</td>
+                        <td>${fVal(row.routeWiseSeatsLeft)}</td>
+                        <td>${fVal(row.routeWiseAverageCost)}</td>
+                        <td>${fVal(row.averageSellFare)}</td>
+                        <td>${fDate(row.requestDateTime)}</td>
+                        <td>
+                            <span class="badge ${row.status === 'Completed' || row.status === 'Success' ? 'bg-success' : 'bg-warning'}">${fVal(row.status)}</span>
+                        </td>
+                        <td><small>${fVal(row.remark)}</small></td>
+                    </tr>`;
+                });
+
+                $('#sectorDetailsTbody').html(html);
+
+                // Run toggle logic to respect checkboxes immediately after data renders
+                const columnBoxes = $('.col-toggle');
+                columnBoxes.each(function() {
+                    toggleNativeColumn(parseInt($(this).attr('data-col-index')), $(this).is(':checked'));
+                });
+            }
+
+            // --- NATIVE COLUMN TOGGLE LOGIC ---
+            const selectAllBox = $('#selectAllCheckbox');
+            const columnBoxes = $('.col-toggle');
+
+            function toggleNativeColumn(index, show) {
+                const table = document.getElementById('sectorDetailsTable');
+                if (!table) return;
+                const rows = table.rows;
+                for (let i = 0; i < rows.length; i++) {
+                    const cell = rows[i].cells[index];
+                    if (cell) {
+                        if (show) cell.classList.remove('hide-column');
+                        else cell.classList.add('hide-column');
+                    }
+                }
+            }
+
+            columnBoxes.on('change', function() {
+                const colIdx = parseInt($(this).attr('data-col-index'));
+                toggleNativeColumn(colIdx, $(this).is(':checked'));
+                selectAllBox.prop('checked', columnBoxes.filter(':checked').length === columnBoxes.length);
+            });
+
+            selectAllBox.on('change', function() {
+                const isChecked = $(this).is(':checked');
+                columnBoxes.prop('checked', isChecked);
+                columnBoxes.each(function() {
+                    toggleNativeColumn(parseInt($(this).attr('data-col-index')), isChecked);
+                });
+            });
+
+            // --- FILTER SEARCH ---
+            document.getElementById('filterSearch').addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                document.querySelectorAll('#filterPanel .airlines label').forEach(label => {
+                    if (label.id === 'selectAllLabel') return; 
+                    label.style.setProperty('display', label.textContent.toLowerCase().includes(searchTerm) ? 'flex' : 'none', 'important'); 
+                });
+            });
+
+            // --- DROPDOWN & POPUP LOGIC ---
+            function closeAllPopups() {
+                document.querySelectorAll('.dd-panel.show, .cal-panel.show, .filter-panel.show').forEach(p => p.classList.remove('show'));
+            }
+
+            document.querySelectorAll('.fb-field').forEach(field => {
+                const trigger = field.querySelector('.dd-trigger');
+                const panel = field.querySelector('.dd-panel');
+                const searchInput = field.querySelector('.dd-search');
+                const valDisplay = field.querySelector('.dd-val');
+                if (!trigger || !panel) return;
+
+                trigger.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isOpening = !panel.classList.contains('show');
+                    closeAllPopups();
+                    if (isOpening) {
+                        panel.classList.add('show');
+                        if (searchInput) { searchInput.value = ''; searchInput.focus(); }
+                    }
+                });
+
+                panel.addEventListener('click', (e) => {
+                    const item = e.target.closest('.dd-item');
+                    if (item) {
+                        e.stopPropagation();
+                        panel.querySelectorAll('.dd-item').forEach(i => i.classList.remove('selected'));
+                        item.classList.add('selected');
+                        valDisplay.textContent = item.textContent;
+                        valDisplay.classList.remove('placeholder');
+                        panel.classList.remove('show');
+                    }
+                });
+            });
+
+            const filterBtn = document.getElementById("filterBtn");
+            const filterPanel = document.getElementById("filterPanel");
+            if (filterBtn && filterPanel) {
+                filterBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const isOpening = !filterPanel.classList.contains('show');
+                    closeAllPopups();
+                    if(isOpening) filterPanel.classList.add("show");
+                });
+            }
+
+            document.addEventListener("click", (e) => {
+                if (!e.target.closest('.fb-field') && !e.target.closest('.filter-container')) closeAllPopups();
+            });
+        });
+    </script>
+}

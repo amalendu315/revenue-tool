@@ -1,0 +1,772 @@
+﻿@{
+    ViewData["Title"] = "Lead Level Audit Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+
+    body[data-layout="horizontal"] .page-content, .page-content {
+        padding-top: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        padding-bottom: 60px !important;
+    }
+
+    :root {
+        --brand-blue: #1076bb;
+        --brand-red: #f16367;
+        --slate-50: #f8fafc;
+        --slate-100: #f1f5f9;
+        --slate-200: #e2e8f0;
+        --slate-300: #cbd5e1;
+        --slate-400: #94a3b8;
+        --slate-500: #64748b;
+        --slate-600: #475569;
+        --slate-700: #334155;
+        --slate-800: #1e293b;
+        --slate-900: #0f172a;
+    }
+
+    .custom-scope {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--slate-50);
+        color: var(--slate-900);
+    }
+
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-up {
+        animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Hero Banner */
+    .hero-banner {
+        background: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-red) 100%);
+        padding-top: 2.5rem;
+        padding-bottom: 7rem;
+        position: relative;
+    }
+
+    .hero-pattern {
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0);
+        background-size: 24px 24px;
+    }
+
+    /* Modern Inputs */
+    .modern-input {
+        background-color: var(--slate-50);
+        border: 1px solid var(--slate-200);
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+        color: var(--slate-800);
+        font-size: 0.875rem;
+        font-weight: 500;
+        height: 38px;
+        transition: all 0.2s;
+        outline: none;
+        width: 100%;
+    }
+
+        .modern-input:focus {
+            background-color: #fff;
+            border-color: var(--brand-blue);
+            box-shadow: 0 0 0 4px rgba(16, 118, 187, 0.1);
+        }
+    
+    .select2-container--default .select2-selection--single {
+        background-color: var(--slate-50) !important;
+        border: 1px solid var(--slate-200) !important;
+        border-radius: 0.5rem !important;
+        height: 38px !important;
+        display: flex;
+        align-items: center;
+        outline: none;
+        box-shadow: none !important;
+        transition: all 0.2s;
+    }
+
+    .select2-container--open .select2-selection--single {
+        background-color: #fff !important;
+        border-color: var(--brand-blue) !important;
+        box-shadow: 0 0 0 4px rgba(16, 118, 187, 0.1) !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--slate-800) !important;
+        font-weight: 500 !important;
+        font-size: 0.875rem;
+        padding-left: 0.75rem !important;
+        line-height: normal !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 38px !important;
+        right: 0.5rem !important;
+    }
+
+    .select2-dropdown {
+        border: 1px solid var(--slate-200) !important;
+        border-radius: 0.5rem !important;
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1) !important;
+        overflow: hidden;
+        font-size: 0.875rem;
+        z-index: 1060;
+    }
+    
+    .input-icon-wrapper {
+        position: relative;
+    }
+
+        .input-icon-wrapper .lucide {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--slate-400);
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .input-icon-wrapper input {
+            padding-left: 2.5rem;
+        }
+
+    /* CARD STYLES */
+    .hover-card {
+        transition: all 0.3s ease;
+    }
+
+        .hover-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04) !important;
+            border-color: rgba(16, 118, 187, 0.3) !important;
+        }
+
+    .metric-box {
+        border: 1px solid var(--slate-200);
+        border-radius: 0.5rem;
+        padding: 0.5rem;
+        text-align: center;
+        transition: all 0.2s;
+    }
+
+        .metric-box:hover {
+            border-color: var(--brand-blue);
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+    /* CUSTOM LIST VIEW TABLE STYLES */
+    .modern-table-wrapper {
+        background: #ffffff;
+        border-radius: 1rem;
+        border: 1px solid var(--slate-200);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .modern-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        font-size: 0.8125rem;
+        white-space: nowrap;
+    }
+
+        .modern-table thead th {
+            background-color: var(--slate-50);
+            color: var(--slate-600);
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--slate-200);
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s;
+        }
+
+            .modern-table thead th:hover {
+                background-color: #e2e8f0;
+            }
+
+        .modern-table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--slate-700);
+            font-weight: 500;
+        }
+
+        .modern-table tbody tr.main-row {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+            .modern-table tbody tr.main-row:hover {
+                background-color: var(--slate-50);
+            }
+
+        .modern-table tbody tr.expanded-row {
+            background-color: rgba(248, 250, 252, 0.6);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+    
+    .sort-icon {
+        width: 12px;
+        height: 12px;
+        transition: opacity 0.2s, color 0.2s;
+        opacity: 0.3;
+        margin-left: 4px;
+    }
+
+        .sort-icon.active {
+            opacity: 1;
+            color: var(--brand-blue);
+        }
+
+    .chevron-icon {
+        transition: transform 0.2s ease;
+    }
+
+    .text-xxs {
+        font-size: 0.65rem;
+    }
+    
+    .drilldown-link {
+        text-decoration: none;
+        color: var(--brand-blue);
+        font-weight: 700;
+        cursor: pointer;
+        transition: color 0.2s;
+        display: block;
+        font-size: 1.125rem;
+    }
+
+        .drilldown-link:hover {
+            color: #0e65a0;
+            text-decoration: underline;
+        }
+
+    .drilldown-alert {
+        text-decoration: none;
+        color: #ef4444;
+        font-weight: 800;
+        cursor: pointer;
+        display: block;
+        font-size: 1.125rem;
+    }
+
+        .drilldown-alert:hover {
+            color: #dc2626;
+            text-decoration: underline;
+        }
+</style>
+
+<div class="page-content custom-scope pb-5">
+    
+    <!-- 1. HERO BANNER -->
+    <div class="hero-banner px-3">
+        <div class="hero-pattern"></div>
+        <div class="container-fluid position-relative z-1" style="max-width: 1800px;">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">
+                <div class="d-flex align-items-center gap-3">
+                    <a href="/Dashboard/Index" class="btn btn-light d-flex align-items-center justify-content-center p-0 rounded-circle shadow-sm flex-shrink-0" style="width: 3rem; height: 3rem; color: var(--brand-blue);" title="Back to Dashboard">
+                        <i data-lucide="arrow-left" style="width: 1.25rem; height: 1.25rem;"></i>
+                    </a>
+                    <div class="text-white">
+                        <h1 class="fw-bolder mb-1 text-white" style="font-size: 2.25rem;">Lead Level <span class="fw-medium opacity-75">Audit</span></h1>
+                        <p class="mb-0 fw-medium opacity-75" style="font-size: 1rem;">Overview of live sectors, purchased sectors, and performance metrics by Lead.</p>
+                    </div>
+                </div>
+                <div class="d-inline-flex p-1 rounded-3" style="background: rgba(0,0,0,0.2); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);">
+                    <button id="btnViewList" class="btn fw-bold d-flex align-items-center gap-2 border-0 shadow" onclick="setView('list')" style="background-color: white; color: var(--brand-blue);">
+                        <i data-lucide="list" style="width: 1rem; height: 1rem;"></i> List View
+                    </button>
+                    <button id="btnViewCard" class="btn fw-bold d-flex align-items-center gap-2 text-white border-0" onclick="setView('card')">
+                        <i data-lucide="layout-grid" style="width: 1rem; height: 1rem;"></i> Card View
+                    </button>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. FILTER BAR -->
+    <div class="container-fluid position-relative px-3" style="max-width: 1600px; margin-top: -3.5rem; z-index: 10;">
+        <div class="card border-0 rounded-4 shadow-sm p-4 mb-4">
+            
+            <div class="row g-3">
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label text-muted text-xxs fw-bold text-uppercase mb-1">Sector Type</label>
+                    <select id="filter-sector-type" class="form-select searchable-select">
+                        <option value="All" selected>All Sectors</option>
+                        <option value="Domestic">Domestic</option>
+                        <option value="International">International</option>
+                    </select>
+                </div>
+                
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label text-muted text-xxs fw-bold text-uppercase mb-1">Lead Manager</label>
+                    <select id="filter-lead" class="form-select searchable-select">
+                        <option value="All" selected>All Leads</option>
+                        <!-- Populated Dynamically -->
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-4 d-flex align-items-end">
+                    <div class="input-icon-wrapper w-100">
+                        <i data-lucide="search"></i>
+                        <input type="text" id="searchInput" placeholder="Search by Lead Name..." class="form-control modern-input w-100">
+                    </div>
+                </div>
+
+                <!-- Sort Dropdown (Visible mainly for Card View) -->
+                <div id="sortControls" class="col-12 col-md-6 col-xl-2 d-none align-items-end gap-2">
+                    <select id="sortFilter" class="form-select modern-input cursor-pointer w-100">
+                        <option value="leadName">Sort: Name</option>
+                        <option value="loss">Sort: Loss</option>
+                        <option value="profit">Sort: Profit</option>
+                        <option value="live">Sort: Live</option>
+                    </select>
+                    <button id="sortOrderBtn" class="btn modern-input d-flex align-items-center justify-content-center text-muted" style="width: 3.5rem; padding: 0;">
+                        <i data-lucide="arrow-up" id="sortOrderIcon" style="width: 1rem; height: 1rem;"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. MAIN CONTENT AREA -->
+        <div id="loading-overlay" class="text-center py-5 bg-white rounded-4 border shadow-sm animate-fade-up">
+            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+            <h4 class="fw-bold" style="color: var(--slate-800);">Loading Audit Data...</h4>
+            <p class="text-muted mb-0">Fetching latest sector performance metrics.</p>
+        </div>
+        
+        <div id="error-overlay" style="display:none;" class="alert alert-danger rounded-4 border-0 mb-4 shadow-sm">
+            <h5 class="fw-bold mb-2">Failed to load data</h5>
+            <p id="error-message" class="mb-0"></p>
+        </div>
+
+        <div id="render-container" class="animate-fade-up" style="display: none;">
+            <!-- HTML injected via JS -->
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+        // --- DATA INJECTION & STATE ---
+        let allAuditData = [];
+        let filteredData = [];
+        
+        let state = {
+            view: 'list',
+            search: '',
+            sectorType: 'All',
+            lead: 'All',
+            sortBy: 'leadName',
+            sortOrder: 'asc'
+        };
+
+        const formatNum = (num) => (num || 0).toLocaleString('en-IN');
+
+        $(document).ready(function () {
+            lucide.createIcons();
+            $('.searchable-select').select2({ width: '100%', dropdownAutoWidth: true });
+
+            // Initial Data Fetch
+            loadLeadDashboardData();
+
+            // Bind Event Listeners
+            $('#filter-sector-type').on('change', function () {
+                state.sectorType = $(this).val();
+                loadLeadDashboardData(); // Server-side filtering required based on original logic
+            });
+
+            $('#filter-lead').on('change', function () {
+                state.lead = $(this).val();
+                loadLeadDashboardData(); // Server-side filtering required based on original logic
+            });
+
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                state.search = e.target.value.toLowerCase().trim();
+                processAndRender();
+            });
+
+            document.getElementById('sortFilter').addEventListener('change', (e) => {
+                state.sortBy = e.target.value;
+                processAndRender();
+            });
+            
+            document.getElementById('sortOrderBtn').addEventListener('click', () => {
+                state.sortOrder = state.sortOrder === 'asc' ? 'desc' : 'asc';
+                document.getElementById('sortOrderIcon').setAttribute('data-lucide', state.sortOrder === 'asc' ? 'arrow-up' : 'arrow-down');
+                lucide.createIcons();
+                processAndRender();
+            });
+        });
+
+        // --- GLOBAL UI HANDLERS ---
+        window.setView = function (viewMode) {
+            state.view = viewMode;
+            const btnList = document.getElementById('btnViewList');
+            const btnCard = document.getElementById('btnViewCard');
+            const sortControls = document.getElementById('sortControls');
+            
+            if (viewMode === 'list') {
+                btnList.style.backgroundColor = 'white'; btnList.style.color = 'var(--brand-blue)';
+                btnList.classList.add('shadow'); btnList.classList.remove('text-white');
+                btnCard.style.backgroundColor = 'transparent'; btnCard.style.color = 'white';
+                btnCard.classList.remove('shadow'); btnCard.classList.add('text-white');
+                sortControls.classList.replace('d-flex', 'd-none');
+            } else {
+                btnCard.style.backgroundColor = 'white'; btnCard.style.color = 'var(--brand-blue)';
+                btnCard.classList.add('shadow'); btnCard.classList.remove('text-white');
+                btnList.style.backgroundColor = 'transparent'; btnList.style.color = 'white';
+                btnList.classList.remove('shadow'); btnList.classList.add('text-white');
+                sortControls.classList.replace('d-none', 'd-flex');
+            }
+            processAndRender();
+        };
+
+        window.handleSort = function (column) {
+            if (state.sortBy === column) {
+                state.sortOrder = state.sortOrder === 'asc' ? 'desc' : 'asc';
+            } else {
+                state.sortBy = column;
+                state.sortOrder = 'asc';
+            }
+            processAndRender();
+        };
+
+        window.toggleRow = function (index) {
+            if (window.innerWidth >= 1200) return; // Disable natively on XL
+            const expandRow = document.getElementById(`expand-${index}`);
+            const chevron = document.getElementById(`chev-${index}`);
+            if (expandRow.classList.contains('d-none')) {
+                expandRow.classList.remove('d-none');
+                if (chevron) chevron.style.transform = 'rotate(180deg)';
+            } else {
+                expandRow.classList.add('d-none');
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+            }
+        };
+
+        // --- DATA FETCHING ---
+        function loadLeadDashboardData() {
+            $('#render-container').hide();
+            $('#error-overlay').hide();
+            $('#loading-overlay').show();
+
+            let params = new URLSearchParams();
+            if (state.sectorType !== 'All') params.append('sectorType', state.sectorType);
+            if (state.lead !== 'All') params.append('lead', state.lead);
+
+            fetch('/FareAudit/GetLeadLevelDashboardData?' + params.toString())
+                .then(res => res.json())
+                .then(result => {
+                    $('#loading-overlay').hide();
+                    if (!result.success) {
+                        showError(result.message || "Failed to load audit data.");
+                        return;
+                    }
+                    
+                    allAuditData = result.data || [];
+                    
+                    if (state.lead === 'All' || state.lead === '') {
+                        populateLeadDropdown(allAuditData);
+                    }
+
+                    $('#render-container').show();
+                    processAndRender();
+                })
+                .catch(err => {
+                    $('#loading-overlay').hide();
+                    showError("Network error: " + err.message);
+                });
+        }
+
+        function populateLeadDropdown(data) {
+            let leadsSet = new Set();
+            data.forEach(item => { if (item.leadName) leadsSet.add(item.leadName); });
+
+            const leadSelect = document.getElementById('filter-lead');
+            leadSelect.innerHTML = '<option value="All">All Leads</option>';
+            
+            Array.from(leadsSet).sort().forEach(lead => {
+                const opt = document.createElement('option');
+                opt.value = lead;
+                opt.textContent = lead;
+                leadSelect.appendChild(opt);
+            });
+            
+            $(leadSelect).val(state.lead).trigger('change.select2');
+        }
+
+        function showError(msg) {
+            $('#error-overlay').show();
+            let formattedMsg = msg;
+            if (msg.includes("Unauthorized") || msg.includes("401")) {
+                formattedMsg += "<br><br><strong style='color:#b71c1c;'>Security Note:</strong> Your Azure session token has expired. <br><br> <a href='/Login/Logout' class='btn btn-danger btn-sm'>Refresh Token</a>";
+            }
+            $('#error-message').html(formattedMsg);
+        }
+
+        // --- PROCESSING & RENDERING ---
+        function processAndRender() {
+            // Filter
+            filteredData = allAuditData.filter(row => {
+                if (!state.search) return true;
+                return (row.leadName && row.leadName.toLowerCase().includes(state.search));
+            });
+
+            // Sort
+            filteredData.sort((a, b) => {
+                let vA, vB;
+                switch (state.sortBy) {
+                    case 'leadName': vA = (a.leadName || "").toLowerCase(); vB = (b.leadName || "").toLowerCase(); break;
+                    case 'assigned': vA = a.assignedSectors || 0; vB = b.assignedSectors || 0; break;
+                    case 'purchased': vA = a.purchasedSectors || 0; vB = b.purchasedSectors || 0; break;
+                    case 'live': vA = a.liveSectors || 0; vB = b.liveSectors || 0; break;
+                    case 'fareSup': vA = a.fareSupportiveCount || 0; vB = b.fareSupportiveCount || 0; break;
+                    case 'd7': vA = a.d7NotLiveCount || 0; vB = b.d7NotLiveCount || 0; break;
+                    case 'block': vA = a.blockSectorCount || 0; vB = b.blockSectorCount || 0; break;
+                    case 'loss': vA = a.sellingAtLossCount || 0; vB = b.sellingAtLossCount || 0; break;
+                    case 'profit': vA = a.sellingAtProfitCount || 0; vB = b.sellingAtProfitCount || 0; break;
+                    case 'new': vA = a.newlyAddedCount || 0; vB = b.newlyAddedCount || 0; break;
+                    default: vA = (a.leadName || "").toLowerCase(); vB = (b.leadName || "").toLowerCase();
+                }
+                if (vA < vB) return state.sortOrder === 'asc' ? -1 : 1;
+                if (vA > vB) return state.sortOrder === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            const container = document.getElementById('render-container');
+            container.classList.remove('animate-fade-up');
+            void container.offsetWidth; // trigger reflow
+            container.classList.add('animate-fade-up');
+
+            if (filteredData.length === 0) {
+                container.innerHTML = `
+                            <div class="text-center py-5 bg-white rounded-4 border shadow-sm my-5">
+                                <i data-lucide="search-x" class="text-muted mb-3" style="width: 3rem; height: 3rem; opacity: 0.5;"></i>
+                                <h4 class="fw-bold" style="color: var(--slate-800);">No results found</h4>
+                                <p class="text-muted mb-0">Adjust your filters or search term to see more leads.</p>
+                            </div>`;
+            } else {
+                if (state.view === 'list') {
+                    container.innerHTML = buildListView(filteredData);
+                } else {
+                    container.innerHTML = buildCardView(filteredData);
+                }
+            }
+            lucide.createIcons();
+        }
+
+        // --- HTML BUILDERS ---
+        function renderLink(val, leadName, category, forCard = false) {
+            if (!val || val === 0) return forCard ? '<span class="text-slate-400">0</span>' : '0';
+            
+            let stParam = (state.sectorType !== 'Select' && state.sectorType !== 'All') ? `&sectorType=${encodeURIComponent(state.sectorType)}` : '';
+            let url = `/FareAudit/LeadCategoryDetails?lead=${encodeURIComponent(leadName)}&category=${category}${stParam}`;
+            
+            if (category === 'SellingAtLoss') {
+                return `<a href="${url}" class="drilldown-alert" onclick="event.stopPropagation();">${formatNum(val)}</a>`;
+            }
+            return `<a href="${url}" class="drilldown-link" onclick="event.stopPropagation();">${formatNum(val)}</a>`;
+        }
+
+        function buildListView(records) {
+            const getIcon = (col) => {
+                const isActive = state.sortBy === col;
+                const icon = isActive ? (state.sortOrder === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down';
+                const activeCls = isActive ? 'active' : '';
+                return `<i data-lucide="${icon}" class="sort-icon ${activeCls}"></i>`;
+            };
+
+            let html = `
+                    <div class="modern-table-wrapper mb-5">
+                        <div class="table-responsive hide-scrollbar">
+                            <table class="modern-table">
+                                <thead>
+                                    <tr>
+                                        <th onclick="handleSort('leadName')"><div class="d-flex align-items-center">Lead Name ${getIcon('leadName')}</div></th>
+                                        <th onclick="handleSort('assigned')" class="text-center"><div class="d-flex justify-content-center align-items-center">Assigned Sector ${getIcon('assigned')}</div></th>
+                                        <th onclick="handleSort('purchased')" class="d-none d-sm-table-cell text-center"><div class="d-flex justify-content-center align-items-center">Purchased Sector ${getIcon('purchased')}</div></th>
+                                        <th onclick="handleSort('live')" class="d-none d-md-table-cell text-center"><div class="d-flex justify-content-center align-items-center">Live Sector ${getIcon('live')}</div></th>
+                                        <th onclick="handleSort('fareSup')" class="d-none d-lg-table-cell text-center"><div class="d-flex justify-content-center align-items-center">Fare Supportive<br><span class="text-xxs opacity-75">(No Seats)</span> ${getIcon('fareSup')}</div></th>
+                                        <th onclick="handleSort('d7')" class="d-none d-xl-table-cell text-center"><div class="d-flex justify-content-center align-items-center">D-7 Not Live ${getIcon('d7')}</div></th>
+                                        <th onclick="handleSort('block')" class="d-none d-xl-table-cell text-center"><div class="d-flex justify-content-center align-items-center">Block Sector ${getIcon('block')}</div></th>
+                                        <th onclick="handleSort('loss')" class="text-center"><div class="d-flex justify-content-center align-items-center">Selling at Loss ${getIcon('loss')}</div></th>
+                                        <th onclick="handleSort('profit')" class="d-none d-lg-table-cell text-center"><div class="d-flex justify-content-center align-items-center">Selling at Profit ${getIcon('profit')}</div></th>
+                                        <th onclick="handleSort('new')" class="d-none d-xxl-table-cell text-center"><div class="d-flex justify-content-center align-items-center">Newly Added ${getIcon('new')}</div></th>
+                                        <th class="text-center d-xl-none">More</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+
+            records.forEach((row, index) => {
+                let profitDisp = row.sellingAtProfitCount > 0 ? `<span class="text-success fw-bold" style="font-size:1.125rem;">${formatNum(row.sellingAtProfitCount)}</span>` : '0';
+
+                html += `
+                            <!-- Main Visible Row -->
+                            <tr class="main-row" onclick="toggleRow(${index})">
+                                <td class="fw-bolder" style="color: var(--brand-blue); font-size: 0.95rem;">${row.leadName || '-'}</td>
+                                <td class="text-center fw-bold text-dark">${renderLink(row.assignedSectors, row.leadName, 'Assigned')}</td>
+                                <td class="d-none d-sm-table-cell text-center fw-bold text-dark">${renderLink(row.purchasedSectors, row.leadName, 'Purchased')}</td>
+                                <td class="d-none d-md-table-cell text-center fw-bold text-dark">${renderLink(row.liveSectors, row.leadName, 'Live')}</td>
+                                <td class="d-none d-lg-table-cell text-center fw-bold text-dark">${renderLink(row.fareSupportiveCount, row.leadName, 'FareSupportive')}</td>
+                                <td class="d-none d-xl-table-cell text-center fw-bold text-dark">${renderLink(row.d7NotLiveCount, row.leadName, 'D7NotLive')}</td>
+                                <td class="d-none d-xl-table-cell text-center fw-bold text-dark">${renderLink(row.blockSectorCount, row.leadName, 'BlockSector')}</td>
+                        
+                                <td class="text-center fw-bold">${renderLink(row.sellingAtLossCount, row.leadName, 'SellingAtLoss')}</td>
+                        
+                                <td class="d-none d-lg-table-cell text-center">${profitDisp}</td>
+                                <td class="d-none d-xxl-table-cell text-center fw-bold text-dark">${renderLink(row.newlyAddedCount, row.leadName, 'NewlyAdded')}</td>
+                        
+                                <td class="text-center d-xl-none">
+                                    <button class="btn btn-light btn-sm border text-muted shadow-sm px-2">
+                                        <i data-lucide="chevron-down" id="chev-${index}" class="chevron-icon" style="width: 1.25rem; height: 1.25rem;"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                    
+                            <!-- Expanded Details Row (Mobile/Tablet/Laptop Only) -->
+                            <tr id="expand-${index}" class="expanded-row d-none d-xl-none">
+                                <td colspan="11" class="p-0 border-0">
+                                    <div class="p-4" style="background-color: rgba(248, 250, 252, 0.5);">
+                                        <div class="row g-3">
+                                            <div class="col-6 d-sm-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Purchased Sector</div><div class="fw-bold text-dark">${renderLink(row.purchasedSectors, row.leadName, 'Purchased')}</div></div>
+                                            <div class="col-6 d-md-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Live Sector</div><div class="fw-bold text-dark">${renderLink(row.liveSectors, row.leadName, 'Live')}</div></div>
+                                            <div class="col-6 d-lg-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Fare Supportive</div><div class="fw-bold text-dark">${renderLink(row.fareSupportiveCount, row.leadName, 'FareSupportive')}</div></div>
+                                            <div class="col-6 d-xl-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">D-7 Not Live</div><div class="fw-bold text-dark">${renderLink(row.d7NotLiveCount, row.leadName, 'D7NotLive')}</div></div>
+                                            <div class="col-6 d-xl-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Block Sector</div><div class="fw-bold text-dark">${renderLink(row.blockSectorCount, row.leadName, 'BlockSector')}</div></div>
+                                            <div class="col-6 d-lg-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Selling at Profit</div><div>${profitDisp}</div></div>
+                                            <div class="col-6 d-xxl-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Newly Added</div><div class="fw-bold text-dark">${renderLink(row.newlyAddedCount, row.leadName, 'NewlyAdded')}</div></div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+            });
+
+            html += `</tbody></table></div></div>`;
+            return html;
+        }
+
+        // Custom Card View specific to Fare Audit Metrics
+        function buildCardView(records) {
+            let html = '<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 mb-5">';
+            
+            records.forEach(row => {
+                const lossAlert = row.sellingAtLossCount > 0
+                    ? `<div class="d-flex align-items-center gap-1 bg-danger bg-opacity-10 px-2 py-1 rounded-3 border border-danger border-opacity-25" title="Sectors Selling at Loss">
+                                   <i data-lucide="alert-triangle" class="text-danger" style="width:14px; height:14px;"></i>
+                                   <span class="text-danger fw-bold" style="font-size: 0.875rem;">${row.sellingAtLossCount}</span>
+                               </div>`
+                    : '';
+
+                html += `
+                            <div class="col">
+                                <div class="card h-100 border-0 rounded-4 shadow-sm hover-card bg-white d-flex flex-column overflow-hidden">
+                                    <div class="p-3 border-bottom d-flex justify-content-between align-items-center" style="background-color: var(--slate-50);">
+                                        <h4 class="fw-bold mb-0 text-truncate" style="color: var(--slate-900); font-size: 1.125rem;">${row.leadName}</h4>
+                                        ${lossAlert}
+                                    </div>
+                            
+                                    <div class="p-3 bg-white flex-grow-1">
+                                        <div class="row g-2">
+                                            <div class="col-4">
+                                                <div class="metric-box bg-slate-50 h-100">
+                                                    <div class="text-xxs text-muted fw-bold text-uppercase mb-1">Assigned</div>
+                                                    <div>${renderLink(row.assignedSectors, row.leadName, 'Assigned', true)}</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="metric-box bg-slate-50 h-100">
+                                                    <div class="text-xxs text-muted fw-bold text-uppercase mb-1">Purchased</div>
+                                                    <div>${renderLink(row.purchasedSectors, row.leadName, 'Purchased', true)}</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="metric-box bg-slate-50 h-100" style="border-bottom: 2px solid var(--primary);">
+                                                    <div class="text-xxs text-primary fw-bold text-uppercase mb-1">Live</div>
+                                                    <div>${renderLink(row.liveSectors, row.leadName, 'Live', true)}</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="metric-box bg-slate-50 h-100">
+                                                    <div class="text-xxs text-muted fw-bold text-uppercase mb-1 text-truncate" title="Fare Supportive (No Seats)">Supportive</div>
+                                                    <div>${renderLink(row.fareSupportiveCount, row.leadName, 'FareSupportive', true)}</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="metric-box bg-slate-50 h-100">
+                                                    <div class="text-xxs text-muted fw-bold text-uppercase mb-1">D-7</div>
+                                                    <div>${renderLink(row.d7NotLiveCount, row.leadName, 'D7NotLive', true)}</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="metric-box bg-slate-50 h-100">
+                                                    <div class="text-xxs text-muted fw-bold text-uppercase mb-1">Blocked</div>
+                                                    <div>${renderLink(row.blockSectorCount, row.leadName, 'BlockSector', true)}</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="metric-box bg-danger bg-opacity-10 h-100" style="border-color: rgba(239, 68, 68, 0.2);">
+                                                    <div class="text-xxs text-danger fw-bold text-uppercase mb-1">At Loss</div>
+                                                    <div>${renderLink(row.sellingAtLossCount, row.leadName, 'SellingAtLoss', true)}</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="metric-box bg-success bg-opacity-10 h-100" style="border-color: rgba(16, 185, 129, 0.2);">
+                                                    <div class="text-xxs text-success fw-bold text-uppercase mb-1">At Profit</div>
+                                                    <div class="fw-bold" style="font-size: 1.125rem;">${row.sellingAtProfitCount > 0 ? `<span class="text-success">${formatNum(row.sellingAtProfitCount)}</span>` : '<span class="text-slate-400">0</span>'}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+            });
+
+            html += '</div>';
+            return html;
+        }
+    </script>
+}

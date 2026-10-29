@@ -3,9 +3,214 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+<!-- Select2 CSS -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
 <style>
+    body[data-layout="horizontal"] .page-content, .page-content {
+        padding-top: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        padding-bottom: 60px !important;
+    }
+
+    :root {
+        --brand-blue: #1076bb;
+        --brand-red: #f16367;
+        --slate-50: #f8fafc;
+        --slate-100: #f1f5f9;
+        --slate-200: #e2e8f0;
+        --slate-300: #cbd5e1;
+        --slate-400: #94a3b8;
+        --slate-500: #64748b;
+        --slate-600: #475569;
+        --slate-700: #334155;
+        --slate-800: #1e293b;
+        --slate-900: #0f172a;
+    }
+
+    .custom-scope {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--slate-50);
+        color: var(--slate-900);
+    }
+    
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    /* Animations */
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-up {
+        animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    
+    @@keyframes progressFill {
+        from {
+            width: 0;
+        }
+    }
+
+    .progress-bar-fill {
+        animation: progressFill 1s ease-out forwards;
+    }
+
+    /* Hero Banner */
+    .hero-banner {
+        background: linear-gradient(to right, var(--brand-blue), var(--brand-red));
+        padding-top: 2.5rem;
+        padding-bottom: 6rem;
+        position: relative;
+    }
+
+    .hero-pattern {
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0);
+        background-size: 24px 24px;
+    }
+
+    /* CUSTOM SELECT2 STYLING TO MATCH MODERN INPUTS */
+    .select2-container--default .select2-selection--single {
+        background-color: var(--slate-50) !important;
+        border: 1px solid var(--slate-200) !important;
+        border-radius: 0.75rem !important;
+        height: 3rem !important;
+        display: flex;
+        align-items: center;
+        outline: none;
+        box-shadow: none !important;
+        transition: all 0.2s;
+    }
+
+    .select2-container--open .select2-selection--single {
+        background-color: #fff !important;
+        border-color: var(--brand-blue) !important;
+        box-shadow: 0 0 0 4px rgba(16, 118, 187, 0.1) !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--slate-800) !important;
+        font-weight: 600 !important;
+        font-size: 0.875rem;
+        padding-left: 1rem !important;
+        line-height: normal !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 3rem !important;
+        right: 0.75rem !important;
+    }
+
+    .select2-dropdown {
+        border: 1px solid var(--slate-200) !important;
+        border-radius: 0.75rem !important;
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1) !important;
+        overflow: hidden;
+        font-size: 0.875rem;
+        z-index: 1060;
+    }
+
+    .select2-search__field {
+        border-radius: 0.5rem !important;
+        padding: 0.5rem !important;
+    }
+    
+    /* CUSTOM LIST VIEW TABLE STYLES */
+    .modern-table-wrapper {
+        background: #ffffff;
+        border-radius: 1rem;
+        border: 1px solid var(--slate-200);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .modern-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        font-size: 0.875rem;
+        white-space: nowrap;
+    }
+
+        .modern-table thead th {
+            background-color: var(--slate-50);
+            color: var(--slate-600);
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1rem 0.75rem;
+            border-bottom: 1px solid var(--slate-200);
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s;
+        }
+
+            .modern-table thead th:hover {
+                background-color: #e2e8f0;
+            }
+
+        .modern-table tbody td {
+            padding: 1.25rem 0.75rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--slate-700);
+            font-weight: 500;
+        }
+
+        .modern-table tbody tr.main-row {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+            .modern-table tbody tr.main-row:hover {
+                background-color: var(--slate-50);
+            }
+
+        .modern-table tbody tr.expanded-row {
+            background-color: rgba(248, 250, 252, 0.6);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+    
+    .sort-icon {
+        width: 14px;
+        height: 14px;
+        transition: opacity 0.2s, color 0.2s;
+        opacity: 0.3;
+        margin-left: 4px;
+    }
+
+        .sort-icon.active {
+            opacity: 1;
+            color: var(--brand-blue);
+        }
+
+    .chevron-icon {
+        transition: transform 0.2s ease;
+    }
+
+    /* Tooltips */
     .tip-table {
         width: 100%;
         border-collapse: collapse;
@@ -14,7 +219,7 @@
     }
 
         .tip-table th {
-            font-weight: 700 !important;
+            font-weight: 700;
             font-size: 11px;
             color: #64748b;
             padding: 6px 12px;
@@ -29,8 +234,8 @@
         }
 
         .tip-table .pct-row td {
-            color: #0b5ed7;
-            background-color: rgba(13, 110, 253, 0.05);
+            color: #0ea5e9;
+            background-color: #f0f9ff;
             border-radius: 4px;
         }
 
@@ -40,131 +245,162 @@
         z-index: 1000;
         background: #fff;
         border: 1px solid #e2e8f0;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-        border-radius: 8px;
-        padding: 8px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        border-radius: 12px;
+        padding: 12px;
         min-width: 250px;
+        left: 0;
+        top: 100%;
+        margin-top: 0.5rem;
     }
 
-    .tip-btn {
-        background: none;
-        border: none;
-        padding: 0;
-        margin-left: 4px;
-        color: #64748b;
-        cursor: pointer;
+    /* Custom Sort Modal Styling */
+    .modern-select {
+        background-color: var(--slate-50);
+        border: 1px solid var(--slate-200);
+        border-radius: 0.5rem;
+        color: var(--slate-800);
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.2s;
     }
 
-        .tip-btn:hover {
-            color: #0b5ed7;
+        .modern-select:focus {
+            background-color: #fff;
+            border-color: var(--brand-blue);
+            box-shadow: 0 0 0 3px rgba(16, 118, 187, 0.1);
+            outline: none;
         }
 
-    /* Custom styling to make Select2 look like Bootstrap 5 */
-    .select2-container .select2-selection--single {
-        height: 38px !important;
-        border: 1px solid #dee2e6 !important;
-        border-radius: 0.375rem !important;
-        padding: 4px 8px !important;
-        box-shadow: 0 .125rem .25rem rgba(0,0,0,.075) !important;
+    .sort-row {
+        background-color: var(--slate-50);
+        border: 1px solid var(--slate-200);
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
     }
 
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 36px !important;
-        right: 8px !important;
-    }
-
-    .select2-container--default .select2-selection--single .select2-selection__rendered {
-        line-height: 28px !important;
-        color: #212529 !important;
-    }
-
-    .select2-dropdown {
-        border: 1px solid #dee2e6 !important;
-        border-radius: 0.375rem !important;
-        box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15) !important;
+    .text-xxs {
+        font-size: 0.65rem;
     }
 </style>
 
-<div class="page-content">
-    <div class="container-fluid">
-        <div class="conatiner cox">
-            <div class="row align-items-center mb-3">
-                <div class="col-12 col-md-3 d-flex justify-content-start align-items-center gap-3 mb-3 mb-md-0">
-                    <a href="/Dashboard/Index" class="btn btn-sm btn-light border shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" title="Back to Dashboard">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+<div class="page-content custom-scope pb-5">
+    
+    <!-- 1. HERO BANNER -->
+    <div class="hero-banner px-3">
+        <div class="hero-pattern"></div>
+        <div class="container-fluid position-relative z-1" style="max-width: 1800px;">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">
+                <div class="d-flex align-items-center gap-3">
+                    <a href="/Dashboard/Index" class="btn btn-light d-flex align-items-center justify-content-center p-0 rounded-circle shadow-sm" style="width: 3rem; height: 3rem; color: var(--brand-blue);" title="Back to Dashboard">
+                        <i data-lucide="arrow-left" style="width: 1.25rem; height: 1.25rem;"></i>
                     </a>
-                    <h4 class="mb-0">Master Sector List</h4>
-                </div>
-
-                <div class="col-12 col-md-9">
-                    <div class="row g-2 justify-content-md-end align-items-center">
-                        <div class="col-12 col-sm-6 col-lg-auto" style="min-width: 150px;">
-                            <select id="sectorTypeFilter" class="form-select searchable-select text-primary fw-bold w-100">
-                                <option value="All" selected="">All Sectors</option>
-                                <option value="Domestic">Domestic</option>
-                                <option value="International">International</option>
-                            </select>
-                        </div>
-
-                        <div class="col-12 col-sm-6 col-lg-auto" style="min-width: 160px;">
-                            <select id="sectorFilter" class="form-select searchable-select w-100">
-                                <option selected="">Filter By Sector</option>
-                            </select>
-                        </div>
-
-                        <div class="col-12 col-sm-6 col-lg-auto" style="min-width: 160px;">
-                            <select id="stationFilter" class="form-select searchable-select w-100">
-                                <option selected="">Filter By Station</option>
-                            </select>
-                        </div>
-
-                        <div class="col-12 col-sm-6 col-lg-auto" style="min-width: 150px;">
-                            <select id="leadFilter" class="form-select searchable-select w-100">
-                                <option selected="">Filter By Lead</option>
-                            </select>
-                        </div>
-
-                        <div class="col-12 col-sm-12 col-lg-auto" style="min-width: 180px;">
-                            <select id="occasionFilter" class="form-select searchable-select w-100">
-                                <option selected="">Filter By Occasion</option>
-                            </select>
-                        </div>
+                    <div class="text-white">
+                        <h1 class="fw-bolder mb-1 text-white" style="font-size: 2.25rem;">Master Sector List</h1>
+                        <p class="mb-0 fw-medium opacity-75" style="font-size: 1rem;">View and filter all flight capabilities across the entire year.</p>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="boxes position-relative bg-white shadow-sm rounded-4 p-4 mt-3 w-100">
-            <div id="loading-overlay" style="padding: 4rem; text-align: center;">
-                <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status"><span class="visually-hidden">Loading...</span></div>
-                <h5 class="mt-3 text-muted">Aggregating Sectors...</h5>
-                <p class="text-muted small">Crunching flight capabilities for the whole year.</p>
+    <!-- 2. FILTER BAR (Updated with Custom Sort Button) -->
+    <div class="container-fluid position-relative px-3" style="max-width: 1600px; margin-top: -3rem; z-index: 10;">
+        <div class="card border-0 rounded-4 shadow-sm p-4">
+            <div class="row g-3">
+                <div class="col-12 col-md-6 col-xl-2">
+                    <select id="sectorTypeFilter" class="form-select searchable-select">
+                        <option value="All" selected>All Types</option>
+                        <option value="Domestic">Domestic</option>
+                        <option value="International">International</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-6 col-xl-2">
+                    <select id="sectorFilter" class="form-select searchable-select">
+                        <option value="All" selected>Filter By Sector</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-4 col-xl-2">
+                    <select id="stationFilter" class="form-select searchable-select">
+                        <option value="All" selected>Filter By Station</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-4 col-xl-2">
+                    <select id="leadFilter" class="form-select searchable-select">
+                        <option value="All" selected>Filter By Lead</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-4 col-xl-2">
+                    <select id="occasionFilter" class="form-select searchable-select">
+                        <option value="All" selected>Filter By Occasion</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-12 col-xl-2">
+                    <!-- Excel-style Custom Sort Button -->
+                    <button onclick="openCustomSortModal()" class="btn d-flex align-items-center justify-content-center gap-2 shadow-sm text-dark fw-bold border w-100" style="background-color: #fff; height: 3rem; border-radius: 0.75rem; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f8fafc'" onmouseout="this.style.backgroundColor='#fff'">
+                        <i data-lucide="list-ordered" style="width: 1.25rem; height: 1.25rem;"></i> Custom Sort
+                    </button>
+                </div>
             </div>
+        </div>
+    </div>
 
-            <div id="error-overlay" style="display:none; padding: 2rem; background: #fff3f3; border: 1px solid #ffcdd2; border-radius: 8px; margin: 1rem 0;">
-                <h5 class="text-danger mb-2">Failed to load data</h5>
-                <p id="error-message" class="text-danger mb-0"></p>
+    <!-- 3. MAIN CONTENT AREA -->
+    <div class="container-fluid px-3 mt-4" style="max-width: 1600px;">
+        
+        <div id="loading-overlay" class="text-center py-5 bg-white rounded-4 border shadow-sm animate-fade-up">
+            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+            <h4 class="fw-bold" style="color: var(--slate-800);">Aggregating Sectors...</h4>
+            <p class="text-muted mb-0">Crunching flight capabilities for the whole year.</p>
+        </div>
+        
+        <div id="error-overlay" style="display:none;" class="alert alert-danger rounded-4 border-0 mb-4 shadow-sm">
+            <p id="error-message" class="fw-bold mb-0"></p>
+        </div>
+
+        <div id="render-container" class="animate-fade-up" style="display: none;">
+            <!-- HTML injected via JS -->
+        </div>
+    </div>
+</div>
+
+<!-- 4. CUSTOM SORT MODAL (Excel Style) -->
+<div class="modal fade" id="customSortModal" tabindex="-1" aria-labelledby="customSortModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold" id="customSortModalLabel">Sort</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-
-            <div id="content-overlay" style="display:none; width: 100%;">
-                <table id="calendarTable" class="display responsive w-100" style="width:100%">
-                    <thead>
-                        <tr>
-                            <th>Sector</th>
-                            <th>Event Name</th>
-                            <th>Event Date</th>
-                            <th>Date Range</th>
-                            <th>Airlines</th>
-                            <th>Flight Count</th>
-                            <th>Total Strength</th>
-                            <th>Target Seats</th>
-                            <th>Achieved</th>
-                            <th>Lead</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="list-tbody"></tbody>
-                </table>
+            <div class="modal-body">
+                <div class="d-flex gap-2 mb-3 pb-3 border-bottom">
+                    <button class="btn btn-sm btn-light border fw-bold d-flex align-items-center gap-1" onclick="addSortLevel()">
+                        <i data-lucide="plus" style="width: 14px; height: 14px; color: #1076bb;"></i> Add Level
+                    </button>
+                    <button class="btn btn-sm btn-light border fw-bold d-flex align-items-center gap-1 text-danger" onclick="deleteLastSortLevel()">
+                        <i data-lucide="minus" style="width: 14px; height: 14px;"></i> Delete Level
+                    </button>
+                    <!-- New Clear All Button -->
+                    <button class="btn btn-sm btn-light border fw-bold d-flex align-items-center gap-1 ms-auto text-muted" onclick="clearAllSorts()">
+                        <i data-lucide="x-circle" style="width: 14px; height: 14px;"></i> Clear All
+                    </button>
+                </div>
+                
+                <div class="fw-bold text-muted text-xxs text-uppercase mb-2 px-2 d-flex">
+                    <div style="flex: 1;">Column</div>
+                    <div style="flex: 1;">Order</div>
+                </div>
+                <div id="sortLevelsContainer">
+                    <!-- Dynamic rows will be injected here -->
+                </div>
+            </div>
+            <div class="modal-footer border-top-0 pt-0">
+                <button type="button" class="btn btn-light fw-bold rounded-3" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn text-white fw-bold rounded-3" style="background-color: var(--brand-blue);" onclick="applyCustomSort()">OK</button>
             </div>
         </div>
     </div>
@@ -172,181 +408,438 @@
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <!-- If Bootstrap JS isn't in your _Layout, uncomment the line below -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> -->
 
     <script>
+        // --- STATE MANAGEMENT ---
         let allMasterData = [];
+        
+        // Converted single sorting state into an array of sort objects
+        let state = {
+            sectorType: 'All',
+            sector: 'All',
+            station: 'All',
+            lead: 'All',
+            occasion: 'All',
+            sortLevels: [{ column: 'date', order: 'asc' }]
+        };
+
+        const availableColumns = [
+            { id: 'id', name: 'Sl No.', type: 'number' },
+            { id: 'sector', name: 'Sector', type: 'text' },
+            { id: 'event', name: 'Event Name', type: 'text' },
+            { id: 'date', name: 'Event Date', type: 'date' },
+            { id: 'range', name: 'Date Range', type: 'date' },
+            { id: 'airlines', name: 'Airlines', type: 'number' },
+            { id: 'flights', name: 'Flights', type: 'number' },
+            { id: 'capacity', name: 'Strength', type: 'number' },
+            { id: 'target', name: 'Target', type: 'number' },
+            { id: 'achieved', name: 'Achieved', type: 'number' },
+            { id: 'lead', name: 'Lead', type: 'text' }
+        ];
+
+        const formatNum = (num) => (num || 0).toLocaleString('en-IN');
 
         $(document).ready(function () {
-        // 1. Initialize Select2 on all filters
-        $('.searchable-select').select2({
-        width: '100%',
-        dropdownAutoWidth: true
-        });
+            lucide.createIcons();
 
-        // 2. Fetch the Data
-        fetch(`/Dashboard/GetAllSectorsData?year=2026`)
-        .then(res => res.json())
-        .then(result => {
-        $('#loading-overlay').hide();
-        if (!result.success) { showError(result.message); return; }
+            $('.searchable-select').select2({
+                width: '100%',
+                dropdownAutoWidth: true
+            });
 
-        allMasterData = result.data || [];
-        populateFilters();
-        $('#content-overlay').show();
-        applyFilters();
-        })
-        .catch(err => {
-        $('#loading-overlay').hide();
-        showError("Network error: " + err.message);
-        });
+            fetch(`/Dashboard/GetAllSectorsData?year=2026`)
+                .then(res => res.json())
+                .then(result => {
+                    $('#loading-overlay').hide();
+                    if (!result.success) { showError(result.message); return; }
 
-        // 3. Bind the change event specifically for Select2
-        $('.searchable-select').on('change', function () {
-        applyFilters();
-        });
+                    allMasterData = result.data || [];
+                    populateFilters();
+                    
+                    $('.searchable-select').on('change', function (e) {
+                        const id = e.target.id;
+                        if (id === 'sectorTypeFilter') state.sectorType = e.target.value;
+                        if (id === 'sectorFilter') state.sector = e.target.value;
+                        if (id === 'stationFilter') state.station = e.target.value;
+                        if (id === 'leadFilter') state.lead = e.target.value;
+                        if (id === 'occasionFilter') state.occasion = e.target.value;
+                        processAndRender();
+                    });
+
+                    $('#render-container').show();
+                    processAndRender();
+                })
+                .catch(err => {
+                    $('#loading-overlay').hide();
+                    showError("Network error: " + err.message);
+                });
         });
 
         function showError(msg) {
-        $('#error-overlay').show();
-        $('#error-message').html(msg);
+            $('#error-overlay').show();
+            $('#error-message').html(msg);
         }
 
         function populateFilters() {
-        const secFilter = document.getElementById('sectorFilter');
-        const staFilter = document.getElementById('stationFilter');
-        const leadFilter = document.getElementById('leadFilter');
-        const occFilter = document.getElementById('occasionFilter');
+            const secFilter = document.getElementById('sectorFilter');
+            const staFilter = document.getElementById('stationFilter');
+            const leadFilter = document.getElementById('leadFilter');
+            const occFilter = document.getElementById('occasionFilter');
 
-        const uniqueSec = [...new Set(allMasterData.map(i => i.sector))].filter(Boolean).sort();
-        const uniqueSta = [...new Set(allMasterData.map(i => i.station))].filter(Boolean).sort();
-        const uniqueLead = [...new Set(allMasterData.map(i => i.lead))].filter(Boolean).sort();
-        const uniqueOcc = [...new Set(allMasterData.map(i => i.eventName))].filter(Boolean).sort();
+            const uniqueSec = [...new Set(allMasterData.map(i => i.sector))].filter(Boolean).sort();
+            const uniqueSta = [...new Set(allMasterData.map(i => i.station))].filter(Boolean).sort();
+            const uniqueLead = [...new Set(allMasterData.map(i => i.lead))].filter(Boolean).sort();
+            const uniqueOcc = [...new Set(allMasterData.map(i => i.eventName))].filter(Boolean).sort();
 
-        // Clear existing and Add new options
-        secFilter.innerHTML = '<option value="Filter By Sector" selected>Filter By Sector</option>';
-        uniqueSec.forEach(x => secFilter.add(new Option(x, x)));
+            secFilter.innerHTML = '<option value="All" selected>Filter By Sector</option>';
+            uniqueSec.forEach(x => secFilter.add(new Option(x, x)));
 
-        staFilter.innerHTML = '<option value="Filter By Station" selected>Filter By Station</option>';
-        uniqueSta.forEach(x => staFilter.add(new Option(x, x)));
+            staFilter.innerHTML = '<option value="All" selected>Filter By Station</option>';
+            uniqueSta.forEach(x => staFilter.add(new Option(x, x)));
 
-        leadFilter.innerHTML = '<option value="Filter By Lead" selected>Filter By Lead</option>';
-        uniqueLead.forEach(x => leadFilter.add(new Option(x, x)));
+            leadFilter.innerHTML = '<option value="All" selected>Filter By Lead</option>';
+            uniqueLead.forEach(x => leadFilter.add(new Option(x, x)));
 
-        occFilter.innerHTML = '<option value="Filter By Occasion" selected>Filter By Occasion</option>';
-        uniqueOcc.forEach(x => occFilter.add(new Option(x, x)));
+            occFilter.innerHTML = '<option value="All" selected>Filter By Occasion</option>';
+            uniqueOcc.forEach(x => occFilter.add(new Option(x, x)));
 
-        // VERY IMPORTANT: Tell Select2 that the HTML options have been updated so it repaints the UI
-        $('.searchable-select').trigger('change.select2');
+            $('.searchable-select').trigger('change.select2');
         }
 
-        function applyFilters() {
-        let filtered = allMasterData;
+        // --- MULTI-LEVEL SORT LOGIC ---
+        const getCellValue = (obj, col) => {
+            switch (col) {
+                case 'id': return obj.eventId || 0;
+                case 'sector': return (obj.sector || "").toLowerCase();
+                case 'event': return (obj.eventName || "").toLowerCase();
+                case 'date': return new Date(obj.eventDateString).getTime();
+                case 'range': return new Date(obj.travelDate).getTime();
+                case 'airlines': return obj.airlinesCount || 0;
+                case 'flights': return obj.flightCount || 0;
+                case 'capacity': return obj.totalStrength || 0;
+                case 'target': return obj.target || 0;
+                case 'achieved': return obj.achieved || 0;
+                case 'lead': return (obj.lead || "").toLowerCase();
+                default: return 0;
+            }
+        };
 
-        // Get all filter values via jQuery to safely handle Select2 instances
-        const sType = $('#sectorTypeFilter').val();
-        const sec = $('#sectorFilter').val();
-        const sta = $('#stationFilter').val();
-        const lead = $('#leadFilter').val();
-        const occ = $('#occasionFilter').val();
+        // Table Header Click (Overrides to single sort)
+        window.handleSort = function (column) {
+            const currentPrimary = state.sortLevels[0];
+            if (state.sortLevels.length === 1 && currentPrimary.column === column) {
+                state.sortLevels = [{ column: column, order: currentPrimary.order === 'asc' ? 'desc' : 'asc' }];
+            } else {
+                state.sortLevels = [{ column: column, order: 'asc' }];
+            }
+            processAndRender();
+        };
 
-        // Apply filters one by one
-        if (sType !== "All") filtered = filtered.filter(e => e.sectorType === sType);
-        if (sec !== "Filter By Sector" && sec !== "") filtered = filtered.filter(e => e.sector === sec);
-        if (sta !== "Filter By Station" && sta !== "") filtered = filtered.filter(e => e.station === sta);
-        if (lead !== "Filter By Lead" && lead !== "") filtered = filtered.filter(e => e.lead === lead);
-        if (occ !== "Filter By Occasion" && occ !== "") filtered = filtered.filter(e => e.eventName === occ);
+        // --- MODAL UI HANDLERS ---
+        let tempSortLevels = [];
 
-        renderList(filtered);
+        window.openCustomSortModal = function () {
+            tempSortLevels = JSON.parse(JSON.stringify(state.sortLevels));
+            // Notice we removed the forced default level here so it accurately shows 0 levels
+            renderModalRows();
+            const modal = new bootstrap.Modal(document.getElementById('customSortModal'));
+            modal.show();
+        };
+
+        window.addSortLevel = function () {
+            tempSortLevels.push({ column: 'sector', order: 'asc' });
+            renderModalRows();
+        };
+
+        window.deleteLastSortLevel = function () {
+            if (tempSortLevels.length > 0) { // Changed from > 1 to > 0
+                tempSortLevels.pop();
+                renderModalRows();
+            }
+        };
+
+        window.clearAllSorts = function () {
+            tempSortLevels = [];
+            renderModalRows();
+        };
+
+        window.updateTempSort = function (index, field, value) {
+            tempSortLevels[index][field] = value;
+            // Immediately re-render the modal if the column changes so the sort labels update
+            if (field === 'column') {
+                renderModalRows();
+            }
+        };
+
+        window.applyCustomSort = function () {
+            state.sortLevels = tempSortLevels.filter(lvl => lvl.column);
+            const modal = bootstrap.Modal.getInstance(document.getElementById('customSortModal'));
+            modal.hide();
+            processAndRender();
+        };
+
+        function renderModalRows() {
+            const container = document.getElementById('sortLevelsContainer');
+    
+            // Empty state UI
+            if (tempSortLevels.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center p-4 text-muted bg-white border rounded-3 shadow-sm" style="border-style: dashed !important;">
+                        <i data-lucide="list-x" class="mb-2 opacity-50" style="width: 24px; height: 24px;"></i>
+                        <div class="fw-bold">No custom sorts applied</div>
+                        <small>Click "OK" to revert data to its original default order.</small>
+                    </div>`;
+                lucide.createIcons();
+                return;
+            }
+
+            let html = '';
+            tempSortLevels.forEach((level, index) => {
+                const isFirst = index === 0;
+                const labelText = isFirst ? 'Sort by' : 'Then by';
+        
+                // Build Column Options
+                let columnOptions = availableColumns.map(col =>
+                    `<option value="${col.id}" ${level.column === col.id ? 'selected' : ''}>${col.name}</option>`
+                ).join('');
+
+                // Determine correct order labels based on column type
+                const colDef = availableColumns.find(c => c.id === level.column) || availableColumns[0];
+                let ascLabel = 'A to Z';
+                let descLabel = 'Z to A';
+        
+                if (colDef.type === 'number') {
+                    ascLabel = 'Smallest to Largest';
+                    descLabel = 'Largest to Smallest';
+                } else if (colDef.type === 'date') {
+                    ascLabel = 'Oldest to Newest';
+                    descLabel = 'Newest to Oldest';
+                }
+
+                html += `
+                    <div class="sort-row">
+                        <div style="width: 80px;" class="fw-bold text-slate-700 text-end pe-2">${labelText}</div>
+                        <select class="form-select modern-select py-1 h-auto" style="flex: 1;" onchange="updateTempSort(${index}, 'column', this.value)">
+                            ${columnOptions}
+                        </select>
+                        <select class="form-select modern-select py-1 h-auto" style="flex: 1;" onchange="updateTempSort(${index}, 'order', this.value)">
+                            <option value="asc" ${level.order === 'asc' ? 'selected' : ''}>${ascLabel}</option>
+                            <option value="desc" ${level.order === 'desc' ? 'selected' : ''}>${descLabel}</option>
+                        </select>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
         }
 
-        function renderList(data) {
-        if ($.fn.DataTable.isDataTable('#calendarTable')) {
-        $('#calendarTable').DataTable().destroy();
-        }
+        window.toggleRow = function (index) {
+            if (window.innerWidth >= 1200) return;
+            const expandRow = document.getElementById(`expand-${index}`);
+            const chevron = document.getElementById(`chev-${index}`);
+            expandRow.classList.toggle('d-none');
+            if (chevron) chevron.style.transform = expandRow.classList.contains('d-none') ? 'rotate(0deg)' : 'rotate(180deg)';
+        };
 
-        let html = '';
-        if (data.length === 0) {
-        html = `<tr><td colspan="11" class="text-center text-muted py-4">No sector details found matching current filters.</td></tr>`;
-        document.getElementById('list-tbody').innerHTML = html;
-        } else {
-        data.forEach(item => {
-        let tipBoxHtml = '';
-        if (item.airlineAchieved && Object.keys(item.airlineAchieved).length > 0) {
-        let validAirlines = Object.entries(item.airlineAchieved).filter(([k]) => k && k.toLowerCase() !== 'total');
-        let totalAch = validAirlines.reduce((sum, [code, count]) => sum + count, 0);
-        let calcTotal = totalAch === 0 ? 1 : totalAch;
-        let ths = '', countTds = '', pctTds = '';
+        window.toggleTip = function (btn) {
+            document.querySelectorAll('.tip-box').forEach(box => {
+                if (box !== btn.nextElementSibling) box.style.display = 'none';
+            });
+            let box = btn.nextElementSibling;
+            let isOpening = box.style.display !== 'block';
+            if (isOpening) {
+                box.style.display = 'block';
+                if (window.innerWidth > 768) {
+                    let btnRect = btn.getBoundingClientRect();
+                    let boxWidth = box.offsetWidth;
+                    if (btnRect.right + boxWidth + 30 > window.innerWidth) {
+                        box.style.left = "auto"; box.style.right = "0";
+                    } else {
+                        box.style.left = "0"; box.style.right = "auto";
+                    }
+                }
+            } else {
+                box.style.display = 'none';
+            }
+        };
 
-        for (const [code, count] of validAirlines) {
-        ths += `<th>${code}</th>`;
-        countTds += `<td>${count}</td>`;
-        pctTds += `<td>${Math.round((count / calcTotal) * 100)}%</td>`;
-        }
-
-        ths += `<th>Total</th>`;
-        countTds += `<td style="font-weight: 800; color: #0b5ed7;">${totalAch}</td>`;
-        pctTds += `<td style="font-weight: 800; color: #0b5ed7;">100%</td>`;
-
-        tipBoxHtml = `<table class="tip-table"><thead><tr>${ths}</tr></thead><tbody><tr>${countTds}</tr><tr class="pct-row">${pctTds}</tr></tbody></table>`;
-        } else {
-        tipBoxHtml = `<ul>${item.airlinesBreakdown ? item.airlinesBreakdown.map(a => `<li>${a}</li>`).join('') : ''}</ul>`;
-        }
-
-        html += `
-        <tr>
-        <td class="fw-bold">${item.sector}</td>
-        <td>${item.eventName}</td>
-        <td data-sort="${new Date(item.eventDateString).getTime()}">${item.eventDateString}</td>
-        <td data-sort="${new Date(item.travelDate).getTime()}">${item.dateRange}</td>
-        <td>${item.airlinesCount}</td>
-        <td>${item.flightCount}</td>
-        <td>${item.totalStrength}</td>
-        <td>${item.target}</td>
-        <td data-sort="${item.achieved}" style="position:relative;">
-        ${item.achieved}
-        <button class="tip-btn" onclick="toggleTip(this)">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-info"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-        </button>
-        <div class="tip-box">${tipBoxHtml}</div>
-        </td>
-        <td><span class="badge text-lg bg-light text-dark border shadow-sm">${item.lead}</span></td>
-        <td><a href="/OccasionDetails/FareDetails?eventId=${item.eventId}&sector=${encodeURIComponent(item.sector)}&sectorType=All" class="card-link btn btn-sm btn-light">View details →</a></td>
-        </tr>`;
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('td')) document.querySelectorAll('.tip-box').forEach(box => box.style.display = 'none');
         });
 
-        document.getElementById('list-tbody').innerHTML = html;
+        function generateTooltipHTML(ev) {
+            let tipBoxHtml = '';
+            if (ev.airlineAchieved && Object.keys(ev.airlineAchieved).length > 0) {
+                let validAirlines = Object.entries(ev.airlineAchieved).filter(([k]) => k && k.toLowerCase() !== 'total');
+                let totalAch = validAirlines.reduce((sum, [code, count]) => sum + count, 0);
+                let calcTotal = totalAch === 0 ? 1 : totalAch;
 
-        if ($.fn.DataTable) {
-        $('#calendarTable').DataTable({
-        responsive: true, paging: true, pageLength: 15,
-        lengthMenu: [[15, 50, 100, -1], [15, 50, 100, "All"]],
-        searching: true, ordering: true,
-        dom: '<"d-flex justify-content-between align-items-center mb-3"if>rt<"d-flex justify-content-between align-items-center mt-3"lp><"clear">',
-        language: { search: "_INPUT_", searchPlaceholder: "Search list..." },
-        columnDefs: [
-        { targets: 3, render: function (data, type) { return type === 'display' ? `<div style="white-space: normal; max-width: 220px; line-height: 1.5; word-wrap: break-word;">${data}</div>` : data; } },
-        { targets: [10], orderable: false }
-        ]
-        });
-        }
-        }
-        }
-
-        function toggleTip(btn) {
-        document.querySelectorAll('.tip-box').forEach(box => { if (box !== btn.nextElementSibling) box.style.display = 'none'; });
-        let box = btn.nextElementSibling;
-        let isOpening = box.style.display !== 'block';
-        if (isOpening) {
-        box.style.display = 'block';
-        if (window.innerWidth > 768) {
-        let btnRect = btn.getBoundingClientRect(), boxWidth = box.offsetWidth, boxHeight = box.offsetHeight;
-        box.style.top = (btn.offsetTop - (boxHeight / 2) + (btn.offsetHeight / 2)) + "px";
-        if (btnRect.right + boxWidth + 30 > window.innerWidth) box.style.left = (btn.offsetLeft - boxWidth - 10) + "px";
-        else box.style.left = (btn.offsetLeft + btn.offsetWidth + 10) + "px";
-        }
-        } else { box.style.display = 'none'; }
+                let ths = ''; let countTds = ''; let pctTds = '';
+                for (const [code, count] of validAirlines) {
+                    ths += `<th>${code}</th>`; countTds += `<td>${count}</td>`; pctTds += `<td>${Math.round((count / calcTotal) * 100)}%</td>`;
+                }
+                ths += `<th>Total</th>`;
+                countTds += `<td style="font-weight: 800; color: #0ea5e9;">${totalAch}</td>`;
+                pctTds += `<td style="font-weight: 800; color: #0ea5e9;">100%</td>`;
+                tipBoxHtml = `<table class="tip-table"><thead><tr>${ths}</tr></thead><tbody><tr>${countTds}</tr><tr class="pct-row">${pctTds}</tr></tbody></table>`;
+            } else {
+                const oldBreakdown = ev.airlinesBreakdown ? ev.airlinesBreakdown.map(a => `<li>${a}</li>`).join('') : '';
+                tipBoxHtml = `<ul>${oldBreakdown}</ul>`;
+            }
+            return tipBoxHtml;
         }
 
-        document.addEventListener('click', function (e) { if (!e.target.closest('td')) document.querySelectorAll('.tip-box').forEach(box => box.style.display = 'none'); });
+        // --- PROCESSING & RENDERING ---
+        function processAndRender() {
+            let filtered = [...allMasterData];
+
+            // 1. Apply Filters
+            if (state.sectorType !== "All") filtered = filtered.filter(e => e.sectorType === state.sectorType);
+            if (state.sector !== "All") filtered = filtered.filter(e => e.sector === state.sector);
+            if (state.station !== "All") filtered = filtered.filter(e => e.station === state.station);
+            if (state.lead !== "All") filtered = filtered.filter(e => e.lead === state.lead);
+            if (state.occasion !== "All") filtered = filtered.filter(e => e.eventName === state.occasion);
+
+            // 2. Chained Sorting Algorithm (Multi-Level)
+            filtered.sort((a, b) => {
+                for (let level of state.sortLevels) {
+                    let vA = getCellValue(a, level.column);
+                    let vB = getCellValue(b, level.column);
+                    
+                    if (vA < vB) return level.order === 'asc' ? -1 : 1;
+                    if (vA > vB) return level.order === 'asc' ? 1 : -1;
+                }
+                return 0;
+            });
+
+            const container = document.getElementById('render-container');
+            
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                            <div class="text-center py-5 bg-white rounded-4 border shadow-sm my-5">
+                                <i data-lucide="map-pin-off" class="text-muted mb-3" style="width: 3rem; height: 3rem; opacity: 0.5;"></i>
+                                <h4 class="fw-bold" style="color: var(--slate-800);">No sectors found</h4>
+                                <p class="text-muted mb-0">No sector details match your current filter combination.</p>
+                            </div>`;
+            } else {
+                container.innerHTML = buildListView(filtered);
+            }
+            
+            lucide.createIcons();
+        }
+
+        function getLink(item) {
+            const passedSectorType = (state.sectorType !== "All") ? state.sectorType : "All";
+            const passedLead = (state.lead !== "All") ? state.lead : "All";
+            return `/OccasionDetails/FareDetails?eventId=${item.eventId}&sector=${encodeURIComponent(item.sector)}&sectorType=${encodeURIComponent(passedSectorType)}&lead=${encodeURIComponent(passedLead)}`;
+        }
+
+        // --- HTML BUILDER ---
+        function buildListView(events) {
+            const getIcon = (col) => {
+                const primarySort = state.sortLevels[0];
+                const isActive = primarySort && primarySort.column === col;
+                const icon = isActive ? (primarySort.order === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down';
+                const activeCls = isActive ? 'active' : '';
+                return `<i data-lucide="${icon}" class="sort-icon ${activeCls}"></i>`;
+            };
+
+            let html = `
+                        <div class="d-flex justify-content-between align-items-center mb-3 px-1">
+                            <h5 class="fw-bold text-muted mb-0" style="font-size: 1rem;">
+                                Total Sectors:
+                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1 ms-2 shadow-sm">${events.length}</span>
+                            </h5>
+                            ${state.sortLevels.length > 1 ? `<span class="badge bg-info bg-opacity-10 text-info border border-info px-2 py-1 shadow-sm"><i data-lucide="layers" style="width:12px; height:12px;" class="me-1"></i>Multi-Level Sort Active</span>` : ''}
+                        </div>
+        
+                        <div class="modern-table-wrapper mb-5">
+                            <div class="table-responsive hide-scrollbar">
+                                <table class="modern-table">
+                                    <thead>
+                                        <tr>
+                                            <th onclick="handleSort('id')" class="d-none d-md-table-cell text-center" style="width: 60px;"><div class="d-flex justify-content-center align-items-center">Sl No. ${getIcon('id')}</div></th>
+                                            <th onclick="handleSort('sector')"><div class="d-flex align-items-center">Sector ${getIcon('sector')}</div></th>
+                                            <th onclick="handleSort('event')"><div class="d-flex align-items-center">Event Name ${getIcon('event')}</div></th>
+                                            <th onclick="handleSort('date')" class="d-none d-lg-table-cell"><div class="d-flex align-items-center">Event Date ${getIcon('date')}</div></th>
+                                            <th onclick="handleSort('range')" class="d-none d-lg-table-cell"><div class="d-flex align-items-center">Date Range ${getIcon('range')}</div></th>
+                                            <th onclick="handleSort('airlines')" class="d-none d-xl-table-cell text-center"><div class="d-flex justify-content-center align-items-center">Airlines ${getIcon('airlines')}</div></th>
+                                            <th onclick="handleSort('flights')" class="d-none d-xl-table-cell text-center"><div class="d-flex justify-content-center align-items-center">Flights ${getIcon('flights')}</div></th>
+                                            <th onclick="handleSort('capacity')" class="d-none d-xxl-table-cell text-end"><div class="d-flex justify-content-end align-items-center">Strength ${getIcon('capacity')}</div></th>
+                                            <th onclick="handleSort('target')" class="d-none d-sm-table-cell text-end"><div class="d-flex justify-content-end align-items-center">Target ${getIcon('target')}</div></th>
+                                            <th onclick="handleSort('achieved')" class="text-end"><div class="d-flex justify-content-end align-items-center">Achieved ${getIcon('achieved')}</div></th>
+                                            <th onclick="handleSort('lead')" class="d-none d-xl-table-cell text-center"><div class="d-flex justify-content-center align-items-center">Lead ${getIcon('lead')}</div></th>
+                                            <th class="text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                        `;
+
+            events.forEach((ev, index) => {
+                const tipHtml = generateTooltipHTML(ev);
+                
+                html += `
+                                <tr class="main-row" onclick="toggleRow(${index})">
+                                    <td class="d-none d-md-table-cell text-center text-muted fw-bold">${index + 1}</td>
+                                    <td class="fw-bolder" style="color: var(--brand-blue); font-size: 0.95rem;">${ev.sector}</td>
+                                    <td class="fw-bold text-dark text-wrap" style="min-width: 150px; max-width: 250px;">${ev.eventName}</td>
+                                    <td class="d-none d-lg-table-cell text-muted fw-bold">${ev.eventDateString}</td>
+                                    <td class="d-none d-lg-table-cell text-muted text-nowrap" style="font-size: 0.75rem;">${ev.dateRange}</td>
+                                    <td class="d-none d-xl-table-cell text-center fw-bold text-muted">${ev.airlinesCount}</td>
+                                    <td class="d-none d-xl-table-cell text-center text-muted">${formatNum(ev.flightCount)}</td>
+                                    <td class="d-none d-xxl-table-cell text-end text-muted">${formatNum(ev.totalStrength)}</td>
+                                    <td class="d-none d-sm-table-cell text-end fw-bold text-muted">${formatNum(ev.target)}</td>
+                    
+                                    <td class="text-end position-relative text-nowrap">
+                                        <div class="d-flex justify-content-end align-items-center">
+                                            <span class="fw-bolder" style="color: var(--slate-900); font-size: 1rem;">${formatNum(ev.achieved)}</span>
+                                            <button class="btn btn-link p-0 ms-1 text-muted" onclick="event.stopPropagation(); toggleTip(this);"><i data-lucide="info" style="width:14px; height:14px;"></i></button>
+                                            <div class="tip-box text-start" onclick="event.stopPropagation();">${tipHtml}</div>
+                                        </div>
+                                    </td>
+                    
+                                    <td class="d-none d-xl-table-cell text-center">
+                                        <span class="badge bg-light text-dark border shadow-sm px-2 py-1">${ev.lead || 'N/A'}</span>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <a href="${getLink(ev)}" class="d-none d-xl-inline-flex btn btn-sm btn-outline-primary fw-bold px-3 border border-primary text-decoration-none shadow-sm text-nowrap" onclick="event.stopPropagation();">
+                                            Details &rarr;
+                                        </a>
+                                        <button class="d-xl-none btn btn-light btn-sm border text-muted shadow-sm px-2">
+                                            <i data-lucide="chevron-down" id="chev-${index}" class="chevron-icon" style="width: 1.25rem; height: 1.25rem;"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                
+                                <tr id="expand-${index}" class="expanded-row d-none d-xl-none">
+                                    <td colspan="12" class="p-0 border-0">
+                                        <div class="p-4" style="background-color: rgba(248, 250, 252, 0.5);">
+                                            <div class="row g-3">
+                                                <div class="col-6 d-md-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Sl No.</div><div class="fw-bold text-dark">${index + 1}</div></div>
+                                                <div class="col-6 d-lg-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Event Date</div><div class="fw-bold text-dark">${ev.eventDateString}</div></div>
+                                                <div class="col-6 d-lg-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Date Range</div><div class="fw-bold text-dark" style="font-size: 0.75rem;">${ev.dateRange}</div></div>
+                                                <div class="col-4 d-xl-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Airlines</div><div class="fw-bold text-dark">${ev.airlinesCount}</div></div>
+                                                <div class="col-4 d-xl-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Flights</div><div class="fw-bold text-dark">${formatNum(ev.flightCount)}</div></div>
+                                                <div class="col-4 d-xl-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Lead</div><div class="fw-bold text-dark">${ev.lead || 'N/A'}</div></div>
+                                                <div class="col-4 d-xxl-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Total Strength</div><div class="fw-bold text-dark">${formatNum(ev.totalStrength)}</div></div>
+                                                <div class="col-4 d-sm-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Target</div><div class="fw-bold text-dark">${formatNum(ev.target)}</div></div>
+                                            </div>
+                            
+                                            <div class="mt-4 pt-3 border-top border-light">
+                                                <a href="${getLink(ev)}" class="btn btn-white w-100 fw-bold border text-primary d-flex align-items-center justify-content-center gap-2 shadow-sm text-decoration-none py-2" style="background: white;">
+                                                    View Fare Details <i data-lucide="arrow-right" style="width: 1rem; height: 1rem;"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `;
+            });
+
+            html += `</tbody></table></div></div>`;
+            return html;
+        }
     </script>
 }

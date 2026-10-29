@@ -4,141 +4,387 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
 <style>
-   
-    .tip-table { width: 100%; border-collapse: collapse; text-align: center; margin: 0; }
-    .tip-table th { font-weight: 700 !important; font-size: 11px; color: #64748b; padding: 6px 12px; border-bottom: 1px solid #e2e8f0; }
-    .tip-table td { font-weight: 600; font-size: 12px; color: #1e293b; padding: 6px 12px; }
-    .tip-table .pct-row td { color: #0b5ed7; background-color: rgba(13, 110, 253, 0.05); border-radius: 4px; }
-    .tip-box { position: absolute; display: none; z-index: 1000; background: #fff; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); border-radius: 8px; padding: 8px; min-width: 250px; }
-    .tip-btn { background: none; border: none; padding: 0; margin-left: 4px; color: #64748b; cursor: pointer; }
-    .tip-btn:hover { color: #0b5ed7; }
+    
+
+    body[data-layout="horizontal"] .page-content, .page-content {
+        padding-top: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        padding-bottom: 60px !important;
+    }
+
+    :root {
+        --brand-blue: #1076bb;
+        --brand-red: #f16367;
+        --slate-50: #f8fafc;
+        --slate-100: #f1f5f9;
+        --slate-200: #e2e8f0;
+        --slate-300: #cbd5e1;
+        --slate-400: #94a3b8;
+        --slate-500: #64748b;
+        --slate-600: #475569;
+        --slate-700: #334155;
+        --slate-800: #1e293b;
+        --slate-900: #0f172a;
+    }
+
+    .custom-scope {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--slate-50);
+        color: var(--slate-900);
+    }
+    
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-up {
+        animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Hero Banner */
+    .hero-banner {
+        background: linear-gradient(to right, var(--brand-blue), var(--brand-red));
+        padding-top: 2.5rem;
+        padding-bottom: 6rem;
+        position: relative;
+    }
+
+    .hero-pattern {
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0);
+        background-size: 24px 24px;
+    }
+
+    /* CUSTOM SELECT2 STYLING TO MATCH MODERN INPUTS */
+    .select2-container--default .select2-selection--single {
+        background-color: var(--slate-50) !important;
+        border: 1px solid var(--slate-200) !important;
+        border-radius: 0.75rem !important;
+        height: 3rem !important;
+        display: flex;
+        align-items: center;
+        outline: none;
+        box-shadow: none !important;
+        transition: all 0.2s;
+    }
+
+    .select2-container--open .select2-selection--single {
+        background-color: #fff !important;
+        border-color: var(--brand-blue) !important;
+        box-shadow: 0 0 0 4px rgba(16, 118, 187, 0.1) !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--slate-800) !important;
+        font-weight: 600 !important;
+        font-size: 0.875rem;
+        padding-left: 1rem !important;
+        line-height: normal !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 3rem !important;
+        right: 0.75rem !important;
+    }
+
+    .select2-dropdown {
+        border: 1px solid var(--slate-200) !important;
+        border-radius: 0.75rem !important;
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1) !important;
+        overflow: hidden;
+        font-size: 0.875rem;
+        z-index: 1060;
+    }
+
+    .select2-search__field {
+        border-radius: 0.5rem !important;
+        padding: 0.5rem !important;
+    }
+    
+    /* CUSTOM LIST VIEW TABLE STYLES */
+    .modern-table-wrapper {
+        background: #ffffff;
+        border-radius: 1rem;
+        border: 1px solid var(--slate-200);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .modern-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        font-size: 0.875rem;
+        white-space: nowrap;
+    }
+
+        .modern-table thead th {
+            background-color: var(--slate-50);
+            color: var(--slate-600);
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1rem 0.75rem;
+            border-bottom: 1px solid var(--slate-200);
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s;
+        }
+
+            .modern-table thead th:hover {
+                background-color: #e2e8f0;
+            }
+
+        .modern-table tbody td {
+            padding: 1.25rem 0.75rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--slate-700);
+            font-weight: 500;
+        }
+
+        .modern-table tbody tr.main-row {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+            .modern-table tbody tr.main-row:hover {
+                background-color: var(--slate-50);
+            }
+
+        .modern-table tbody tr.expanded-row {
+            background-color: rgba(248, 250, 252, 0.6);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+    
+    .sort-icon {
+        width: 14px;
+        height: 14px;
+        transition: opacity 0.2s, color 0.2s;
+        opacity: 0.3;
+        margin-left: 4px;
+    }
+
+        .sort-icon.active {
+            opacity: 1;
+            color: var(--brand-blue);
+        }
+
+    .chevron-icon {
+        transition: transform 0.2s ease;
+    }
+
+    .text-xxs {
+        font-size: 0.65rem;
+    }
+
+    /* Tooltips */
+    .tip-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: center;
+        margin: 0;
+    }
+
+        .tip-table th {
+            font-weight: 700;
+            font-size: 11px;
+            color: #64748b;
+            padding: 6px 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .tip-table td {
+            font-weight: 600;
+            font-size: 12px;
+            color: #1e293b;
+            padding: 6px 12px;
+        }
+
+        .tip-table .pct-row td {
+            color: #0ea5e9;
+            background-color: #f0f9ff;
+            border-radius: 4px;
+        }
+
+    .tip-box {
+        position: absolute;
+        display: none;
+        z-index: 1000;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        border-radius: 12px;
+        padding: 12px;
+        min-width: 250px;
+        left: 0;
+        top: 100%;
+        margin-top: 0.5rem;
+    }
 </style>
 
-<div class="page-content">
-    <div class="container-fluid">
-
-        <div class="conatiner cox">
-            <div class="row">
-                <div class="col-4 d-flex justify-content-start align-items-center gap-3">
-                    <a href="/Dashboard/Index" class="btn btn-sm btn-light border shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" title="Back to Dashboard">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+<div class="page-content custom-scope pb-5">
+    
+    <!-- 1. HERO BANNER -->
+    <div class="hero-banner px-3">
+        <div class="hero-pattern"></div>
+        <div class="container-fluid position-relative z-1" style="max-width: 1800px;">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">
+                <div class="d-flex align-items-center gap-3">
+                    <a href="/Dashboard/Index?sectorType=@Html.Raw(ViewBag.SectorType ?? "All")&lead=@Html.Raw(ViewBag.Lead ?? "All")&priority=@Html.Raw(ViewBag.Priority ?? "All")" class="btn btn-light d-flex align-items-center justify-content-center p-0 rounded-circle shadow-sm" style="width: 3rem; height: 3rem; color: var(--brand-blue);" title="Back to Dashboard">
+                        <i data-lucide="arrow-left" style="width: 1.25rem; height: 1.25rem;"></i>
                     </a>
-                    <h4 class="mb-sm-0">
-                        Sector Details:
-                        <span class="text-primary">@ViewBag.EventName</span>,
-                        <span class="text-primary d-inline-block" style="font-size:15px;">@ViewBag.EventDay - @ViewBag.EventDate</span>
-                    </h4>
-                </div>
-                <div class="col-8">
-                    <div class="row g-2 justify-content-end align-items-center">
-                        <div class="col-auto">
-                            <select id="stationFilter" class="form-select w-auto shadow-sm" style="min-width: 160px;">
-                                <option selected="">Filter By Station</option>
-                            </select>
-                        </div>
-                        <div class="col-auto">
-                            <select id="leadFilter" class="form-select w-auto shadow-sm" style="min-width: 150px;">
-                                <option selected="">Filter By Lead</option>
-                            </select>
-                        </div>
-                        @* <div class="col-auto">
-                            <select id="inputState" class="form-select w-auto shadow-sm" data-choices="" data-choices-sorting="true" style="min-width: 150px;">
-                                <option selected="">Filter By Month</option>
-                                <option> January </option>
-                                <option> February </option>
-                                <option> March </option>
-                                <option> April </option>
-                                <option> May </option>
-                                <option> June </option>
-                                <option> July </option>
-                                <option> August </option>
-                                <option> September</option>
-                                <option> October </option>
-                                <option> November </option>
-                                <option> December </option>
-                            </select>
-                        </div> *@
+                    <div class="text-white">
+                        <h1 class="fw-bolder mb-1 text-white" style="font-size: 2.25rem;">Sector Details</h1>
+                        <p class="mb-0 fw-medium opacity-75 d-flex align-items-center gap-2" style="font-size: 1rem;">
+                            <span class="text-white fw-bold">@ViewBag.EventName</span> &bull; @ViewBag.EventDay, @ViewBag.EventDate
+                        </p>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="boxes position-relative bg-white shadow-sm rounded-4 p-4 mt-3 w-100">
-            <div id="loading-overlay" style="padding: 4rem; text-align: center;">
-                <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-                    <span class="visually-hidden">Loading...</span>
+    <!-- 2. FILTER BAR -->
+    <div class="container-fluid position-relative px-3" style="max-width: 1600px; margin-top: -3rem; z-index: 10;">
+        <div class="card border-0 rounded-4 shadow-sm p-4">
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <select id="stationFilter" class="form-select searchable-select">
+                        <option value="All" selected>Filter By Station</option>
+                    </select>
                 </div>
-                <h5 class="mt-3 text-muted">Analyzing Sectors...</h5>
-                <p class="text-muted small">Crunching flight capabilities for this event.</p>
-            </div>
-
-            <div id="error-overlay" style="display:none; padding: 2rem; background: #fff3f3; border: 1px solid #ffcdd2; border-radius: 8px; margin: 1rem 0;">
-                <h5 class="text-danger mb-2">Failed to load data</h5>
-                <p id="error-message" class="text-danger mb-0"></p>
-            </div>
-
-            <div id="content-overlay" style="display:none; width: 100%;">
-                <table id="calendarTable" class="display responsive w-100" style="width:100%">
-                    <thead>
-                        <tr>
-                            <th>Sector</th>
-                            <th>Date Range</th>
-                            <th>Airlines</th>
-                            <th>Flight Count</th>
-                            <th>Total Strength</th>
-                            <th>Target Seats</th>
-                            <th>Achieved</th>
-                            <th>Attempt Count</th>
-                            <th>Lead</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="list-tbody">
-                    </tbody>
-                </table>
+                <div class="col-12 col-md-6">
+                    <select id="leadFilter" class="form-select searchable-select">
+                        <option value="All" selected>Filter By Lead</option>
+                    </select>
+                </div>
             </div>
         </div>
+    </div>
 
+    <!-- 3. MAIN CONTENT AREA -->
+    <div class="container-fluid pt-4 pt-lg-5 px-3" style="max-width: 1600px;">
+        
+        <div id="loading-overlay" class="text-center py-5 bg-white rounded-4 border shadow-sm animate-fade-up">
+            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+            <h4 class="fw-bold" style="color: var(--slate-800);">Analyzing Sectors...</h4>
+            <p class="text-muted mb-0">Crunching flight capabilities for this event.</p>
+        </div>
+        
+        <div id="error-overlay" style="display:none;" class="alert alert-danger rounded-4 border-0 mb-4 shadow-sm">
+            <p id="error-message" class="fw-bold mb-0"></p>
+        </div>
+
+        <div id="render-container" class="animate-fade-up" style="display: none;">
+            <!-- HTML injected via JS -->
+        </div>
     </div>
 </div>
 
 @section Scripts {
-    <script>
-        let allSectors = [];
-        const currentEventId = @ViewBag.EventId;
-        const currentSectorType = '@ViewBag.SectorType';
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-        document.addEventListener("DOMContentLoaded", function() {
-            fetch(`/OccasionDetails/GetSectorData?id=${currentEventId}&sectorType=${encodeURIComponent(currentSectorType)}&year=2026`)
+    <script>
+        // --- STATE MANAGEMENT ---
+        let allSectors = [];
+        let filteredSectors = [];
+        const currentEventId = @ViewBag.EventId;
+        const currentSectorType = '@Html.Raw(ViewBag.SectorType ?? "All")';
+        const currentPriority = '@Html.Raw(ViewBag.Priority ?? "All")';
+        const initialLead = '@Html.Raw(ViewBag.Lead ?? "All")';
+        
+        let state = {
+            station: 'All',
+            lead: 'All',
+            sortBy: 'sector',
+            sortOrder: 'asc'
+        };
+
+        const formatNum = (num) => (num || 0).toLocaleString('en-IN');
+
+        $(document).ready(function () {
+            lucide.createIcons();
+
+            // 1. Initialize Select2
+            $('.searchable-select').select2({
+                width: '100%',
+                dropdownAutoWidth: true
+            });
+
+            // 2. Fetch the Data
+            fetch(`/OccasionDetails/GetSectorData?id=${currentEventId}&sectorType=${currentSectorType}&lead=${encodeURIComponent(initialLead)}&priority=${encodeURIComponent(currentPriority)}&year=@ViewBag.Year`)
                 .then(res => res.json())
                 .then(result => {
-                    document.getElementById('loading-overlay').style.display = 'none';
-                    if (!result.success) {
-                        showError(result.message);
-                        return;
-                    }
+                    $('#loading-overlay').hide();
+                    if (!result.success) { showError(result.message); return; }
 
                     allSectors = result.data || [];
                     populateDynamicDropdowns();
-                    document.getElementById('content-overlay').style.display = 'block';
-                    applyFilters();
+
+                    // Pre-select lead if applicable
+                    if (initialLead && initialLead !== "All" && initialLead !== "Filter By Lead") {
+                        const leadSelect = document.getElementById('leadFilter');
+                        if (Array.from(leadSelect.options).some(opt => opt.value === initialLead)) {
+                            state.lead = initialLead;
+                            $('#leadFilter').val(initialLead);
+                        }
+                    }
+
+                    $('.searchable-select').trigger('change.select2');
+
+                    // Bind Select2 events
+                    $('.searchable-select').on('change', function (e) {
+                        const id = e.target.id;
+                        if (id === 'stationFilter') state.station = e.target.value;
+                        if (id === 'leadFilter') state.lead = e.target.value;
+                        processAndRender();
+                    });
+
+                    $('#render-container').show();
+                    processAndRender();
                 })
                 .catch(err => {
-                    document.getElementById('loading-overlay').style.display = 'none';
-                    showError("Network error while connecting to controller: " + err.message);
+                    $('#loading-overlay').hide();
+                    showError("Network error: " + err.message);
                 });
-            document.getElementById('stationFilter').addEventListener('change', applyFilters);
-            document.getElementById('leadFilter').addEventListener('change', applyFilters);
         });
 
         function showError(msg) {
-            document.getElementById('error-overlay').style.display = 'block';
+            $('#error-overlay').show();
             let formattedMsg = msg;
             if (msg.includes("Unauthorized") || msg.includes("401")) {
-                formattedMsg += "<br><br><strong style='color:#b71c1c;'>Security Note:</strong> Your Azure session token has expired. <br><br> <a href='/Login/Logout' class='btn btn-danger btn-sm'>Refresh Token</a>";
+                formattedMsg += "<br><br><strong style='color:#b71c1c;'>Security Note:</strong> Your session token has expired. <a href='/Login/Logout' class='btn btn-danger btn-sm'>Refresh Token</a>";
             }
-            document.getElementById('error-message').innerHTML = formattedMsg;
+            $('#error-message').html(formattedMsg);
         }
 
         function populateDynamicDropdowns() {
@@ -147,174 +393,297 @@
 
             const uniqueStations = [...new Set(allSectors.map(item => item.station))].filter(Boolean).sort();
             const uniqueLeads = [...new Set(allSectors.map(item => item.lead))].filter(Boolean).sort();
-            uniqueStations.forEach(s => {
-                stationFilter.add(new Option(s, s));
-            });
-            uniqueLeads.forEach(l => {
-                leadFilter.add(new Option(l, l));
-            });
+            
+            stationFilter.innerHTML = '<option value="All" selected>Filter By Station</option>';
+            leadFilter.innerHTML = '<option value="All" selected>Filter By Lead</option>';
+
+            uniqueStations.forEach(s => { stationFilter.add(new Option(s, s)); });
+            uniqueLeads.forEach(l => { leadFilter.add(new Option(l, l)); });
         }
 
-        function applyFilters() {
-            let filtered = allSectors;
-            const selectedStation = document.getElementById('stationFilter').value;
-            const selectedLead = document.getElementById('leadFilter').value;
-
-            if (selectedStation !== "Filter By Station") {
-                filtered = filtered.filter(e => e.station === selectedStation);
-            }
-
-            if (selectedLead !== "Filter By Lead") {
-                filtered = filtered.filter(e => e.lead === selectedLead);
-            }
-
-            renderList(filtered);
-        }
-
-        function renderList(data) {
-            if (typeof $ !== 'undefined' && $.fn.DataTable.isDataTable('#calendarTable')) {
-                $('#calendarTable').DataTable().destroy();
-            }
-
-            let html = '';
-            if (data.length === 0) {
-                html = `<tr><td colspan="10" class="text-center text-muted py-4">No sector details found matching current filters.</td></tr>`;
-                document.getElementById('list-tbody').innerHTML = html;
+        // --- GLOBAL UI HANDLERS ---
+        window.handleSort = function (column) {
+            if (state.sortBy === column) {
+                state.sortOrder = state.sortOrder === 'asc' ? 'desc' : 'asc';
             } else {
-                data.forEach(item => {
-                    
-                    // --- NEW: Calculate Percentages and Build the Custom Tooltip Table ---
-                    let tipBoxHtml = '';
-                    if (item.airlineAchieved && Object.keys(item.airlineAchieved).length > 0) {
-                        let validAirlines = Object.entries(item.airlineAchieved).filter(([k]) => k && k.toLowerCase() !== 'total');
-                        let totalAch = validAirlines.reduce((sum, [code, count]) => sum + count, 0);
-                        let calcTotal = totalAch === 0 ? 1 : totalAch; 
-
-                        let ths = '';
-                        let countTds = '';
-                        let pctTds = '';
-
-                        for (const [code, count] of validAirlines) {
-                            ths += `<th>${code}</th>`;
-                            countTds += `<td>${count}</td>`;
-                            let pct = Math.round((count / calcTotal) * 100);
-                            pctTds += `<td>${pct}%</td>`;
-                        }
-
-                        ths += `<th>Total</th>`;
-                        countTds += `<td style="font-weight: 800; color: #0b5ed7;">${totalAch}</td>`;
-                        pctTds += `<td style="font-weight: 800; color: #0b5ed7;">100%</td>`;
-
-                        tipBoxHtml = `
-                        <table class="tip-table">
-                            <thead><tr>${ths}</tr></thead>
-                            <tbody>
-                                <tr>${countTds}</tr>
-                                <tr class="pct-row">${pctTds}</tr>
-                            </tbody>
-                        </table>`;
-                    } else {
-                        const oldBreakdown = item.airlinesBreakdown ? item.airlinesBreakdown.map(a => `<li>${a}</li>`).join('') : '';
-                        tipBoxHtml = `<ul>${oldBreakdown}</ul>`;
-                    }
-                    // ---------------------------------------------------------------------
-
-                    html += `
-                    <tr>
-                        <td>${item.sector}</td>
-                        <td data-sort="${new Date(item.travelDate).getTime()}">${item.dateRange}</td>
-                        <td>${item.airlinesCount}</td>
-                        <td>${item.flightCount}</td>
-                        <td>${item.totalStrength}</td>
-                        <td>${item.target}</td>
-                        <td data-sort="${item.achieved}" style="position:relative;">
-                            ${item.achieved}
-                            <button class="tip-btn" onclick="toggleTip(this)">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-info">
-                                    <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>
-                                </svg>
-                            </button>
-                            <div class="tip-box">${tipBoxHtml}</div>
-                        </td>
-                        <td>
-                            <a href="/OccasionDetails/AttemptDetails?eventId=${currentEventId}&sector=${encodeURIComponent(item.sector)}" class="card-link fw-bold text-primary">${item.attemptCount}</a>
-                        </td>
-                        <td><span class="badge text-lg bg-light text-dark border shadow-sm">${item.lead}</span></td>
-                        <td>
-                            <a href="/OccasionDetails/FareDetails?eventId=${currentEventId}&sector=${encodeURIComponent(item.sector)}&sectorType=${encodeURIComponent(currentSectorType)}" class="card-link btn btn-sm btn-light">View details →</a>
-                        </td>
-                    </tr>`;
-                });
-                
-                document.getElementById('list-tbody').innerHTML = html;
-
-                if (typeof $ !== 'undefined' && $.fn.DataTable) {
-                    $('#calendarTable').DataTable({
-                        responsive: true,
-                        paging: true,
-                        pageLength: 10,
-                        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
-                        searching: true,
-                        ordering: true,
-                        dom: '<"d-flex justify-content-between align-items-center mb-3"if>rt<"d-flex justify-content-between align-items-center mt-3"lp><"clear">',
-                        language: {
-                            search: "_INPUT_",
-                            searchPlaceholder: "Search sectors...",
-                            info: "Showing _START_ to _END_ of _TOTAL_ entries",
-                            infoEmpty: "Showing 0 entries",
-                            lengthMenu: "Show _MENU_ entries"
-                        },
-                        columnDefs: [
-                            {
-                                // Target the "Date Range" column (Index 1 assuming Sector is 0)
-                                targets: 1,
-                                render: function (data, type, row) {
-                                    if (type === 'display') {
-                                        // Forces the text to wrap nicely into multiple lines
-                                        return `<div style="white-space: normal; max-width: 220px; line-height: 1.5; word-wrap: break-word;">${data}</div>`;
-                                    }
-                                    return data;
-                                }
-                            },
-                            { targets: [8], orderable: true }
-                        ]
-                    });
-                }
+                state.sortBy = column;
+                state.sortOrder = 'asc';
             }
-        }
+            processAndRender();
+        };
 
-        // Smart Edge Detection Tooltip toggler
-        function toggleTip(btn) {
+        window.toggleRow = function (index) {
+            if (window.innerWidth >= 1200) return; // Disable accordion on XL screens
+
+            const expandRow = document.getElementById(`expand-${index}`);
+            const chevron = document.getElementById(`chev-${index}`);
+            
+            if (expandRow.classList.contains('d-none')) {
+                expandRow.classList.remove('d-none');
+                if (chevron) chevron.style.transform = 'rotate(180deg)';
+            } else {
+                expandRow.classList.add('d-none');
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+            }
+        };
+
+        window.toggleTip = function (btn) {
             document.querySelectorAll('.tip-box').forEach(box => {
                 if (box !== btn.nextElementSibling) box.style.display = 'none';
             });
             let box = btn.nextElementSibling;
             let isOpening = box.style.display !== 'block';
-
             if (isOpening) {
                 box.style.display = 'block';
                 if (window.innerWidth > 768) {
                     let btnRect = btn.getBoundingClientRect();
                     let boxWidth = box.offsetWidth;
-                    let boxHeight = box.offsetHeight;
-                    
-                    box.style.top = (btn.offsetTop - (boxHeight / 2) + (btn.offsetHeight / 2)) + "px";
-                    
                     if (btnRect.right + boxWidth + 30 > window.innerWidth) {
-                        box.style.left = (btn.offsetLeft - boxWidth - 10) + "px"; 
+                        box.style.left = "auto";
+                        box.style.right = "0";
                     } else {
-                        box.style.left = (btn.offsetLeft + btn.offsetWidth + 10) + "px";
+                        box.style.left = "0";
+                        box.style.right = "auto";
                     }
                 }
             } else {
                 box.style.display = 'none';
             }
+        };
+
+        // Close tooltip when clicking outside
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('td')) document.querySelectorAll('.tip-box').forEach(box => box.style.display = 'none');
+        });
+
+        function generateTooltipHTML(ev) {
+            let tipBoxHtml = '';
+            if (ev.airlineAchieved && Object.keys(ev.airlineAchieved).length > 0) {
+                let validAirlines = Object.entries(ev.airlineAchieved).filter(([k]) => k && k.toLowerCase() !== 'total');
+                let totalAch = validAirlines.reduce((sum, [code, count]) => sum + count, 0);
+                let calcTotal = totalAch === 0 ? 1 : totalAch;
+
+                let ths = ''; let countTds = ''; let pctTds = '';
+                for (const [code, count] of validAirlines) {
+                    ths += `<th>${code}</th>`; countTds += `<td>${count}</td>`; pctTds += `<td>${Math.round((count / calcTotal) * 100)}%</td>`;
+                }
+                ths += `<th>Total</th>`;
+                countTds += `<td style="font-weight: 800; color: #0ea5e9;">${totalAch}</td>`;
+                pctTds += `<td style="font-weight: 800; color: #0ea5e9;">100%</td>`;
+                tipBoxHtml = `<table class="tip-table"><thead><tr>${ths}</tr></thead><tbody><tr>${countTds}</tr><tr class="pct-row">${pctTds}</tr></tbody></table>`;
+            } else {
+                const oldBreakdown = ev.airlinesBreakdown ? ev.airlinesBreakdown.map(a => `<li>${a}</li>`).join('') : '';
+                tipBoxHtml = `<ul>${oldBreakdown}</ul>`;
+            }
+            return tipBoxHtml;
         }
 
-        document.addEventListener('click', function (e) {
-            if (!e.target.closest('td')) {
-                document.querySelectorAll('.tip-box').forEach(box => box.style.display = 'none');
+        // --- PROCESSING & RENDERING ---
+        function processAndRender() {
+            let filtered = allSectors;
+
+            // 1. Apply Filters
+            if (state.station !== "All" && state.station !== "Filter By Station") {
+                filtered = filtered.filter(e => e.station === state.station);
             }
-        });
+            if (state.lead !== "All" && state.lead !== "Filter By Lead") {
+                filtered = filtered.filter(e => e.lead === state.lead);
+            }
+
+            // 2. Sorting (matching the old code's data properties exactly)
+            filtered.sort((a, b) => {
+                let vA, vB;
+                switch (state.sortBy) {
+                    case 'sector': vA = (a.sector || "").toLowerCase(); vB = (b.sector || "").toLowerCase(); break;
+                    case 'range': vA = new Date(a.travelDate || 0).getTime(); vB = new Date(b.travelDate || 0).getTime(); break;
+                    case 'airlines': vA = a.airlinesCount; vB = b.airlinesCount; break;
+                    case 'flights': vA = a.flightCount; vB = b.flightCount; break;
+                    case 'capacity': vA = a.totalStrength; vB = b.totalStrength; break;
+                    case 'target': vA = a.target; vB = b.target; break;
+                    case 'achieved': vA = a.achieved; vB = b.achieved; break;
+                    case 'attempts': vA = a.attemptCount; vB = b.attemptCount; break;
+                    case 'lead': vA = (a.lead || "").toLowerCase(); vB = (b.lead || "").toLowerCase(); break;
+                    default: vA = (a.sector || "").toLowerCase(); vB = (b.sector || "").toLowerCase();
+                }
+                if (vA < vB) return state.sortOrder === 'asc' ? -1 : 1;
+                if (vA > vB) return state.sortOrder === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            const container = document.getElementById('render-container');
+            
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                            <div class="text-center py-5 bg-white rounded-4 border shadow-sm my-5">
+                                <i data-lucide="map-pin-off" class="text-muted mb-3" style="width: 3rem; height: 3rem; opacity: 0.5;"></i>
+                                <h4 class="fw-bold" style="color: var(--slate-800);">No sectors found</h4>
+                                <p class="text-muted mb-0">No sector details match your current filter combination.</p>
+                            </div>`;
+            } else {
+                container.innerHTML = buildListView(filtered);
+            }
+            
+            lucide.createIcons();
+        }
+
+        function getDetailsLink(item) {
+            let passLead = (!state.lead || state.lead === "Filter By Lead") ? "All" : state.lead;
+            return `/OccasionDetails/FareDetails?eventId=${currentEventId}&sector=${encodeURIComponent(item.sector)}&sectorType=${encodeURIComponent(currentSectorType)}&lead=${encodeURIComponent(passLead)}&priority=${encodeURIComponent(currentPriority)}&year=@ViewBag.Year`;
+        }
+
+        function getAttemptsLink(item) {
+            let passLead = (!state.lead || state.lead === "Filter By Lead") ? "All" : state.lead;
+            return `/OccasionDetails/AttemptDetails?eventId=${currentEventId}&sector=${encodeURIComponent(item.sector)}&sectorType=${encodeURIComponent(currentSectorType)}&lead=${encodeURIComponent(passLead)}&priority=${encodeURIComponent(currentPriority)}&year=@ViewBag.Year`;
+        }
+
+        // --- HTML BUILDER ---
+        function buildListView(events) {
+            const getIcon = (col) => {
+                const isActive = state.sortBy === col;
+                const icon = isActive ? (state.sortOrder === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down';
+                const activeCls = isActive ? 'active' : '';
+                return `<i data-lucide="${icon}" class="sort-icon ${activeCls}"></i>`;
+            };
+
+            let passLead = (!state.lead || state.lead === "Filter By Lead") ? "All" : state.lead;
+
+            let html = `
+                    <div class="d-flex justify-content-between align-items-center mb-3 px-1">
+                        <h5 class="fw-bold text-muted mb-0" style="font-size: 1rem;">
+                            Total Sectors:
+                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1 ms-2 shadow-sm">${events.length}</span>
+                        </h5>
+                    </div>
+            
+                    <div class="modern-table-wrapper mb-5">
+                        <div class="table-responsive hide-scrollbar">
+                            <table class="modern-table">
+                                <thead>
+                                    <tr>
+                                        <th onclick="handleSort('sector')">
+                                            <div class="d-flex align-items-center">Sector ${getIcon('sector')}</div>
+                                        </th>
+                                        <th onclick="handleSort('range')">
+                                            <div class="d-flex align-items-center">Date Range ${getIcon('range')}</div>
+                                        </th>
+                                        <th onclick="handleSort('airlines')" class="text-center">
+                                            <div class="d-flex justify-content-center align-items-center">Airlines ${getIcon('airlines')}</div>
+                                        </th>
+                                        <th onclick="handleSort('flights')" class="text-center">
+                                            <div class="d-flex justify-content-center align-items-center">Flight Count ${getIcon('flights')}</div>
+                                        </th>
+                                        <th onclick="handleSort('capacity')" class="text-end">
+                                            <div class="d-flex justify-content-end align-items-center">Total Strength ${getIcon('capacity')}</div>
+                                        </th>
+                                        <th onclick="handleSort('target')" class="text-end">
+                                            <div class="d-flex justify-content-end align-items-center">Target Seats ${getIcon('target')}</div>
+                                        </th>
+                                        <th onclick="handleSort('achieved')" class="text-end">
+                                            <div class="d-flex justify-content-end align-items-center">Achieved ${getIcon('achieved')}</div>
+                                        </th>
+                                        <th onclick="handleSort('attempts')" class="text-center">
+                                            <div class="d-flex justify-content-center align-items-center">Attempt Count ${getIcon('attempts')}</div>
+                                        </th>
+                                        <th onclick="handleSort('lead')" class="text-center">
+                                            <div class="d-flex justify-content-center align-items-center">Lead ${getIcon('lead')}</div>
+                                        </th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+
+            events.forEach((item, index) => {
+                const tipHtml = generateTooltipHTML(item);
+                
+                html += `
+                            <!-- Main Visible Row -->
+                            <tr class="main-row" onclick="toggleRow(${index})">
+                                <td class="fw-bolder" style="color: var(--brand-blue); font-size: 0.95rem;">${item.sector}</td>
+                                <td class="text-muted text-nowrap" style="font-size: 0.8rem;">${item.dateRange}</td>
+                                <td class="text-center fw-bold text-muted">${item.airlinesCount}</td>
+                                <td class="text-center text-muted">${formatNum(item.flightCount)}</td>
+                                <td class="text-end text-muted">${formatNum(item.totalStrength)}</td>
+                                <td class="text-end fw-bold text-muted">${formatNum(item.target)}</td>
+                        
+                                <td class="text-end position-relative text-nowrap">
+                                    <div class="d-flex justify-content-end align-items-center">
+                                        <span class="fw-bolder" style="color: var(--slate-900); font-size: 1rem;">${formatNum(item.achieved)}</span>
+                                        <button class="tip-btn ms-1" onclick="event.stopPropagation(); toggleTip(this);"><i data-lucide="info" style="width:14px; height:14px;"></i></button>
+                                        <div class="tip-box text-start" onclick="event.stopPropagation();">${tipHtml}</div>
+                                    </div>
+                                </td>
+                        
+                                <td class="text-center">
+                                    <a href="${getAttemptsLink(item)}" class="fw-bold text-primary text-decoration-none" onclick="event.stopPropagation();">${item.attemptCount}</a>
+                                </td>
+                        
+                                <td class="text-center">
+                                    <span class="badge bg-light text-dark border shadow-sm px-2 py-1">${item.lead || 'N/A'}</span>
+                                </td>
+
+                                <td class="text-center">
+                                    <a href="${getDetailsLink(item)}" class="btn-view-details text-decoration-none d-none d-xl-inline-flex" onclick="event.stopPropagation();">
+                                        View details &rarr;
+                                    </a>
+                                    <button class="d-xl-none btn btn-light btn-sm border text-muted shadow-sm px-2">
+                                        <i data-lucide="chevron-down" id="chev-${index}" class="chevron-icon" style="width: 1.25rem; height: 1.25rem;"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                    
+                            <!-- Expanded Details Row (Mobile/Tablet Only) -->
+                            <tr id="expand-${index}" class="expanded-row d-none d-xl-none">
+                                <td colspan="10" class="p-0 border-0">
+                                    <div class="p-4" style="background-color: rgba(248, 250, 252, 0.5);">
+                                        <div class="row g-3">
+                                            <div class="col-6">
+                                                <div class="text-xxs fw-bold text-muted text-uppercase mb-1">Date Range</div>
+                                                <div class="fw-bold text-dark" style="font-size: 0.75rem;">${item.dateRange}</div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="text-xxs fw-bold text-muted text-uppercase mb-1">Airlines</div>
+                                                <div class="fw-bold text-dark">${item.airlinesCount}</div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="text-xxs fw-bold text-muted text-uppercase mb-1">Flight Count</div>
+                                                <div class="fw-bold text-dark">${formatNum(item.flightCount)}</div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="text-xxs fw-bold text-muted text-uppercase mb-1">Total Strength</div>
+                                                <div class="fw-bold text-dark">${formatNum(item.totalStrength)}</div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="text-xxs fw-bold text-muted text-uppercase mb-1">Target Seats</div>
+                                                <div class="fw-bold text-dark">${formatNum(item.target)}</div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="text-xxs fw-bold text-muted text-uppercase mb-1">Attempt Count</div>
+                                                <a href="${getAttemptsLink(item)}" class="fw-bold text-primary text-decoration-none">${item.attemptCount}</a>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="text-xxs fw-bold text-muted text-uppercase mb-1">Lead</div>
+                                                <div class="fw-bold text-dark">${item.lead || 'N/A'}</div>
+                                            </div>
+                                        </div>
+                                
+                                        <div class="mt-4 pt-3 border-top border-light">
+                                            <a href="${getDetailsLink(item)}" class="btn btn-white w-100 fw-bold border text-primary d-flex align-items-center justify-content-center gap-2 shadow-sm text-decoration-none py-2" style="background: white;">
+                                                View details &rarr;
+                                            </a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+            });
+
+            html += `
+                            </tbody>
+                        </table>
+                        </div>
+                    </div>`;
+            return html;
+        }
     </script>
 }

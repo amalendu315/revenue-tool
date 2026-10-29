@@ -1,118 +1,4 @@
-﻿//using inventory_analytics_tool.Models;
-//using Microsoft.AspNetCore.Authorization;
-//using Microsoft.AspNetCore.Mvc;
-//using Microsoft.Extensions.Caching.Memory;
-
-//namespace inventory_analytics_tool.Controllers;
-
-//[Authorize]
-//public class DashboardController : Controller
-//{
-//    private readonly ILogger<DashboardController> _logger;
-//    private readonly IMemoryCache _cache;
-
-//    public DashboardController(ILogger<DashboardController> logger, IMemoryCache cache)
-//    {
-//        _logger = logger;
-//        _cache = cache;
-//    }
-
-//    public IActionResult Index()
-//    {
-//        var upcomingEvents = new List<DashboardUiEvent>();
-
-//        // Always use Primary Phase 1 cache for initial dashboard load
-//        if (_cache.TryGetValue("DashboardMasterData", out List<DashboardUiEvent> dashEvents) && dashEvents != null)
-//        {
-//            var today = DateTime.Today;
-//            upcomingEvents = dashEvents
-//                .Where(e => DateTime.TryParse(e.EventDate, out DateTime parsedDate) && parsedDate.Date >= today)
-//                .OrderBy(e => DateTime.Parse(e.EventDate))
-//                .ToList();
-//        }
-
-//        return View(upcomingEvents);
-//    }
-
-//    [HttpGet]
-//    public IActionResult GetDashboardData(int year = 2026, bool includePast = false)
-//    {
-//        // ====================================================================
-//        // THE SMART SWITCH: Pick cache dynamically based on UI params!
-//        // ====================================================================
-//        bool usePrimaryCache = (year == 2026 && !includePast);
-//        string targetDashKey = usePrimaryCache ? "DashboardMasterData" : "HistoricalDashboardMasterData";
-//        string targetRawKey = usePrimaryCache ? "RawEventListData" : "HistoricalRawEventListData";
-
-//        // Pull from the requested cache bucket
-//        if (!_cache.TryGetValue(targetDashKey, out List<DashboardUiEvent>? dashEvents) || dashEvents == null)
-//            return Json(new { success = false, message = "Updating background data..." });
-
-//        // Fetch International Sectors from Cache
-//        var destList = _cache.Get<List<FDestData>>("FDestList") ?? new List<FDestData>();
-//        var intlSectors = destList.Where(d => d.IsInternationalNew)
-//                                  .Select(d => $"{d.FromCode}-{d.ToCode}")
-//                                  .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-//        // Fetch Raw Events strictly from the same correlated cache tier
-//        _cache.TryGetValue(targetRawKey, out List<EventListData>? rawEvents);
-
-//        var today = DateTime.Today;
-//        var yearStart = new DateTime(year, 1, 1).AddDays(-15);
-//        var yearEnd = new DateTime(year, 12, 31).AddDays(15);
-
-//        var filteredEvents = new List<object>();
-
-//        foreach (var ev in dashEvents)
-//        {
-//            if (!DateTime.TryParse(ev.EventDate, out DateTime occasionDate)) continue;
-
-//            bool occasionInYearWindow = occasionDate >= yearStart && occasionDate <= yearEnd;
-//            if (!occasionInYearWindow) continue;
-
-//            var validDailyStats = ev.DailyStats.Where(d => {
-//                var statDate = DateTime.Parse(d.Date);
-//                bool inYear = statDate >= yearStart && statDate <= yearEnd;
-//                bool isFutureOrPresent = statDate >= today;
-
-//                return includePast ? inYear : (inYear && isFutureOrPresent);
-//            }).ToList();
-
-//            // Keep it if there are active travel dates!
-//            if (validDailyStats.Any() || (includePast && occasionInYearWindow))
-//            {
-//                // Calculate Domestic and International counts for this specific event using matching Raw cache
-//                var rawEvent = rawEvents?.FirstOrDefault(r => r.EventId == ev.Id);
-//                int domSectorsCount = 0;
-//                int intlSectorsCount = 0;
-
-//                if (rawEvent != null && rawEvent.Details != null)
-//                {
-//                    domSectorsCount = rawEvent.Details.Count(s => !intlSectors.Contains($"{s.FromCode}-{s.ToCode}"));
-//                    intlSectorsCount = rawEvent.Details.Count(s => intlSectors.Contains($"{s.FromCode}-{s.ToCode}"));
-//                }
-
-//                filteredEvents.Add(new
-//                {
-//                    id = ev.Id,
-//                    name = ev.Name,
-//                    eventDate = ev.EventDate,
-//                    sectorsCovered = ev.SectorsCovered,
-//                    totalDomSectors = domSectorsCount,
-//                    totalIntlSectors = intlSectorsCount,
-//                    isImportant = ev.IsImportant,
-//                    airlinesBreakdown = ev.AirlinesBreakdown,
-//                    airlineAchieved = ev.AirlineAchieved,
-//                    dailyStats = validDailyStats
-//                });
-//            }
-//        }
-
-//        return Json(new { success = true, data = filteredEvents });
-//    }
-//}
-
-using inventory_analytics_tool.Helpers;
+﻿using inventory_analytics_tool.Helpers;
 using inventory_analytics_tool.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -120,7 +6,7 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace inventory_analytics_tool.Controllers;
 
-[Authorize]
+[Authorize(Roles = "Admin, Revenue")]
 public class DashboardController : Controller
 {
     private readonly ILogger<DashboardController> _logger;
@@ -151,32 +37,46 @@ public class DashboardController : Controller
         return View(upcomingEvents);
     }
 
+
+    public IActionResult FestivalCards()
+    {
+        var upcomingEvents = new List<DashboardUiEvent>();
+
+        // Always use Primary Phase 1 cache for initial dashboard load
+        if (_cache.TryGetValue("DashboardMasterData", out List<DashboardUiEvent> dashEvents) && dashEvents != null)
+        {
+            var today = DateTime.Today;
+            upcomingEvents = dashEvents
+                .Where(e => DateTime.TryParse(e.EventDate, out DateTime parsedDate) && parsedDate.Date >= today)
+                .OrderBy(e => DateTime.Parse(e.EventDate))
+                .ToList();
+        }
+
+        return View(upcomingEvents);
+    }
+
+
+
     [HttpGet]
     public IActionResult GetDashboardData(int year = 2026, bool includePast = false)
     {
-        // ====================================================================
-        // THE SMART SWITCH: Pick cache dynamically based on UI params!
-        // ====================================================================
         bool usePrimaryCache = (year == 2026 && !includePast);
-        string targetDashKey = usePrimaryCache ? "DashboardMasterData" : "HistoricalDashboardMasterData";
-        string targetRawKey = usePrimaryCache ? "RawEventListData" : "HistoricalRawEventListData";
+        string targetDashKey = usePrimaryCache ? "DashboardMasterData" : $"HistoricalDashboardMasterData_{year}";
+        string targetRawKey = usePrimaryCache ? "RawEventListData" : $"HistoricalRawEventListData_{year}";
 
-        // Pull from the requested cache bucket
         if (!_cache.TryGetValue(targetDashKey, out List<DashboardUiEvent>? dashEvents) || dashEvents == null)
-            return Json(new { success = false, message = "Updating background data..." });
+            return Json(new { success = false, isUpdating = true, message = "System is updating background data." });
 
-        // Fetch International Sectors from Cache
         var destList = _cache.Get<List<FDestData>>("FDestList") ?? new List<FDestData>();
         var intlSectors = destList.Where(d => d.IsInternationalNew)
                                   .Select(d => $"{d.FromCode}-{d.ToCode}")
                                   .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        // Fetch Raw Events strictly from the same correlated cache tier
         _cache.TryGetValue(targetRawKey, out List<EventListData>? rawEvents);
 
         var today = DateTime.Today;
-        var yearStart = new DateTime(year, 1, 1).AddDays(-15);
-        var yearEnd = new DateTime(year, 12, 31).AddDays(15);
+        var yearStart = new DateTime(year, 1, 1).AddDays(-40);
+        var yearEnd = new DateTime(year, 12, 31).AddDays(40);
 
         var filteredEvents = new List<object>();
 
@@ -187,40 +87,42 @@ public class DashboardController : Controller
             bool occasionInYearWindow = occasionDate >= yearStart && occasionDate <= yearEnd;
             if (occasionDate.Year != year) continue;
 
-            var validDailyStats = ev.DailyStats.Where(d => {
+            var validDailyStats = ev.DailyStats.Where(d =>
+            {
                 var statDate = DateTime.Parse(d.Date);
-                bool inYear = statDate >= yearStart && statDate <= yearEnd; // 15-day overlap still works here!
+                bool inYear = statDate >= yearStart && statDate <= yearEnd;
                 bool isFutureOrPresent = statDate >= today;
 
                 return includePast ? inYear : (inYear && isFutureOrPresent);
             }).ToList();
 
-            // Keep it if there are active travel dates!
             if (validDailyStats.Any() || (includePast && occasionInYearWindow))
             {
                 var rawEvent = rawEvents?.FirstOrDefault(r => r.EventId == ev.Id);
-                int domSectorsCount = 0;
-                int intlSectorsCount = 0;
-
-                // Dictionaries to hold the aggregated day-by-day stats for Dom vs Intl
-                var domDailyDict = new Dictionary<DateTime, (double t, int a, int f)>();
-                var intlDailyDict = new Dictionary<DateTime, (double t, int a, int f)>();
+                var eventLeads = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var eventSectors = new List<object>();
 
                 if (rawEvent != null && rawEvent.Details != null)
                 {
                     foreach (var s in rawEvent.Details)
                     {
                         bool isIntl = intlSectors.Contains($"{s.FromCode}-{s.ToCode}");
-                        if (isIntl) intlSectorsCount++; else domSectorsCount++;
+                        var destMatch = destList.FirstOrDefault(d =>
+                            string.Equals(d.FromCode, s.FromCode, StringComparison.OrdinalIgnoreCase) &&
+                            string.Equals(d.ToCode, s.ToCode, StringComparison.OrdinalIgnoreCase));
 
-                        var targetDict = isIntl ? intlDailyDict : domDailyDict;
+                        string leadName = !string.IsNullOrEmpty(destMatch?.InternalOwner) ? destMatch.InternalOwner.Trim() : "Unassigned";
+                        eventLeads.Add(leadName);
 
-                        // CRITICAL FIX: Pre-fill targetDict using DateRange so zero-flight days aren't dropped!
+                        var sDays = new List<object>();
+                        var validDatesSet = new HashSet<string>();
+
+                        // Capture specific dates where this sector is active
                         if (s.DateRange != null)
                         {
-                            foreach (var dDate in s.DateRange)
+                            foreach (var dRangeDate in s.DateRange)
                             {
-                                if (!targetDict.ContainsKey(dDate.Date)) targetDict[dDate.Date] = (0, 0, 0);
+                                validDatesSet.Add(dRangeDate.ToString("yyyy-MM-dd"));
                             }
                         }
 
@@ -228,58 +130,57 @@ public class DashboardController : Controller
                         {
                             foreach (var d in s.Details)
                             {
-                                var date = d.TravelDate.Date;
-                                if (!targetDict.ContainsKey(date)) targetDict[date] = (0, 0, 0);
-
-                                var curr = targetDict[date];
-                                targetDict[date] = (curr.t + d.TargetSeat, curr.a + d.Achieved, curr.f + d.FlightCount);
+                                validDatesSet.Add(d.TravelDate.ToString("yyyy-MM-dd"));
+                                sDays.Add(new
+                                {
+                                    date = d.TravelDate.ToString("yyyy-MM-dd"),
+                                    targetSeat = d.TargetSeat,
+                                    achieved = d.Achieved,
+                                    flightCount = d.FlightCount,
+                                    priority = !string.IsNullOrEmpty(d.BlackoutPriority) ? d.BlackoutPriority : "Normal"
+                                });
                             }
                         }
+
+                        var sAirlines = new Dictionary<string, int>();
+                        if (s.Airlines != null)
+                        {
+                            foreach (var a in s.Airlines)
+                            {
+                                string code = !string.IsNullOrEmpty(a.AirlineCode) ? a.AirlineCode : "OAL";
+                                sAirlines[code] = sAirlines.GetValueOrDefault(code, 0) + a.Achieved;
+                            }
+                        }
+
+                        eventSectors.Add(new
+                        {
+                            sectorCode = $"{s.FromCode}-{s.ToCode}",
+                            isIntl = isIntl,
+                            lead = leadName,
+                            days = sDays,
+                            validDates = validDatesSet.ToList(),
+                            airlineAchieved = sAirlines
+                        });
                     }
                 }
 
-                // Map the base daily stats ensuring clean JSON serialization
-                var baseDailyStats = validDailyStats.Select(d => new {
-                    date = d.Date,
-                    priority = d.Priority,
-                    targetSeat = d.TargetSeat,
-                    achieved = d.Achieved,
-                    flightCount = d.FlightCount
-                }).ToList();
-
-                var domDailyStats = new List<object>();
-                var intlDailyStats = new List<object>();
-
-                // Build specific arrays strictly mapping to the valid timeline
-                foreach (var d in validDailyStats)
+                // Map base timeline priorities safely
+                var baseDailyStats = validDailyStats.Select(d => new
                 {
-                    var pDate = DateTime.Parse(d.Date).Date;
-
-                    if (domDailyDict.TryGetValue(pDate, out var domVals))
-                    {
-                        domDailyStats.Add(new { date = d.Date, priority = d.Priority, targetSeat = domVals.t, achieved = domVals.a, flightCount = domVals.f });
-                    }
-
-                    if (intlDailyDict.TryGetValue(pDate, out var intlVals))
-                    {
-                        intlDailyStats.Add(new { date = d.Date, priority = d.Priority, targetSeat = intlVals.t, achieved = intlVals.a, flightCount = intlVals.f });
-                    }
-                }
+                    date = DateTime.Parse(d.Date).ToString("yyyy-MM-dd"),
+                    priority = d.Priority
+                }).ToList();
 
                 filteredEvents.Add(new
                 {
                     id = ev.Id,
                     name = ev.Name,
                     eventDate = ev.EventDate,
-                    sectorsCovered = ev.SectorsCovered,
-                    totalDomSectors = domSectorsCount,
-                    totalIntlSectors = intlSectorsCount,
+                    sectorsCovered = rawEvent?.Details?.Count ?? 0,
                     isImportant = ev.IsImportant,
-                    airlinesBreakdown = ev.AirlinesBreakdown,
-                    airlineAchieved = ev.AirlineAchieved,
+                    leads = eventLeads.ToList(),
                     dailyStats = baseDailyStats,
-                    domDailyStats = domDailyStats,     // Extracted Domestic Day ranges
-                    intlDailyStats = intlDailyStats    // Extracted Intl Day ranges
+                    eventSectors = eventSectors // Passes the detailed sectors for JS to calculate
                 });
             }
         }
@@ -298,8 +199,9 @@ public class DashboardController : Controller
         try
         {
             bool usePrimaryCache = (year == 2026 && !includePast);
-            string targetDashKey = usePrimaryCache ? "DashboardMasterData" : "HistoricalDashboardMasterData";
-            string targetRawKey = usePrimaryCache ? "RawEventListData" : "HistoricalRawEventListData";
+            // FIX: Dynamically fetch the year-specific cache key
+            string targetDashKey = usePrimaryCache ? "DashboardMasterData" : $"HistoricalDashboardMasterData_{year}";
+            string targetRawKey = usePrimaryCache ? "RawEventListData" : $"HistoricalRawEventListData_{year}";
 
             if (!_cache.TryGetValue(targetRawKey, out List<EventListData> rawEvents) || rawEvents == null)
                 return Json(new { success = false, message = "System is updating data." });
@@ -504,7 +406,8 @@ public class DashboardController : Controller
             {
                 var userSectorSet = userSectors.ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-                var filteredAlerts = cachedAlerts.Where(a => {
+                var filteredAlerts = cachedAlerts.Where(a =>
+                {
                     // Extract the sector from the cached anonymous object
                     string sec = ((dynamic)a).sector;
                     return userSectorSet.Contains(sec);
@@ -520,5 +423,19 @@ public class DashboardController : Controller
             _logger.LogError($"Alerts UI Load Error: {ex.Message}");
             return Json(new { success = false, message = ex.Message });
         }
+    }
+
+    [HttpGet]
+    public IActionResult IndexV2()
+    {
+        return View();
+    }
+
+    // Add this inside FareAuditController.cs
+
+    [HttpGet]
+    public IActionResult FestivalCardsV2()
+    {
+        return View();
     }
 }

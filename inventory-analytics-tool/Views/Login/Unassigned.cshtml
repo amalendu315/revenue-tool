@@ -1,0 +1,30 @@
+﻿@{
+    ViewData["Title"] = "Role Pending";
+    Layout = "~/Views/Shared/_Layout.cshtml"; 
+}
+
+<div class="page-content d-flex align-items-center justify-content-center" style="min-height: 80vh;">
+    <div class="container text-center">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                
+                <!-- Icon -->
+                <div class="mb-4">
+                    <i class="mdi mdi-account-clock-outline" style="font-size: 80px; color: #4b6794; opacity: 0.8;"></i>
+                </div>
+                
+                <!-- Message -->
+                <h2 class="fw-bold text-dark mb-3">Account Pending Setup</h2>
+                <p class="text-muted fs-5 mb-4">
+                    You have successfully logged in, but your account has not been assigned a specific dashboard role yet. Please contact your system administrator to configure your access permissions.
+                </p>
+                
+                <!-- Logout Button -->
+                <a href="/Login/Logout" class="btn btn-lg text-white shadow-sm" style="background-color: #f16367; border-radius: 8px; padding: 10px 24px;">
+                    <i class="mdi mdi-logout me-2"></i> Log Out
+                </a>
+                
+            </div>
+        </div>
+    </div>
+</div>

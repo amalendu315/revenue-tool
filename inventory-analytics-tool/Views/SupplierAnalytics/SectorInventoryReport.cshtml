@@ -1,0 +1,478 @@
+﻿@model inventory_analytics_tool.Models.ViewModels.SectorInventoryViewModel
+@{
+    ViewData["Title"] = "Sector Inventory Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+
+    body[data-layout="horizontal"] .page-content, .page-content {
+        padding-top: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        padding-bottom: 60px !important;
+    }
+
+    :root {
+        --brand-blue: #1076bb;
+        --brand-red: #f16367;
+        --slate-50: #f8fafc;
+        --slate-100: #f1f5f9;
+        --slate-200: #e2e8f0;
+        --slate-300: #cbd5e1;
+        --slate-400: #94a3b8;
+        --slate-500: #64748b;
+        --slate-600: #475569;
+        --slate-700: #334155;
+        --slate-800: #1e293b;
+        --slate-900: #0f172a;
+    }
+
+    .custom-scope {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--slate-50);
+        color: var(--slate-900);
+    }
+
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-up {
+        animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Hero Banner */
+    .hero-banner {
+        background: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-red) 100%);
+        padding-top: 2.5rem;
+        padding-bottom: 7rem;
+        position: relative;
+    }
+
+    .hero-pattern {
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0);
+        background-size: 24px 24px;
+    }
+
+    /* Date Filter Box Styling */
+    .date-filter-box {
+        background-color: var(--slate-50);
+        border-radius: 0.75rem;
+        padding: 1rem;
+        height: 100%;
+    }
+
+    .date-label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: var(--slate-500);
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+        display: block;
+        letter-spacing: 0.05em;
+    }
+
+    .custom-date-wrap {
+        background-color: #fff;
+        border: 1px solid var(--slate-200);
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+    }
+
+        .custom-date-wrap input[type="date"] {
+            border: none;
+            box-shadow: none;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            color: var(--slate-700);
+            cursor: pointer;
+            height: 38px;
+            flex-grow: 1;
+        }
+
+            .custom-date-wrap input[type="date"]:focus {
+                background-color: var(--slate-50);
+                outline: none;
+            }
+
+    /* Modern Inputs */
+    .modern-input {
+        background-color: var(--slate-50);
+        border: 1px solid var(--slate-200);
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+        color: var(--slate-800);
+        font-size: 0.875rem;
+        font-weight: 500;
+        height: 38px;
+        transition: all 0.2s;
+        outline: none;
+        width: 100%;
+    }
+
+        .modern-input:focus {
+            background-color: #fff;
+            border-color: var(--brand-blue);
+            box-shadow: 0 0 0 4px rgba(16, 118, 187, 0.1);
+        }
+
+    .input-icon-wrapper {
+        position: relative;
+    }
+
+        .input-icon-wrapper .lucide {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--slate-400);
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .input-icon-wrapper input {
+            padding-left: 2.5rem;
+        }
+
+    /* CUSTOM LIST VIEW TABLE STYLES */
+    .modern-table-wrapper {
+        background: #ffffff;
+        border-radius: 1rem;
+        border: 1px solid var(--slate-200);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .modern-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        font-size: 0.8125rem;
+        white-space: nowrap;
+    }
+
+        .modern-table thead th {
+            background-color: var(--slate-50);
+            color: var(--slate-600);
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1rem;
+            border-bottom: 1px solid var(--slate-200);
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s;
+        }
+
+            .modern-table thead th:hover {
+                background-color: #e2e8f0;
+            }
+
+        .modern-table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--slate-700);
+            font-weight: 500;
+        }
+
+        .modern-table tbody tr.main-row {
+            transition: background-color 0.2s;
+        }
+
+            .modern-table tbody tr.main-row:hover {
+                background-color: var(--slate-50);
+            }
+    
+    .sort-icon {
+        width: 12px;
+        height: 12px;
+        transition: opacity 0.2s, color 0.2s;
+        opacity: 0.3;
+        margin-left: 4px;
+    }
+
+        .sort-icon.active {
+            opacity: 1;
+            color: var(--brand-blue);
+        }
+
+    /* Custom Cell Styling */
+    .date-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.75rem;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-weight: 600;
+        background: var(--slate-50);
+        color: var(--slate-700);
+        border: 1px solid var(--slate-200);
+    }
+</style>
+
+<div class="page-content custom-scope pb-5">
+    
+    <!-- 1. HERO BANNER -->
+    <div class="hero-banner px-3">
+        <div class="hero-pattern"></div>
+        <div class="container-fluid position-relative z-1" style="max-width: 1800px;">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">
+                <div class="d-flex align-items-center gap-3">
+                    <a href="/SupplierAnalytics/Index" class="btn btn-light d-flex align-items-center justify-content-center p-0 rounded-circle shadow-sm" style="width: 3rem; height: 3rem; color: var(--brand-blue);" title="Back to Master Report">
+                        <i data-lucide="arrow-left" style="width: 1.25rem; height: 1.25rem;"></i>
+                    </a>
+                    <div class="text-white">
+                        <h1 class="fw-bolder mb-1 text-white" style="font-size: 2.25rem;">Sector-Wise <span class="fw-medium opacity-75">Inventory Report</span></h1>
+                        <p class="mb-0 fw-medium opacity-75 d-flex align-items-center gap-2" style="font-size: 1rem;">
+                            <i data-lucide="calendar" style="width: 1rem; height: 1rem;"></i> Filtered by Travel Date: <strong class="text-white">@Model.DateRangeLabel</strong>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. FILTER BAR -->
+    <div class="container-fluid position-relative px-3" style="max-width: 1400px; margin-top: -3.5rem; z-index: 10;">
+        <div class="card border-0 rounded-4 shadow-sm p-4 mb-4">
+            <form method="get" action="/SupplierAnalytics/SectorInventoryReport" class="row g-3 align-items-center">
+                <div class="col-12 col-md-5">
+                    <div class="date-filter-box mb-0">
+                        <span class="date-label">Start Travel Date</span>
+                        <div class="custom-date-wrap shadow-sm">
+                            <input type="date" name="start" value="@Context.Request.Query["start"]" required />
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-12 col-md-5">
+                    <div class="date-filter-box mb-0">
+                        <span class="date-label">End Travel Date</span>
+                        <div class="custom-date-wrap shadow-sm">
+                            <input type="date" name="end" value="@Context.Request.Query["end"]" required />
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-12 col-md-2 mt-4 mt-md-0 d-flex align-items-end h-100">
+                    <button type="submit" class="btn text-white w-100 shadow-sm d-flex align-items-center justify-content-center gap-2" style="background-color: var(--brand-blue); font-weight: 700; height: 38px; border-radius: 0.5rem; margin-top: 1.6rem; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#0e65a0'" onmouseout="this.style.backgroundColor='var(--brand-blue)'">
+                        <i data-lucide="filter" style="width: 1.1rem; height: 1.1rem;"></i> Filter
+                    </button>
+                </div>
+            </form>
+
+            <hr class="text-muted opacity-25 my-4">
+
+            <!-- Data Table Search & Export Controls -->
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div class="input-icon-wrapper" style="max-width: 400px; width: 100%;">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="searchInput" placeholder="Search sector or supplier..." class="form-control modern-input w-100">
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-success fw-bold shadow-sm rounded-3 px-4 d-flex align-items-center gap-2" onclick="exportToCSV()">
+                        <i data-lucide="file-spreadsheet" style="width: 1rem; height: 1rem;"></i> Export CSV
+                    </button>
+                    <button class="btn btn-outline-danger fw-bold shadow-sm rounded-3 px-4 d-flex align-items-center gap-2" onclick="window.print()">
+                        <i data-lucide="file-text" style="width: 1rem; height: 1rem;"></i> Print / PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. DATA TABLE AREA -->
+        <div id="render-container" class="animate-fade-up">
+            <!-- HTML injected via JS -->
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // --- DATA INJECTION & STATE ---
+        const serverData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.InventoryRows));
+        let filteredData = [];
+        let state = {
+            search: '',
+            sortBy: 'sector',
+            sortOrder: 'asc'
+        };
+
+        $(document).ready(function () {
+            lucide.createIcons();
+            
+            // Search functionality
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                state.search = e.target.value.toLowerCase().trim();
+                processAndRender();
+            });
+
+            processAndRender();
+        });
+
+        // --- GLOBAL UI HANDLERS ---
+        window.handleSort = function (column) {
+            if (state.sortBy === column) {
+                state.sortOrder = state.sortOrder === 'asc' ? 'desc' : 'asc';
+            } else {
+                state.sortBy = column;
+                state.sortOrder = 'asc';
+            }
+            processAndRender();
+        };
+
+        // --- PROCESSING & RENDERING ---
+        function processAndRender() {
+            filteredData = serverData.filter(row => {
+                if (!state.search) return true;
+                const sq = state.search;
+                return (
+                    (row.Sector && row.Sector.toLowerCase().includes(sq)) ||
+                    (row.SupplierName && row.SupplierName.toLowerCase().includes(sq))
+                );
+            });
+
+            // Sorting
+            filteredData.sort((a, b) => {
+                let vA, vB;
+                switch (state.sortBy) {
+                    case 'sector': vA = (a.Sector || "").toLowerCase(); vB = (b.Sector || "").toLowerCase(); break;
+                    case 'supplier': vA = (a.SupplierName || "").toLowerCase(); vB = (b.SupplierName || "").toLowerCase(); break;
+                    case 'days': vA = parseInt(a.AvailableDays || 0); vB = parseInt(b.AvailableDays || 0); break;
+                    default: vA = (a.Sector || "").toLowerCase(); vB = (b.Sector || "").toLowerCase();
+                }
+                if (vA < vB) return state.sortOrder === 'asc' ? -1 : 1;
+                if (vA > vB) return state.sortOrder === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            const container = document.getElementById('render-container');
+            if (filteredData.length === 0) {
+                container.innerHTML = `
+                            <div class="text-center py-5 bg-white rounded-4 border shadow-sm my-5">
+                                <i data-lucide="search-x" class="text-muted mb-3" style="width: 3rem; height: 3rem; opacity: 0.5;"></i>
+                                <h4 class="fw-bold" style="color: var(--slate-800);">No inventory found</h4>
+                                <p class="text-muted mb-0">Try changing your search term or date range.</p>
+                            </div>`;
+            } else {
+                container.innerHTML = buildListView(filteredData);
+            }
+            lucide.createIcons();
+        }
+
+        // --- HTML BUILDER ---
+        function buildListView(records) {
+            const getIcon = (col) => {
+                const isActive = state.sortBy === col;
+                const icon = isActive ? (state.sortOrder === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down';
+                const activeCls = isActive ? 'active' : '';
+                return `<i data-lucide="${icon}" class="sort-icon ${activeCls}"></i>`;
+            };
+
+            let html = `
+                    <div class="modern-table-wrapper mb-5">
+                        <div class="table-responsive hide-scrollbar">
+                            <table class="modern-table">
+                                <thead>
+                                    <tr>
+                                        <th onclick="handleSort('sector')"><div class="d-flex align-items-center">Sector ${getIcon('sector')}</div></th>
+                                        <th onclick="handleSort('supplier')"><div class="d-flex align-items-center">Supplier Name ${getIcon('supplier')}</div></th>
+                                        <th onclick="handleSort('days')" class="text-center"><div class="d-flex justify-content-center align-items-center">Available Days ${getIcon('days')}</div></th>
+                                        <th><div class="d-flex align-items-center">Available Dates</div></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+
+            records.forEach(row => {
+                // Split comma separated dates into badges
+                let dateBadges = '';
+                if (row.AvailableDates) {
+                    const datesArray = row.AvailableDates.split(',').filter(d => d.trim() !== '');
+                    dateBadges = datesArray.map(d => `<span class="date-badge"><i data-lucide="calendar-days" style="width:12px; height:12px; color:var(--slate-400);"></i> ${d.trim()}</span>`).join('');
+                }
+
+                html += `
+                            <tr class="main-row">
+                                <td class="fw-bolder" style="color: var(--brand-blue); font-size: 0.95rem;">${row.Sector || '-'}</td>
+                                <td class="text-dark fw-bold">${row.SupplierName || '-'}</td>
+                                <td class="text-center">
+                                    <span class="badge bg-light text-dark border px-3 py-2 fs-6 shadow-sm">${row.AvailableDays || 0}</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-wrap gap-2 py-1" style="max-width: 600px;">
+                                        ${dateBadges}
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+            });
+
+            html += `</tbody></table></div></div>`;
+            return html;
+        }
+
+        // --- EXPORT FUNCTIONALITY ---
+        function exportToCSV() {
+            if (!filteredData || filteredData.length === 0) {
+                alert("No data available to export.");
+                return;
+            }
+            
+            let csv = 'Sector,Supplier Name,Available Days,Available Dates\n';
+            
+            filteredData.forEach(item => {
+                const s = item.Sector || '';
+                const n = item.SupplierName || '';
+                const d = item.AvailableDays || 0;
+                // Wrap AvailableDates in quotes to prevent commas from breaking the CSV structure
+                const ad = `"${item.AvailableDates || ''}"`;
+
+                csv += `"${s}","${n}",${d},${ad}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            
+            link.setAttribute("href", url);
+            link.setAttribute("download", `Sector_Inventory_Report_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+}

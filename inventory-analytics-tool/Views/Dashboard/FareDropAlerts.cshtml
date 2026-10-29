@@ -3,128 +3,665 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
 <style>
-    #calendarTable {
-        table-layout: fixed !important;
-        width: 100% !important;
+    body[data-layout="horizontal"] .page-content, .page-content {
+        padding-top: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        padding-bottom: 60px !important;
     }
 
-    .green-tab {
-        background-color: #d1e7dd !important; /* light green subtle background */
-        color: #0f5132 !important; /* dark green text */
-        border: 1px solid #badbcc !important;
-        border-radius: 6px;
-        padding: 6px 12px;
-        font-weight: 700;
-        display: inline-block;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    :root {
+        --brand-blue: #1076bb;
+        --brand-red: #f16367;
+        --slate-50: #f8fafc;
+        --slate-100: #f1f5f9;
+        --slate-200: #e2e8f0;
+        --slate-300: #cbd5e1;
+        --slate-400: #94a3b8;
+        --slate-500: #64748b;
+        --slate-600: #475569;
+        --slate-700: #334155;
+        --slate-800: #1e293b;
+        --slate-900: #0f172a;
+    }
+
+    .custom-scope {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--slate-50);
+        color: var(--slate-900);
+    }
+    
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-up {
+        animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Hero Banner */
+    .hero-banner {
+        background: linear-gradient(to right, var(--brand-blue), var(--brand-red));
+        padding-top: 2.5rem;
+        padding-bottom: 6rem;
+        position: relative;
+    }
+
+    .hero-pattern {
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0);
+        background-size: 24px 24px;
+    }
+
+    /* Modern Inputs */
+    .modern-input {
+        background-color: var(--slate-50);
+        border: 1px solid var(--slate-200);
+        border-radius: 0.75rem;
+        padding: 0.5rem 1rem;
+        color: var(--slate-800);
+        font-size: 0.875rem;
+        font-weight: 500;
+        height: 3rem;
+        transition: all 0.2s;
+    }
+
+        .modern-input:focus {
+            background-color: #fff;
+            border-color: var(--brand-blue);
+            box-shadow: 0 0 0 4px rgba(16, 118, 187, 0.1);
+            outline: none;
+        }
+
+        .modern-input::placeholder {
+            color: var(--slate-400);
+        }
+
+    .input-icon-wrapper {
+        position: relative;
+    }
+
+        .input-icon-wrapper .lucide {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--slate-400);
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .input-icon-wrapper input {
+            padding-left: 2.5rem;
+        }
+    
+    /* CUSTOM LIST VIEW TABLE STYLES */
+    .modern-table-wrapper {
+        background: #ffffff;
+        border-radius: 1rem;
+        border: 1px solid var(--slate-200);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .modern-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        font-size: 0.875rem;
+        white-space: nowrap;
+    }
+
+        .modern-table thead th {
+            background-color: var(--slate-50);
+            color: var(--slate-600);
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1rem 0.75rem;
+            border-bottom: 1px solid var(--slate-200);
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s;
+        }
+
+            .modern-table thead th:hover {
+                background-color: #e2e8f0;
+            }
+
+        .modern-table tbody td {
+            padding: 1.25rem 0.75rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--slate-700);
+            font-weight: 500;
+        }
+
+        .modern-table tbody tr.main-row {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+            .modern-table tbody tr.main-row:hover {
+                background-color: var(--slate-50);
+            }
+
+        .modern-table tbody tr.expanded-row {
+            background-color: rgba(248, 250, 252, 0.6);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+    
+    .sort-icon {
+        width: 14px;
+        height: 14px;
+        transition: opacity 0.2s, color 0.2s;
+        opacity: 0.3;
+        margin-left: 4px;
+    }
+
+        .sort-icon.active {
+            opacity: 1;
+            color: var(--brand-blue);
+        }
+
+    .chevron-icon {
+        transition: transform 0.2s ease;
+    }
+
+    .text-xxs {
+        font-size: 0.65rem;
+    }
+
+    /* Custom Sort Modal Styling */
+    .modern-select {
+        background-color: var(--slate-50);
+        border: 1px solid var(--slate-200);
+        border-radius: 0.5rem;
+        color: var(--slate-800);
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+        .modern-select:focus {
+            background-color: #fff;
+            border-color: var(--brand-blue);
+            box-shadow: 0 0 0 3px rgba(16, 118, 187, 0.1);
+            outline: none;
+        }
+
+    .sort-row {
+        background-color: var(--slate-50);
+        border: 1px solid var(--slate-200);
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
     }
 </style>
 
-<div class="page-content">
-    <div class="container-fluid">
-        <div class="conatiner cox">
-            <div class="row">
-                <div class="col-12 d-flex justify-content-start align-items-center gap-3">
-                    <a href="/Dashboard/Index" class="btn btn-sm btn-light border shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+<div class="page-content custom-scope pb-5">
+    
+    <!-- 1. HERO BANNER -->
+    <div class="hero-banner px-3">
+        <div class="hero-pattern"></div>
+        <div class="container-fluid position-relative z-1" style="max-width: 1600px;">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">
+                <div class="d-flex align-items-center gap-3">
+                    <a href="/Dashboard/Index" class="btn btn-light d-flex align-items-center justify-content-center p-0 rounded-circle shadow-sm" style="width: 3rem; height: 3rem; color: var(--brand-blue);" title="Back to Dashboard">
+                        <i data-lucide="arrow-left" style="width: 1.25rem; height: 1.25rem;"></i>
                     </a>
-                    <h4 class="mb-sm-0 text-danger"><i class="mdi mdi-alert-decagram-outline me-1"></i> Active Fare Drop Alerts</h4>
+                    <div class="text-white">
+                        <h1 class="fw-bolder mb-1 text-white d-flex align-items-center gap-2" style="font-size: 2.25rem;">
+                            <i data-lucide="bell-ring" style="width: 2rem; height: 2rem;"></i> Active Fare Drops
+                        </h1>
+                        <p class="mb-0 fw-medium opacity-75" style="font-size: 1rem;">Monitor tracked sectors where fares have fallen below target.</p>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="boxes position-relative bg-white shadow-sm rounded-4 p-4 mt-3 w-100">
-            <div id="loading-overlay" style="padding: 4rem; text-align: center;">
-                <div class="spinner-border text-danger" style="width: 3rem; height: 3rem;" role="status"></div>
-                <h5 class="mt-3 text-muted">Scanning for dropped fares...</h5>
+    <!-- 2. CONTROL BAR (Search, Custom Sort, Export) -->
+    <div class="container-fluid position-relative px-3" style="max-width: 1600px; margin-top: -3rem; z-index: 10;">
+        <div class="card border-0 rounded-4 shadow-sm p-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div class="input-icon-wrapper" style="max-width: 400px; width: 100%;">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="searchInput" placeholder="Search sectors, airlines, or events..." class="form-control modern-input w-100">
+                </div>
+                <div class="d-flex gap-2">
+                    <!-- Excel-style Custom Sort Button -->
+                    <button onclick="openCustomSortModal()" class="btn d-flex align-items-center justify-content-center gap-2 shadow-sm text-dark fw-bold border" style="background-color: #fff; height: 3rem; padding: 0 1.5rem; border-radius: 0.75rem; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f8fafc'" onmouseout="this.style.backgroundColor='#fff'">
+                        <i data-lucide="list-ordered" style="width: 1.25rem; height: 1.25rem;"></i> Custom Sort
+                    </button>
+                    <!-- Export Button -->
+                    <button onclick="exportToCSV()" class="btn d-flex align-items-center justify-content-center gap-2 shadow-sm text-white fw-bold" style="background-color: #10b981; border: none; height: 3rem; padding: 0 1.5rem; border-radius: 0.75rem; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#059669'" onmouseout="this.style.backgroundColor='#10b981'">
+                        <i data-lucide="download" style="width: 1.25rem; height: 1.25rem;"></i> Export
+                    </button>
+                </div>
             </div>
+        </div>
+    </div>
 
-            <div id="content-overlay" style="display:none; width: 100%;">
-                <table id="calendarTable" class="display responsive w-100" style="width:100%">
-                    <thead>
-                        <tr>
-                            <th>Sector</th>
-                            <th>Occasion</th>
-                            <th>Travel Date</th>
-                            <th>Target Fare</th>
-                            <th>Current Online Fare</th>
-                            <th>Entry Date</th>
-                            <th>Difference</th>
-                            <th>Lead</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="list-tbody"></tbody>
-                </table>
+    <!-- 3. MAIN CONTENT AREA -->
+    <div class="container-fluid px-3 mt-4" style="max-width: 1600px;">
+        
+        <div id="loading-overlay" class="text-center py-5 bg-white rounded-4 border shadow-sm animate-fade-up">
+            <div class="spinner-border text-danger mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+            <h4 class="fw-bold" style="color: var(--slate-800);">Scanning Fares...</h4>
+            <p class="text-muted mb-0">Checking your monitored sectors for active drops.</p>
+        </div>
+
+        <div id="render-container" class="animate-fade-up" style="display: none;">
+            <!-- HTML injected via JS -->
+        </div>
+    </div>
+</div>
+
+<!-- 4. CUSTOM SORT MODAL (Excel Style) -->
+<div class="modal fade" id="customSortModal" tabindex="-1" aria-labelledby="customSortModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold" id="customSortModalLabel">Sort</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex gap-2 mb-3 pb-3 border-bottom">
+                    <button class="btn btn-sm btn-light border fw-bold d-flex align-items-center gap-1" onclick="addSortLevel()">
+                        <i data-lucide="plus" style="width: 14px; height: 14px; color: #1076bb;"></i> Add Level
+                    </button>
+                    <button class="btn btn-sm btn-light border fw-bold d-flex align-items-center gap-1 text-danger" onclick="deleteLastSortLevel()">
+                        <i data-lucide="minus" style="width: 14px; height: 14px;"></i> Delete Level
+                    </button>
+                    <button class="btn btn-sm btn-light border fw-bold d-flex align-items-center gap-1 ms-auto text-muted" onclick="clearAllSorts()">
+                        <i data-lucide="x-circle" style="width: 14px; height: 14px;"></i> Clear All
+                    </button>
+                </div>
+                
+                <div class="fw-bold text-muted text-xxs text-uppercase mb-2 px-2 d-flex">
+                    <div style="flex: 1;">Column</div>
+                    <div style="flex: 1;">Order</div>
+                </div>
+                <div id="sortLevelsContainer">
+                    <!-- Dynamic rows will be injected here -->
+                </div>
+            </div>
+            <div class="modal-footer border-top-0 pt-0">
+                <button type="button" class="btn btn-light fw-bold rounded-3" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn text-white fw-bold rounded-3" style="background-color: var(--brand-blue);" onclick="applyCustomSort()">OK</button>
             </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
+    <!-- If Bootstrap JS isn't in your _Layout, uncomment the line below -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> -->
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
+        // --- STATE MANAGEMENT ---
+        let allAlerts = [];
+        let filteredAlerts = [];
+        
+        // Multi-level sort state
+        let state = {
+            search: '',
+            sortLevels: [{ column: 'entryDate', order: 'desc' }] // Default sort
+        };
+
+        // Data-type aware column definitions
+        const availableColumns = [
+            { id: 'sector', name: 'Sector', type: 'text' },
+            { id: 'event', name: 'Occasion', type: 'text' },
+            { id: 'date', name: 'Travel Date', type: 'date' },
+            { id: 'airline', name: 'Airline', type: 'text' },
+            { id: 'flight', name: 'Flight No', type: 'text' },
+            { id: 'target', name: 'Target Fare', type: 'number' },
+            { id: 'current', name: 'Current Fare', type: 'number' },
+            { id: 'entryDate', name: 'Entry Date', type: 'date' },
+            { id: 'achieved', name: 'Achieved', type: 'number' },
+            { id: 'lead', name: 'Lead', type: 'text' }
+        ];
+
+        const formatNum = (num) => (num || 0).toLocaleString('en-IN');
+
+        $(document).ready(function () {
+            lucide.createIcons();
+
             fetch(`/Dashboard/GetActiveAlerts`)
                 .then(res => res.json())
                 .then(result => {
-                    document.getElementById('loading-overlay').style.display = 'none';
-                    document.getElementById('content-overlay').style.display = 'block';
-                    renderList(result.data || []);
+                    $('#loading-overlay').hide();
+                    allAlerts = result.data || [];
+                    $('#render-container').show();
+                    
+                    document.getElementById('searchInput').addEventListener('input', (e) => {
+                        state.search = e.target.value.toLowerCase();
+                        processAndRender();
+                    });
+
+                    processAndRender();
+                })
+                .catch(err => {
+                    $('#loading-overlay').hide();
+                    $('#render-container').show().html(`<div class="alert alert-danger rounded-4 border-0 shadow-sm">Failed to load data: ${err.message}</div>`);
                 });
         });
 
-        function renderList(data) {
-            if ($.fn.DataTable.isDataTable('#calendarTable')) {
-                $('#calendarTable').DataTable().destroy();
+        // --- MULTI-LEVEL SORT LOGIC ---
+        const getCellValue = (obj, col) => {
+            switch (col) {
+                case 'sector': return (obj.sector || "").toLowerCase();
+                case 'event': return (obj.eventName || "").toLowerCase();
+                case 'date': return new Date(obj.rawDate || 0).getTime();
+                case 'airline': return (obj.airline || "").toLowerCase();
+                case 'flight': return (obj.flightNo || "").toLowerCase();
+                case 'target': return obj.targetFare || 0;
+                case 'current': return obj.lastOnlineFare || 0;
+                case 'entryDate': return new Date(obj.entryDate || 0).getTime();
+                case 'achieved': return obj.acheivedPax || 0;
+                case 'lead': return (obj.lead || "").toLowerCase();
+                default: return 0;
+            }
+        };
+
+        // Standard Table Header Sort Handler
+        window.handleSort = function (column) {
+            const currentPrimary = state.sortLevels[0];
+            if (state.sortLevels.length === 1 && currentPrimary && currentPrimary.column === column) {
+                state.sortLevels = [{ column: column, order: currentPrimary.order === 'asc' ? 'desc' : 'asc' }];
+            } else {
+                state.sortLevels = [{ column: column, order: 'asc' }];
+            }
+            processAndRender();
+        };
+
+        // --- MODAL UI HANDLERS ---
+        let tempSortLevels = [];
+
+        window.openCustomSortModal = function () {
+            tempSortLevels = JSON.parse(JSON.stringify(state.sortLevels));
+            renderModalRows();
+            const modal = new bootstrap.Modal(document.getElementById('customSortModal'));
+            modal.show();
+        };
+
+        window.addSortLevel = function () {
+            tempSortLevels.push({ column: 'sector', order: 'asc' });
+            renderModalRows();
+        };
+
+        window.deleteLastSortLevel = function () {
+            if (tempSortLevels.length > 0) {
+                tempSortLevels.pop();
+                renderModalRows();
+            }
+        };
+
+        window.clearAllSorts = function () {
+            tempSortLevels = [];
+            renderModalRows();
+        };
+
+        window.updateTempSort = function (index, field, value) {
+            tempSortLevels[index][field] = value;
+            if (field === 'column') {
+                renderModalRows(); // Trigger re-render to update Order labels (A-Z vs 0-9)
+            }
+        };
+
+        window.applyCustomSort = function () {
+            state.sortLevels = tempSortLevels.filter(lvl => lvl.column);
+            const modal = bootstrap.Modal.getInstance(document.getElementById('customSortModal'));
+            modal.hide();
+            processAndRender();
+        };
+
+        function renderModalRows() {
+            const container = document.getElementById('sortLevelsContainer');
+            
+            if (tempSortLevels.length === 0) {
+                container.innerHTML = `
+                            <div class="text-center p-4 text-muted bg-white border rounded-3 shadow-sm" style="border-style: dashed !important;">
+                                <i data-lucide="list-x" class="mb-2 opacity-50" style="width: 24px; height: 24px;"></i>
+                                <div class="fw-bold">No custom sorts applied</div>
+                                <small>Click "OK" to revert data to its original default order.</small>
+                            </div>`;
+                lucide.createIcons();
+                return;
             }
 
             let html = '';
+            tempSortLevels.forEach((level, index) => {
+                const isFirst = index === 0;
+                const labelText = isFirst ? 'Sort by' : 'Then by';
+                
+                let columnOptions = availableColumns.map(col =>
+                    `<option value="${col.id}" ${level.column === col.id ? 'selected' : ''}>${col.name}</option>`
+                ).join('');
 
-            // WE REMOVED THE IF(DATA.LENGTH === 0) COLSPAN LOGIC HERE
-            // DataTables will now safely handle empty tables without crashing!
+                const colDef = availableColumns.find(c => c.id === level.column) || availableColumns[0];
+                let ascLabel = 'A to Z';
+                let descLabel = 'Z to A';
+                
+                if (colDef.type === 'number') {
+                    ascLabel = 'Smallest to Largest';
+                    descLabel = 'Largest to Smallest';
+                } else if (colDef.type === 'date') {
+                    ascLabel = 'Oldest to Newest';
+                    descLabel = 'Newest to Oldest';
+                }
 
-            data.forEach(item => {
-                let diff = item.targetFare - item.lastOnlineFare;
                 html += `
-                        <tr>
-                            <td class="fw-bold">${item.sector}</td>
-                            <td>${item.eventName}</td>
-                            <td data-sort="${new Date(item.rawDate).getTime()}">${item.travelDate}</td>
-                            <td class="text-muted text-decoration-line-through">₹${item.targetFare.toLocaleString('en-IN')}</td>
-                            <td data-sort="${item.lastOnlineFare}">
-                                <span class="green-tab">₹${item.lastOnlineFare.toLocaleString('en-IN')}</span>
-                            </td>
-                            <td data-sort="${new Date(item.entryDate).getTime()}">
-                                <span>${item.entryDate}</span>
-                            </td>
-                            <td class="text-success fw-bold">📉 Saved ₹${diff.toLocaleString('en-IN')}</td>
+                            <div class="sort-row">
+                                <div style="width: 80px;" class="fw-bold text-slate-700 text-end pe-2">${labelText}</div>
+                                <select class="form-select modern-select py-1 h-auto" style="flex: 1;" onchange="updateTempSort(${index}, 'column', this.value)">
+                                    ${columnOptions}
+                                </select>
+                                <select class="form-select modern-select py-1 h-auto" style="flex: 1;" onchange="updateTempSort(${index}, 'order', this.value)">
+                                    <option value="asc" ${level.order === 'asc' ? 'selected' : ''}>${ascLabel}</option>
+                                    <option value="desc" ${level.order === 'desc' ? 'selected' : ''}>${descLabel}</option>
+                                </select>
+                            </div>
+                        `;
+            });
+            container.innerHTML = html;
+        }
 
-                            <td><span class="badge text-lg bg-light text-dark border shadow-sm">${item.lead || 'Unassigned'}</span></td>
+        window.toggleRow = function (index) {
+            if (window.innerWidth >= 1200) return;
+            const expandRow = document.getElementById(`expand-${index}`);
+            const chevron = document.getElementById(`chev-${index}`);
+            expandRow.classList.toggle('d-none');
+            if (chevron) chevron.style.transform = expandRow.classList.contains('d-none') ? 'rotate(0deg)' : 'rotate(180deg)';
+        };
 
-                            <td>
-                                <a href="/OccasionDetails/FareDetails?eventId=${item.eventId}&sector=${encodeURIComponent(item.sector)}&sectorType=All" class="btn btn-sm btn-outline-primary">View Fare Chart →</a>
-                            </td>
-                        </tr>`;
+        // --- PROCESSING & RENDERING ---
+        function processAndRender() {
+            // Filter creates a safe clone, preventing permanent mutation of allAlerts during sort
+            filteredAlerts = allAlerts.filter(e => {
+                const searchStr = state.search;
+                if (!searchStr) return true;
+                return (
+                    (e.sector && e.sector.toLowerCase().includes(searchStr)) ||
+                    (e.eventName && e.eventName.toLowerCase().includes(searchStr)) ||
+                    (e.airline && e.airline.toLowerCase().includes(searchStr)) ||
+                    (e.flightNo && e.flightNo.toLowerCase().includes(searchStr)) ||
+                    (e.lead && e.lead.toLowerCase().includes(searchStr))
+                );
             });
 
-            document.getElementById('list-tbody').innerHTML = html;
-
-            $('#calendarTable').DataTable({
-                responsive: true,
-                paging: true,
-                pageLength: 15,
-                ordering: true,
-                dom: '<"d-flex justify-content-between align-items-center mb-3"if>rt<"d-flex justify-content-between align-items-center mt-3"lp>',
-                language: {
-                    // Tell DataTables what to say when the table is empty!
-                    emptyTable: "No fare drops currently active for your selected sectors!"
-                },
-                columnDefs: [
-                    { targets: "_all", className: "text-center align-middle" },
-                    { targets: 7, orderable: true } // Disable sorting on the "Action" button column
-                ]
+            // Chained Multi-Level Sort
+            filteredAlerts.sort((a, b) => {
+                for (let level of state.sortLevels) {
+                    let vA = getCellValue(a, level.column);
+                    let vB = getCellValue(b, level.column);
+                    
+                    if (vA < vB) return level.order === 'asc' ? -1 : 1;
+                    if (vA > vB) return level.order === 'asc' ? 1 : -1;
+                }
+                return 0;
             });
+
+            const container = document.getElementById('render-container');
+            
+            if (filteredAlerts.length === 0) {
+                container.innerHTML = `
+                            <div class="text-center py-5 bg-white rounded-4 border shadow-sm my-5">
+                                <i data-lucide="check-circle" class="text-success mb-3" style="width: 3rem; height: 3rem; opacity: 0.8;"></i>
+                                <h4 class="fw-bold" style="color: var(--slate-800);">No active fare drops</h4>
+                                <p class="text-muted mb-0">There are no dropped fares matching your criteria right now.</p>
+                            </div>`;
+            } else {
+                container.innerHTML = buildListView(filteredAlerts);
+            }
+            lucide.createIcons();
+        }
+
+        // --- HTML BUILDER ---
+        function buildListView(events) {
+            const getIcon = (col) => {
+                const primarySort = state.sortLevels[0];
+                const isActive = primarySort && primarySort.column === col;
+                const icon = isActive ? (primarySort.order === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down';
+                const activeCls = isActive ? 'active' : '';
+                return `<i data-lucide="${icon}" class="sort-icon ${activeCls}"></i>`;
+            };
+
+            let html = `
+                        <div class="d-flex justify-content-between align-items-center mb-3 px-1">
+                            <h5 class="fw-bold text-muted mb-0" style="font-size: 1rem;">
+                                Active Alerts:
+                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1 ms-2 shadow-sm">${events.length}</span>
+                            </h5>
+                            ${state.sortLevels.length > 1 ? `<span class="badge bg-info bg-opacity-10 text-info border border-info px-2 py-1 shadow-sm"><i data-lucide="layers" style="width:12px; height:12px;" class="me-1"></i>Multi-Level Sort Active</span>` : ''}
+                        </div>
+        
+                        <div class="modern-table-wrapper mb-5">
+                            <div class="table-responsive hide-scrollbar">
+                                <table class="modern-table">
+                                    <thead>
+                                        <tr>
+                                            <th onclick="handleSort('sector')"><div class="d-flex align-items-center">Sector ${getIcon('sector')}</div></th>
+                                            <th onclick="handleSort('event')" class="d-none d-sm-table-cell"><div class="d-flex align-items-center">Occasion ${getIcon('event')}</div></th>
+                                            <th onclick="handleSort('date')" class="d-none d-lg-table-cell"><div class="d-flex align-items-center">Travel Date ${getIcon('date')}</div></th>
+                                            <th onclick="handleSort('airline')" class="d-none d-xl-table-cell"><div class="d-flex align-items-center">Airline ${getIcon('airline')}</div></th>
+                                            <th onclick="handleSort('flight')" class="d-none d-xl-table-cell"><div class="d-flex align-items-center">Flight No ${getIcon('flight')}</div></th>
+                                            <th onclick="handleSort('target')" class="d-none d-md-table-cell text-end"><div class="d-flex justify-content-end align-items-center">Target ${getIcon('target')}</div></th>
+                                            <th onclick="handleSort('current')" class="text-end"><div class="d-flex justify-content-end align-items-center">Current Fare ${getIcon('current')}</div></th>
+                                            <th onclick="handleSort('entryDate')" class="d-none d-xxl-table-cell"><div class="d-flex align-items-center">Entry Date ${getIcon('entryDate')}</div></th>
+                                            <th onclick="handleSort('achieved')" class="d-none d-lg-table-cell text-center"><div class="d-flex justify-content-center align-items-center">Achieved ${getIcon('achieved')}</div></th>
+                                            <th onclick="handleSort('lead')" class="d-none d-xl-table-cell text-center"><div class="d-flex justify-content-center align-items-center">Lead ${getIcon('lead')}</div></th>
+                                            <th class="text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                        `;
+
+            events.forEach((ev, index) => {
+                html += `
+                                <tr class="main-row" onclick="toggleRow(${index})">
+                                    <td class="fw-bolder" style="color: var(--brand-blue); font-size: 0.95rem;">${ev.sector}</td>
+                                    <td class="d-none d-sm-table-cell fw-bold text-dark text-wrap" style="min-width: 150px; max-width: 200px;">${ev.eventName}</td>
+                                    <td class="d-none d-lg-table-cell text-muted fw-bold">${ev.travelDate}</td>
+                                    <td class="d-none d-xl-table-cell text-muted">${ev.airline}</td>
+                                    <td class="d-none d-xl-table-cell text-muted">${ev.flightNo}</td>
+                                    <td class="d-none d-md-table-cell text-end text-muted text-decoration-line-through">₹${formatNum(ev.targetFare)}</td>
+                                    <td class="text-end"><span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 fs-6 shadow-sm">₹${formatNum(ev.lastOnlineFare)}</span></td>
+                                    <td class="d-none d-xxl-table-cell text-muted text-nowrap" style="font-size: 0.75rem;">${ev.entryDate}</td>
+                                    <td class="d-none d-lg-table-cell text-center fw-bold text-dark">${ev.acheivedPax}</td>
+                                    <td class="d-none d-xl-table-cell text-center"><span class="badge bg-light text-dark border shadow-sm px-2 py-1">${ev.lead || 'Unassigned'}</span></td>
+                                    <td class="text-center">
+                                        <a href="/OccasionDetails/FareDetails?eventId=${ev.eventId}&sector=${encodeURIComponent(ev.sector)}&sectorType=All" class="d-none d-xl-inline-flex btn btn-sm btn-outline-primary fw-bold px-3 border border-primary text-decoration-none shadow-sm text-nowrap" onclick="event.stopPropagation();">Chart &rarr;</a>
+                                        <button class="d-xl-none btn btn-light btn-sm border text-muted shadow-sm px-2"><i data-lucide="chevron-down" id="chev-${index}" class="chevron-icon" style="width: 1.25rem; height: 1.25rem;"></i></button>
+                                    </td>
+                                </tr>
+                
+                                <tr id="expand-${index}" class="expanded-row d-none d-xl-none">
+                                    <td colspan="11" class="p-0 border-0">
+                                        <div class="p-4" style="background-color: rgba(248, 250, 252, 0.5);">
+                                            <div class="row g-3">
+                                                <div class="col-6 d-sm-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Occasion</div><div class="fw-bold text-dark text-truncate">${ev.eventName}</div></div>
+                                                <div class="col-6 d-lg-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Travel Date</div><div class="fw-bold text-dark">${ev.travelDate}</div></div>
+                                                <div class="col-4 d-xl-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Airline</div><div class="fw-bold text-dark">${ev.airline}</div></div>
+                                                <div class="col-4 d-xl-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Flight No</div><div class="fw-bold text-dark">${ev.flightNo}</div></div>
+                                                <div class="col-4 d-md-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Target Fare</div><div class="fw-bold text-muted text-decoration-line-through">₹${formatNum(ev.targetFare)}</div></div>
+                                                <div class="col-4 d-lg-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Achieved</div><div class="fw-bold text-dark">${ev.acheivedPax}</div></div>
+                                                <div class="col-4 d-xxl-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Entry Date</div><div class="fw-bold text-dark" style="font-size: 0.75rem;">${ev.entryDate}</div></div>
+                                                <div class="col-4 d-xl-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Lead</div><div class="fw-bold text-dark">${ev.lead || 'Unassigned'}</div></div>
+                                            </div>
+                            
+                                            <div class="mt-4 pt-3 border-top border-light">
+                                                <a href="/OccasionDetails/FareDetails?eventId=${ev.eventId}&sector=${encodeURIComponent(ev.sector)}&sectorType=All" class="btn btn-white w-100 fw-bold border text-primary d-flex align-items-center justify-content-center gap-2 shadow-sm text-decoration-none py-2" style="background: white;">
+                                                    View Fare Chart <i data-lucide="arrow-right" style="width: 1rem; height: 1rem;"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `;
+            });
+
+            html += `</tbody></table></div></div>`;
+            return html;
+        }
+
+        // --- EXPORT FUNCTIONALITY ---
+        function exportToCSV() {
+            if (!filteredAlerts || filteredAlerts.length === 0) return alert("No data available to export.");
+            
+            let csv = 'Sector,Occasion,Travel Date,Airline,Flight No,Target Fare,Current Online Fare,Entry Date,Achieved,Lead\n';
+            
+            filteredAlerts.forEach(item => {
+                const s = item.sector || '';
+                const e = item.eventName || '';
+                const td = item.travelDate || '';
+                const a = item.airline || '';
+                const f = item.flightNo || '';
+                const tf = item.targetFare || 0;
+                const of = item.lastOnlineFare || 0;
+                const ed = item.entryDate || '';
+                const ach = item.acheivedPax || 0;
+                const l = item.lead || 'Unassigned';
+
+                csv += `"${s}","${e}","${td}","${a}","${f}",${tf},${of},"${ed}",${ach},"${l}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = window.URL.createObjectURL(blob);
+            link.download = `Active_Fare_Drop_Alerts_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     </script>
 }

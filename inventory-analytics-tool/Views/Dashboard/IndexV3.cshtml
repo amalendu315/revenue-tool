@@ -1,0 +1,882 @@
+﻿@{
+    ViewData["Title"] = "Dashboard Page";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    /* MODERN DASHBOARD STYLES */
+    body {
+        background-color: #f4f7fe;
+    }
+
+    .hero-banner {
+        background: linear-gradient(135deg, #1076bb 0%, #f16367 100%);
+        border-radius: 16px;
+        padding: 2rem 2rem 4rem 2rem;
+        color: white;
+        margin-bottom: -3rem;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    .control-center-card {
+        background: #ffffff;
+        border-radius: 0px 0 16px 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        padding: 1.5rem;
+        position: relative;
+        z-index: 10;
+        margin-bottom: 2rem;
+    }
+
+    .table-card {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        padding: 1.5rem;
+        overflow: hidden;
+    }
+
+    /* MODERN INPUTS */
+    .modern-input {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0.6rem 1rem;
+        color: #334155;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+        .modern-input:focus {
+            background-color: #fff;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+    /* MODERN SEGMENTED SWITCH */
+    .modern-segment {
+        display: inline-flex;
+        flex-wrap: wrap;
+        background-color: #f1f5f9;
+        border-radius: 10px;
+        padding: 5px;
+        gap: 4px;
+        width: 100%;
+    }
+
+        .modern-segment .btn {
+            flex: 1;
+            border: none;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 13px;
+            border-radius: 8px;
+            padding: 8px 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin: 0;
+            text-align: center;
+        }
+
+            .modern-segment .btn:hover {
+                color: #1e293b;
+            }
+
+        .modern-segment .btn-check:checked + .btn {
+            background-color: #ffffff;
+            color: #0ea5e9;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+    /* DATATABLES CUSTOM SEARCH STYLING */
+
+    /* TARGET VISIBLE HEADER ONLY */
+    .dataTables_scrollHead thead tr {
+        background-color: #f8fafc;
+        color: #475569;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    /* COMPLETELY SQUASH THE HIDDEN SIZING HEADER */
+    .dataTables_scrollBody thead tr,
+    .dataTables_scrollBody thead th,
+    .dataTables_scrollBody thead td {
+        height: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        margin: 0 !important;
+        line-height: 0 !important;
+    }
+
+    .dataTables_scrollBody thead .dataTables_sizing {
+        height: 0 !important;
+        overflow: hidden !important;
+    }
+
+    /* REMOVE BOOTSTRAP DEFAULT BOTTOM MARGIN ON SCROLL TABLE */
+    .dataTables_scrollBody table {
+        margin-bottom: 0 !important;
+        border-top: none !important;
+    }
+
+    #calendarTable thead th {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 10 !important;
+        background-color: #f8fafc !important; /* Forces the gray background */
+        box-shadow: inset 0 -2px 0 #e2e8f0 !important; /* Replaces border-bottom for sticky elements */
+    }
+
+    /* Remove the old inline styles from the HTML tr to prevent conflicts */
+    #calendarTable thead tr {
+        background-color: transparent !important;
+    }
+
+
+    .dataTables_filter {
+        margin-bottom: 0 !important;
+        text-align: right;
+    }
+
+        .dataTables_filter label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0;
+            font-weight: 600;
+            color: #475569;
+            font-size: 14px;
+        }
+
+        .dataTables_filter input {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            color: #334155;
+            font-weight: 500;
+            margin-left: 0.5rem;
+            outline: none;
+            transition: all 0.2s ease;
+            width: 100%;
+            max-width: 250px;
+        }
+
+            .dataTables_filter input:focus {
+                background-color: #fff;
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            }
+
+    /* TOOLTIP OVERRIDES */
+    .tip-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: center;
+        margin: 0;
+    }
+
+        .tip-table th {
+            font-weight: 700;
+            font-size: 11px;
+            color: #64748b;
+            padding: 6px 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .tip-table td {
+            font-weight: 600;
+            font-size: 12px;
+            color: #1e293b;
+            padding: 6px 12px;
+        }
+
+        .tip-table .pct-row td {
+            color: #0ea5e9;
+            background-color: #f0f9ff;
+            border-radius: 4px;
+        }
+
+    .tip-box {
+        position: absolute;
+        display: none;
+        z-index: 1000;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        border-radius: 12px;
+        padding: 12px;
+        min-width: 250px;
+    }
+
+    /* ACTION BUTTON */
+    .btn-view-details {
+        background-color: #f8fafc;
+        color: #3b82f6;
+        font-weight: 600;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 4px 16px;
+        transition: all 0.2s;
+    }
+
+        .btn-view-details:hover {
+            background-color: #eff6ff;
+            border-color: #bfdbfe;
+            color: #2563eb;
+        }
+</style>
+
+<div class="page-content">
+    <div class="container-fluid">
+
+        <!-- HERO BANNER -->
+        <div class="hero-banner d-flex justify-content-between align-items-center gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <h3 class="fw-bold mb-1 text-white">Festival Calendar</h3>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <a href="/Dashboard/FestivalCards" class="btn btn-light fw-bold rounded-pill px-4 shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                    Switch to Card View
+                </a>
+                <a href="/Dashboard/IndexV2" class="btn btn-light shadow-sm fw-bold d-flex align-items-center gap-2" style="border-radius: 20px; font-size: 13px; color: #1076bb; padding: 8px 16px;">
+                    ✨ Try New V2 Dashboard
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </a>
+            </div>
+        </div>
+
+        <!-- UNIFIED CONTROL CENTER (Only Dropdowns) -->
+        <div class="control-center-card">
+            <div class="row g-3 align-items-end">
+                <div class="col-12 col-md-4">
+                    <label class="form-label text-muted small fw-bold text-uppercase mb-1">Lead Filter</label>
+                    <select id="leadFilter" class="form-select modern-input w-100">
+                        <option value="All" selected>All Leads</option>
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-4">
+                    <label class="form-label text-muted small fw-bold text-uppercase mb-1">Year</label>
+                    <select id="yearFilter" class="form-select modern-input w-100">
+                        <option value="2024">2024</option>
+                        <option value="2025">2025</option>
+                        <option value="2026" selected>2026</option>
+                        <option value="2027">2027</option>
+                        <option value="2028">2028</option>
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-4">
+                    <label class="form-label text-muted small fw-bold text-uppercase mb-1">Month</label>
+                    <select id="monthFilter" class="form-select modern-input w-100">
+                        <option value="All" selected>All Months</option>
+                        <option value="January">January</option>
+                        <option value="February">February</option>
+                        <option value="March">March</option>
+                        <option value="April">April</option>
+                        <option value="May">May</option>
+                        <option value="June">June</option>
+                        <option value="July">July</option>
+                        <option value="August">August</option>
+                        <option value="September">September</option>
+                        <option value="October">October</option>
+                        <option value="November">November</option>
+                        <option value="December">December</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABLE CARD -->
+        <div class="table-card">
+
+            <div id="loading-overlay" style="display:none; padding: 4rem; text-align: center;">
+                <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <h5 class="mt-3 text-muted" id="loading-title">Analyzing Data...</h5>
+                <p class="text-muted small" id="loading-desc">Please wait while we fetch the latest events and blackout dates.</p>
+                <div id="countdown-container" style="display:none;" class="mt-3">
+                    <span class="badge bg-warning text-dark px-3 py-2 fs-6 shadow-sm">
+                        Data is building. Ready in approx: <span id="countdown-timer" class="fw-bold fs-5">20:00</span>
+                    </span>
+                </div>
+            </div>
+
+            <div id="error-overlay" style="display:none; padding: 2rem; background: #fff3f3; border: 1px solid #ffcdd2; border-radius: 8px; margin: 1rem 0;">
+                <h5 class="text-danger mb-2">Failed to load data</h5>
+                <p id="error-message" class="text-danger mb-0"></p>
+            </div>
+
+            <div id="content-overlay" style="display:none;">
+
+                <!-- TABLE CONTROLS (Always Visible to allow switching states) -->
+                <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3 mb-4 pb-3 border-bottom">
+                    <div class="d-flex flex-column flex-md-row gap-3 w-100 w-xl-auto">
+                        <!-- Sector Switch -->
+                        <div class="modern-segment w-100 w-md-auto">
+                            <input type="radio" class="btn-check sector-type-radio" name="sectorTypeFilter" id="sectorDomestic" value="Domestic" checked>
+                            <label class="btn" for="sectorDomestic">Domestic</label>
+
+                            <input type="radio" class="btn-check sector-type-radio" name="sectorTypeFilter" id="sectorInternational" value="International">
+                            <label class="btn" for="sectorInternational">International</label>
+                        </div>
+
+                        <!-- Priority Switch -->
+                        <div class="modern-segment w-100 w-md-auto">
+                            <input type="radio" class="btn-check priority-radio" name="priorityFilter" id="priorityAll" value="All" checked>
+                            <label class="btn" for="priorityAll">All</label>
+
+                            <input type="radio" class="btn-check priority-radio" name="priorityFilter" id="priorityNormal" value="Normal">
+                            <label class="btn" for="priorityNormal">Normal</label>
+
+                            <input type="radio" class="btn-check priority-radio" name="priorityFilter" id="priorityHigh" value="High">
+                            <label class="btn" for="priorityHigh">Peak</label>
+
+                            <input type="radio" class="btn-check priority-radio" name="priorityFilter" id="prioritySuperPeak" value="Super Peak">
+                            <label class="btn" for="prioritySuperPeak">Super Peak</label>
+                        </div>
+                    </div>
+
+                    <!-- Target container for DataTable Native Search -->
+                    <div id="dt-search-container" class="w-100 w-xl-auto d-flex justify-content-end">
+                        <!-- The DataTables search box will be dynamically injected here -->
+                    </div>
+                </div>
+
+                <div id="no-data-message" style="display:none;"></div>
+
+                <div id="list-view" style="max-height: 60vh; overflow-y: auto; overflow-x: auto; position: relative;">
+                    <table id="calendarTable" class="display responsive nowrap w-100" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th class="fw-bold">Sl No.</th> 
+                                <th class="fw-bold">Event</th>
+                                <th class="fw-bold">Date</th>
+                                <th class="fw-bold">Day</th>
+                                <th class="fw-bold">Date Range</th>
+                                <th class="fw-bold">Days</th>
+                                <th class="fw-bold">Sectors</th>
+                                <th class="fw-bold">Flights</th>
+                                <th class="fw-bold">Capacity</th>
+                                <th class="fw-bold">Target</th>
+                                <th class="fw-bold">Achieved</th>
+                                <th class="fw-bold">Shortfall</th>
+                                <th class="fw-bold text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="list-tbody">
+                            <!-- Leave completely empty! -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let allEvents = [];
+        let calendarTable = null; // Global instance to prevent empty sizing row bugs
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const returnedSectorType = urlParams.get('sectorType');
+            const returnedLead = urlParams.get('lead');
+            const returnedPriority = urlParams.get('priority');
+
+            const yearFilter = document.getElementById('yearFilter');
+            const monthFilter = document.getElementById('monthFilter');
+            const leadFilter = document.getElementById('leadFilter');
+
+            if (returnedSectorType && (returnedSectorType === "Domestic" || returnedSectorType === "International")) {
+                const radioTarget = document.querySelector(`input[name="sectorTypeFilter"][value="${returnedSectorType}"]`);
+                if (radioTarget) radioTarget.checked = true;
+            }
+
+            if (returnedPriority && returnedPriority !== "All") {
+                const prioTarget = document.querySelector(`input[name="priorityFilter"][value="${returnedPriority}"]`);
+                if (prioTarget) prioTarget.checked = true;
+            }
+
+            window.pendingLeadFilter = returnedLead;
+
+            loadDataForYear(yearFilter.value);
+
+            yearFilter.addEventListener('change', function () {
+                monthFilter.value = 'All';
+                loadDataForYear(this.value);
+            });
+
+            document.querySelectorAll('.priority-radio').forEach(radio => radio.addEventListener('change', applyFilters));
+            document.querySelectorAll('.sector-type-radio').forEach(radio => radio.addEventListener('change', applyFilters));
+            leadFilter.addEventListener('change', applyFilters);
+
+            monthFilter.addEventListener('change', function () {
+                const selectedYear = document.getElementById('yearFilter').value;
+                const currentYear = new Date().getFullYear().toString();
+
+                if (selectedYear === currentYear) {
+                    loadDataForYear(selectedYear);
+                } else {
+                    applyFilters();
+                }
+            });
+        });
+
+        let countdownInterval = null;
+
+        function loadDataForYear(year) {
+            document.getElementById('content-overlay').style.display = 'none';
+            document.getElementById('error-overlay').style.display = 'none';
+            document.getElementById('loading-overlay').style.display = 'block';
+
+            const selectedMonth = document.getElementById('monthFilter').value;
+            const currentYear = new Date().getFullYear();
+            const includePast = parseInt(year) < currentYear || (parseInt(year) === currentYear && selectedMonth !== 'All');
+
+            fetch(`/Dashboard/GetDashboardData?year=${year}&includePast=${includePast}`)
+                .then(res => res.json())
+                .then(result => {
+                    if (result.isUpdating) {
+                        document.getElementById('loading-title').innerText = `Building Data for ${year}...`;
+                        document.getElementById('loading-desc').innerText = "The server is fetching large historical/future records in the background. This is a one-time process.";
+                        document.getElementById('countdown-container').style.display = 'inline-block';
+
+                        let timeLeft = 20 * 60;
+
+                        const updateTimerDisplay = () => {
+                            let minutes = Math.floor(timeLeft / 60);
+                            let seconds = timeLeft % 60;
+                            document.getElementById('countdown-timer').innerText =
+                                (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+                        };
+
+                        updateTimerDisplay();
+
+                        if (countdownInterval) clearInterval(countdownInterval);
+
+                        countdownInterval = setInterval(() => {
+                            timeLeft--;
+                            updateTimerDisplay();
+
+                            if (timeLeft <= 0) {
+                                clearInterval(countdownInterval);
+                                loadDataForYear(year);
+                            }
+                        }, 1000);
+
+                        return;
+                    }
+
+                    if (countdownInterval) clearInterval(countdownInterval);
+                    document.getElementById('countdown-container').style.display = 'none';
+                    document.getElementById('loading-overlay').style.display = 'none';
+
+                    if (!result.success) {
+                        showError(result.message);
+                        return;
+                    }
+
+                    allEvents = result.data || [];
+                    populateLeadsDropdown(allEvents);
+                    document.getElementById('content-overlay').style.display = 'block';
+
+                    document.getElementById('loading-title').innerText = "Analyzing Data...";
+                    document.getElementById('loading-desc').innerText = "Please wait while we fetch the latest events and blackout dates.";
+
+                    applyFilters();
+                })
+                .catch(err => {
+                    if (countdownInterval) clearInterval(countdownInterval);
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    showError("Network error while connecting to controller: " + err.message);
+                });
+        }
+
+        function populateLeadsDropdown(data) {
+            const leadFilter = document.getElementById('leadFilter');
+            let currentVal = leadFilter.value;
+
+            if (window.pendingLeadFilter && window.pendingLeadFilter !== "All") {
+                currentVal = window.pendingLeadFilter;
+                window.pendingLeadFilter = null;
+            }
+
+            let leadsSet = new Set();
+            data.forEach(e => {
+                if (e.leads && Array.isArray(e.leads)) {
+                    e.leads.forEach(l => leadsSet.add(l));
+                }
+            });
+
+            leadFilter.innerHTML = '<option value="All" selected>All Leads</option>';
+            Array.from(leadsSet).sort().forEach(l => {
+                const opt = document.createElement('option');
+                opt.value = l;
+                opt.textContent = l;
+                leadFilter.appendChild(opt);
+            });
+
+            if (leadsSet.has(currentVal)) {
+                leadFilter.value = currentVal;
+            }
+        }
+
+        function showError(msg) {
+            document.getElementById('error-overlay').style.display = 'block';
+            let formattedMsg = msg;
+
+            if (msg.includes("Unauthorized") || msg.includes("401")) {
+                formattedMsg += "<br><br><strong style='color:#b71c1c;'>Security Note:</strong> Your Azure session token has expired or is invalid. <br><br> <a href='/Login/Logout' class='btn btn-danger btn-sm'>Log Out & Refresh Token</a>";
+            }
+
+            document.getElementById('error-message').innerHTML = formattedMsg;
+        }
+
+        function applyFilters() {
+            let filtered = [];
+            const selectedMonth = document.getElementById('monthFilter').value;
+            const selectedLead = document.getElementById('leadFilter').value;
+
+            const sectorTypeRadio = document.querySelector('input[name="sectorTypeFilter"]:checked');
+            const sectorType = sectorTypeRadio ? sectorTypeRadio.value : "Domestic";
+
+            const priorityRadio = document.querySelector('input[name="priorityFilter"]:checked');
+            const prioritySelection = priorityRadio ? priorityRadio.value : "All";
+
+            const isNormalBlackout = prioritySelection === 'Normal';
+            const isHighBlackout = prioritySelection === 'High';
+            const isSuperPeak = prioritySelection === 'Super Peak';
+
+            allEvents.forEach(e => {
+                if (selectedMonth !== "All" && e.eventDate) {
+                    const dateParts = e.eventDate.split('-');
+                    if (dateParts.length === 3) {
+                        const eDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+                        const eventMonthName = eDate.toLocaleString('en-US', { month: 'long' });
+                        if (eventMonthName !== selectedMonth) return;
+                    }
+                }
+
+                let validSectors = e.eventSectors || [];
+
+                if (sectorType === "Domestic") validSectors = validSectors.filter(s => !s.isIntl);
+                else if (sectorType === "International") validSectors = validSectors.filter(s => s.isIntl);
+
+                if (selectedLead !== 'All') validSectors = validSectors.filter(s => s.lead === selectedLead);
+
+                if (isNormalBlackout || isHighBlackout || isSuperPeak) {
+                    validSectors = validSectors.map(sec => {
+                        let filteredDays = (sec.days || []).filter(d => {
+                            let p = (d.priority || "Normal").toLowerCase();
+                            if (isNormalBlackout) return p === 'normal';
+                            if (isHighBlackout) return p === 'high' || p === 'peak';
+                            if (isSuperPeak) return p === 'super peak';
+                            return true;
+                        });
+                        return { ...sec, days: filteredDays };
+                    }).filter(sec => sec.days.length > 0);
+                }
+
+                if (validSectors.length === 0) return;
+
+                let sCovered = validSectors.length;
+                let sourceStatsMap = {};
+                let sourceStats = [];
+                let validDatesSet = new Set();
+                let aggAirlineAchieved = {};
+
+                validSectors.forEach(sec => {
+                    if (sec.days) {
+                        sec.days.forEach(d => {
+                            let dKey = d.date.substring(0, 10);
+                            validDatesSet.add(dKey);
+                        });
+                    }
+                });
+
+                e.dailyStats.forEach(d => {
+                    let dKey = d.date.substring(0, 10);
+                    if (validDatesSet.has(dKey)) {
+                        let newDay = {
+                            date: d.date,
+                            targetSeat: 0,
+                            achieved: 0,
+                            flightCount: 0
+                        };
+                        sourceStatsMap[dKey] = newDay;
+                        sourceStats.push(newDay);
+                    }
+                });
+
+                validSectors.forEach(sec => {
+                    if (sec.days) {
+                        sec.days.forEach(d => {
+                            let dKey = d.date.substring(0, 10);
+                            if (sourceStatsMap[dKey]) {
+                                sourceStatsMap[dKey].targetSeat += d.targetSeat;
+                                sourceStatsMap[dKey].achieved += d.achieved;
+                                sourceStatsMap[dKey].flightCount += d.flightCount;
+                            }
+                        });
+                    }
+                    if (sec.airlineAchieved) {
+                        for (const [code, count] of Object.entries(sec.airlineAchieved)) {
+                            aggAirlineAchieved[code] = (aggAirlineAchieved[code] || 0) + count;
+                        }
+                    }
+                });
+
+                let validDays = sourceStats;
+
+                if (validDays.length > 0) {
+                    let tSeat = 0;
+                    let ach = 0;
+                    let fCount = 0;
+                    let uniqueDatesSet = new Set();
+
+                    validDays.forEach(day => {
+                        tSeat += day.targetSeat;
+                        ach += day.achieved;
+                        fCount += day.flightCount;
+                        uniqueDatesSet.add(day.date);
+                    });
+
+                    const uniqueDates = Array.from(uniqueDatesSet).sort();
+                    const firstDate = new Date(uniqueDates[0]);
+                    const lastDate = new Date(uniqueDates[uniqueDates.length - 1]);
+                    let dateRangeStr = formatDateShort(firstDate) + " - " + formatDate(lastDate);
+
+                    filtered.push({
+                        id: e.id,
+                        name: e.name,
+                        eventDate: e.eventDate,
+                        dateRange: dateRangeStr,
+                        daysCount: uniqueDates.length,
+                        sectorsCovered: sCovered,
+                        flightCount: fCount,
+                        paxCapacity: fCount * 150,
+                        targetSeat: tSeat,
+                        achieved: ach,
+                        airlineAchieved: aggAirlineAchieved
+                    });
+                }
+            });
+
+            filtered.sort((a, b) => new Date(a.eventDate) - new Date(b.eventDate));
+            renderList(filtered);
+        }
+
+        function formatDate(date) {
+            return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+        function formatDateShort(date) {
+            return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+        }
+
+        function renderList(data) {
+            const listView = document.getElementById('list-view');
+            const noDataMsg = document.getElementById('no-data-message');
+
+            if (data.length === 0) {
+                const yearText = document.getElementById('yearFilter').value;
+                const monthText = document.getElementById('monthFilter').value !== 'All' ? ` in ${document.getElementById('monthFilter').value}` : '';
+                const typeText = document.querySelector('input[name="sectorTypeFilter"]:checked') ? ` ${document.querySelector('input[name="sectorTypeFilter"]:checked').value}` : '';
+                const priorityRadio = document.querySelector('input[name="priorityFilter"]:checked');
+                const priorityText = (priorityRadio && priorityRadio.value !== 'All') ? ` (${priorityRadio.value} priority)` : '';
+                const selectedLead = document.getElementById('leadFilter').value;
+                const leadText = selectedLead !== 'All' ? ` for Lead: ${selectedLead}` : '';
+
+                noDataMsg.innerHTML = `<div class="text-center text-muted" style="padding: 4rem 0; border: 1px dashed #cbd5e1; border-radius: 12px; margin-bottom: 2rem;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-3"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                    <h5 class="fw-bold text-slate-700">No active events found</h5>
+                                    <p class="mb-0 text-slate-500">There are no upcoming${typeText} blackout events${priorityText}${leadText} for ${yearText}${monthText}.</p>
+                                </div>`;
+                noDataMsg.style.display = 'block';
+                listView.style.display = 'none';
+                document.getElementById('dt-search-container').style.display = 'none';
+                return;
+            }
+
+            noDataMsg.style.display = 'none';
+            listView.style.display = 'block';
+            document.getElementById('dt-search-container').style.display = 'flex';
+
+            // BULLETPROOF DOM RESET: Destroy and physically recreate the table HTML
+            // to completely wipe out any stranded DataTables scroll wrappers.
+            if (calendarTable !== null) {
+                calendarTable.destroy();
+                calendarTable = null;
+            }
+            
+            // Inject a brand new table element
+            listView.innerHTML = `
+                        <table id="calendarTable" class="display responsive nowrap w-100" style="width:100%">
+                            <thead class="table-light">
+                                <tr style="background-color: #f8fafc; color: #475569; border-bottom: 2px solid #e2e8f0;">
+                                    <th class="fw-bold">Sl No.</th>
+                                    <th class="fw-bold">Event</th>
+                                    <th class="fw-bold">Date</th>
+                                    <th class="fw-bold">Day</th>
+                                    <th class="fw-bold">Date Range</th>
+                                    <th class="fw-bold">Days</th>
+                                    <th class="fw-bold">Sectors</th>
+                                    <th class="fw-bold">Flights</th>
+                                    <th class="fw-bold">Capacity</th>
+                                    <th class="fw-bold">Target</th>
+                                    <th class="fw-bold">Achieved</th>
+                                    <th class="fw-bold">Shortfall</th>
+                                    <th class="fw-bold text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>`;
+
+            // NATIVE DATATABLES INITIALIZATION ON CLEAN DOM
+            calendarTable = $('#calendarTable').DataTable({
+                responsive: true,
+                paging: false,
+                deferRender: true,
+                searching: true,
+                ordering: true,
+                dom: '<"dt-search-hidden d-none"f>rt',
+                language: {
+                    search: "",
+                    searchPlaceholder: "Search global events...",
+                    info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                    infoEmpty: "Showing 0 entries"
+                },
+                data: data,
+                columns: [
+                    {
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        defaultContent: '',
+                        className: "text-muted fw-medium text-center",
+                        render: (d, t, r, meta) => meta.row + 1
+                    },
+                    { data: 'name', render: (d) => `<span class="fw-bold text-dark">${d}</span>` },
+                    {
+                        data: 'eventDate',
+                        render: function (d, t) {
+                            if (t === 'display') return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                            return new Date(d).getTime();
+                        }
+                    },
+                    { data: 'eventDate', render: (d) => new Date(d).toLocaleDateString('en-GB', { weekday: 'short' }), orderable: false },
+                    {
+                        data: 'dateRange',
+                        render: function (d, t, row) {
+                            if (t === 'display') return d;
+                            return new Date(row.eventDate).getTime();
+                        }
+                    },
+                    { data: 'daysCount' },
+                    { data: 'sectorsCovered' },
+                    { data: 'flightCount' },
+                    { data: 'paxCapacity', render: (d, t) => t === 'display' ? d.toLocaleString('en-IN') : d },
+                    { data: 'targetSeat', render: (d, t) => t === 'display' ? d.toLocaleString('en-IN') : d },
+                    {
+                        data: 'achieved',
+                        render: function (d, t, row) {
+                            if (t === 'display') {
+                                let tipBoxHtml = '';
+                                if (row.airlineAchieved && Object.keys(row.airlineAchieved).length > 0) {
+                                    let validAirlines = Object.entries(row.airlineAchieved).filter(([k]) => k && k.toLowerCase() !== 'total');
+                                    let totalAch = validAirlines.reduce((sum, [code, count]) => sum + count, 0);
+                                    let calcTotal = totalAch === 0 ? 1 : totalAch;
+
+                                    let ths = ''; let countTds = ''; let pctTds = '';
+                                    for (const [code, count] of validAirlines) {
+                                        ths += `<th>${code}</th>`;
+                                        countTds += `<td>${count}</td>`;
+                                        pctTds += `<td>${Math.round((count / calcTotal) * 100)}%</td>`;
+                                    }
+                                    ths += `<th>Total</th>`;
+                                    countTds += `<td style="font-weight: 800; color: #0ea5e9;">${totalAch}</td>`;
+                                    pctTds += `<td style="font-weight: 800; color: #0ea5e9;">100%</td>`;
+
+                                    tipBoxHtml = `<table class="tip-table"><thead><tr>${ths}</tr></thead><tbody><tr>${countTds}</tr><tr class="pct-row">${pctTds}</tr></tbody></table>`;
+                                } else {
+                                    const oldBreakdown = row.airlinesBreakdown ? row.airlinesBreakdown.map(a => `<li>${a}</li>`).join('') : '';
+                                    tipBoxHtml = `<ul>${oldBreakdown}</ul>`;
+                                }
+
+                                return `
+                                            <div style="position:relative;">
+                                                <span class="fw-bold">${d.toLocaleString('en-IN')}</span>
+                                                <button class="tip-btn" onclick="toggleTip(this)" style="background:none; border:none; padding:0; margin-left:5px; color:#64748b; cursor:pointer;">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                                                </button>
+                                                <div class="tip-box overflow-hidden">${tipBoxHtml}</div>
+                                            </div>`;
+                            }
+                            return d;
+                        }
+                    },
+                    {
+                        data: null,
+                        render: function (d, t, row) {
+                            let shortfall = Math.max(0, row.targetSeat - row.achieved);
+                            if (t === 'display') {
+                                let color = shortfall > 0 ? '#ef4444' : '#10b981';
+                                return `<span style="color: ${color}; font-weight: 700;">${shortfall.toLocaleString('en-IN')}</span>`;
+                            }
+                            return shortfall;
+                        }
+                    },
+                    {
+                        data: null,
+                        orderable: false,
+                        className: "text-center",
+                        render: function (d, t, row) {
+                            let stRadio = document.querySelector('input[name="sectorTypeFilter"]:checked');
+                            let secType = stRadio ? stRadio.value : "Domestic";
+                            let leadVal = document.getElementById('leadFilter').value;
+                            let prioRadio = document.querySelector('input[name="priorityFilter"]:checked');
+                            let prioVal = prioRadio ? prioRadio.value : "All";
+                            let yearVal = document.getElementById('yearFilter').value;
+
+                            return `<a href="/OccasionDetails/Index/${row.id}?sectorType=${encodeURIComponent(secType)}&lead=${encodeURIComponent(leadVal)}&priority=${encodeURIComponent(prioVal)}&year=${yearVal}" class="btn-view-details text-decoration-none">Details →</a>`;
+                        }
+                    }
+                ],
+                initComplete: function () {
+                    const searchBox = $('.dt-search-hidden').contents().detach(); $('#dt-search-container').empty().append(searchBox);
+                }
+            });
+        }
+
+        function toggleTip(btn) {
+            document.querySelectorAll('.tip-box').forEach(box => {
+                if (box !== btn.nextElementSibling) box.style.display = 'none';
+            });
+
+            let box = btn.nextElementSibling;
+            let isOpening = box.style.display !== 'block';
+
+            if (isOpening) {
+                box.style.display = 'block';
+
+                if (window.innerWidth > 768) {
+                    let btnRect = btn.getBoundingClientRect();
+                    let boxWidth = box.offsetWidth;
+                    let boxHeight = box.offsetHeight;
+
+                    box.style.top = (btn.offsetTop - (boxHeight / 2) + (btn.offsetHeight / 2)) + "px";
+
+                    if (btnRect.right + boxWidth + 30 > window.innerWidth) {
+                        box.style.left = (btn.offsetLeft - boxWidth - 10) + "px";
+                    } else {
+                        box.style.left = (btn.offsetLeft + btn.offsetWidth + 10) + "px";
+                    }
+                }
+            } else {
+                box.style.display = 'none';
+            }
+        }
+    </script>
+}

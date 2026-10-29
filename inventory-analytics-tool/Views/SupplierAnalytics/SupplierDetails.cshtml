@@ -1,0 +1,595 @@
+﻿@model inventory_analytics_tool.Models.ViewModels.SupplierSectorDetailsViewModel
+@{
+    ViewData["Title"] = "Supplier Sector Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+
+    body[data-layout="horizontal"] .page-content, .page-content {
+        padding-top: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        padding-bottom: 60px !important;
+    }
+
+    :root {
+        --brand-blue: #1076bb;
+        --brand-red: #f16367;
+        --slate-50: #f8fafc;
+        --slate-100: #f1f5f9;
+        --slate-200: #e2e8f0;
+        --slate-300: #cbd5e1;
+        --slate-400: #94a3b8;
+        --slate-500: #64748b;
+        --slate-600: #475569;
+        --slate-700: #334155;
+        --slate-800: #1e293b;
+        --slate-900: #0f172a;
+        --success: #10b981;
+        --danger: #ef4444;
+    }
+
+    .custom-scope {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--slate-50);
+        color: var(--slate-900);
+    }
+    
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-up {
+        animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Hero Banner */
+    .hero-banner {
+        background: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-red) 100%);
+        padding-top: 2.5rem;
+        padding-bottom: 7rem;
+        position: relative;
+    }
+
+    .hero-pattern {
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0);
+        background-size: 24px 24px;
+    }
+
+    /* Modern Inputs */
+    .modern-input {
+        background-color: var(--slate-50);
+        border: 1px solid var(--slate-200);
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+        color: var(--slate-800);
+        font-size: 0.875rem;
+        font-weight: 500;
+        height: 38px;
+        transition: all 0.2s;
+        outline: none;
+        width: 100%;
+    }
+
+        .modern-input:focus {
+            background-color: #fff;
+            border-color: var(--brand-blue);
+            box-shadow: 0 0 0 4px rgba(16, 118, 187, 0.1);
+        }
+
+    .input-icon-wrapper {
+        position: relative;
+    }
+
+        .input-icon-wrapper .lucide {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--slate-400);
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .input-icon-wrapper input {
+            padding-left: 2.5rem;
+        }
+
+    /* CUSTOM LIST VIEW TABLE STYLES */
+    .modern-table-wrapper {
+        background: #ffffff;
+        border-radius: 1rem;
+        border: 1px solid var(--slate-200);
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        overflow: hidden;
+        margin-top: -3.5rem;
+        position: relative;
+        z-index: 10;
+    }
+
+    .modern-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        font-size: 0.8125rem;
+        white-space: nowrap;
+    }
+    
+        .modern-table thead th {
+            background-color: var(--slate-50);
+            color: var(--slate-600);
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1rem 0.75rem;
+            border-bottom: 1px solid var(--slate-200);
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s;
+        }
+
+            .modern-table thead th:hover {
+                background-color: #e2e8f0;
+            }
+    
+        .modern-table tbody td {
+            padding: 1rem 0.75rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--slate-700);
+            font-weight: 500;
+        }
+
+        .modern-table tbody tr.main-row {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+            .modern-table tbody tr.main-row:hover {
+                background-color: var(--slate-50);
+            }
+
+        .modern-table tbody tr.expanded-row {
+            background-color: rgba(248, 250, 252, 0.6);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+    
+        .modern-table tfoot th {
+            background-color: var(--slate-50);
+            color: var(--slate-900);
+            font-weight: 800;
+            padding: 1rem 0.75rem;
+            border-top: 2px solid var(--slate-200);
+            font-size: 0.875rem;
+        }
+
+    .sort-icon {
+        width: 12px;
+        height: 12px;
+        transition: opacity 0.2s, color 0.2s;
+        opacity: 0.3;
+        margin-left: 4px;
+    }
+
+        .sort-icon.active {
+            opacity: 1;
+            color: var(--brand-blue);
+        }
+
+    .chevron-icon {
+        transition: transform 0.2s ease;
+    }
+
+    .text-xxs {
+        font-size: 0.65rem;
+    }
+
+    /* Custom Badges */
+    .type-api {
+        color: var(--brand-blue);
+        background: #e0f2fe;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        border: 1px solid #bae6fd;
+    }
+
+    .type-offline {
+        color: var(--success);
+        background: #ecfdf5;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        border: 1px solid #a7f3d0;
+    }
+    
+    .trend-up {
+        color: var(--success);
+        background: #ecfdf5;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        border: 1px solid #a7f3d0;
+    }
+
+    .trend-down {
+        color: var(--danger);
+        background: #fef2f2;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        border: 1px solid #fecaca;
+    }
+
+    .trend-flat {
+        color: var(--slate-600);
+        background: var(--slate-100);
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        border: 1px solid var(--slate-200);
+    }
+</style>
+
+<div class="page-content custom-scope pb-5">
+    
+    <!-- 1. HERO BANNER -->
+    <div class="hero-banner px-3">
+        <div class="hero-pattern"></div>
+        <div class="container-fluid position-relative z-1" style="max-width: 1800px;">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <a href="/SupplierAnalytics/SupplierList?type=@Model.SupplierType&r1Start=@Context.Request.Query["r1Start"]&r1End=@Context.Request.Query["r1End"]&r2Start=@Context.Request.Query["r2Start"]&r2End=@Context.Request.Query["r2End"]"
+                       class="btn btn-light d-flex align-items-center justify-content-center p-0 rounded-circle shadow-sm flex-shrink-0"
+                       style="width: 3rem; height: 3rem; color: var(--brand-blue);" title="Back to Supplier List">
+                        <i data-lucide="arrow-left" style="width: 1.25rem; height: 1.25rem;"></i>
+                    </a>
+                    <div class="text-white">
+                        <h1 class="fw-bolder mb-1 text-white" style="font-size: 2.25rem;">Sector Breakdown: <span class="fw-medium opacity-75">@Model.SupplierName</span></h1>
+                        <div class="d-flex align-items-center gap-2 mt-2">
+                            <span class="opacity-75" style="font-size: 0.875rem;">Supplier Type:</span>
+                            <span class="@(Model.SupplierType == "API" ? "type-api" : "type-offline") shadow-sm">@Model.SupplierType</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. DATA TABLE & SEARCH AREA -->
+    <div class="container-fluid px-3" style="max-width: 1600px;">
+        
+        <div class="modern-table-wrapper animate-fade-up">
+            
+            <!-- Table Controls -->
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+                <div class="input-icon-wrapper" style="max-width: 400px; width: 100%;">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="searchInput" placeholder="Search sectors or dates..." class="form-control modern-input w-100">
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-success fw-bold shadow-sm rounded-3 px-4 d-flex align-items-center gap-2" onclick="exportToCSV()">
+                        <i data-lucide="file-spreadsheet" style="width: 1rem; height: 1rem;"></i> Export CSV
+                    </button>
+                    <button class="btn btn-outline-secondary fw-bold shadow-sm rounded-3 px-4 d-flex align-items-center gap-2" onclick="window.print()">
+                        <i data-lucide="printer" style="width: 1rem; height: 1rem;"></i> Print
+                    </button>
+                </div>
+            </div>
+
+            <!-- Custom Render Engine Container -->
+            <div id="render-container">
+                <!-- HTML injected via JS -->
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // --- DATA INJECTION & STATE ---
+        // Pass model list natively into JS engine without DataTables
+        const serverData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SectorRows));
+        let filteredData = [];
+        let state = {
+            search: '',
+            sortBy: 'sector',
+            sortOrder: 'asc'
+        };
+
+        const formatNum = (num) => (num || 0).toLocaleString('en-IN');
+        const r1Label = '@Html.Raw(Model.DateRange1Label)';
+        const r2Label = '@Html.Raw(Model.DateRange2Label)';
+
+        $(document).ready(function () {
+            lucide.createIcons();
+            
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                state.search = e.target.value.toLowerCase().trim();
+                processAndRender();
+            });
+
+            processAndRender();
+        });
+
+        // --- GLOBAL UI HANDLERS ---
+        window.handleSort = function (column) {
+            if (state.sortBy === column) {
+                state.sortOrder = state.sortOrder === 'asc' ? 'desc' : 'asc';
+            } else {
+                state.sortBy = column;
+                state.sortOrder = 'asc';
+            }
+            processAndRender();
+        };
+
+        window.toggleRow = function (index) {
+            if (window.innerWidth >= 1200) return; // Disable accordion natively on XL screens
+            const expandRow = document.getElementById(`expand-${index}`);
+            const chevron = document.getElementById(`chev-${index}`);
+            
+            if (expandRow.classList.contains('d-none')) {
+                expandRow.classList.remove('d-none');
+                if (chevron) chevron.style.transform = 'rotate(180deg)';
+            } else {
+                expandRow.classList.add('d-none');
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+            }
+        };
+
+        // --- PROCESSING & RENDERING ---
+        function processAndRender() {
+            // 1. Search Filter
+            filteredData = serverData.filter(row => {
+                if (!state.search) return true;
+                const sq = state.search;
+                return (
+                    (row.Sector && row.Sector.toLowerCase().includes(sq)) ||
+                    (row.StartDate && row.StartDate.toLowerCase().includes(sq)) ||
+                    (row.EndDate && row.EndDate.toLowerCase().includes(sq))
+                );
+            });
+
+            // 2. Sort Filter
+            filteredData.sort((a, b) => {
+                let vA, vB;
+                switch (state.sortBy) {
+                    case 'sector': vA = (a.Sector || "").toLowerCase(); vB = (b.Sector || "").toLowerCase(); break;
+                    case 'sdate': vA = new Date(a.StartDate || 0).getTime(); vB = new Date(b.StartDate || 0).getTime(); break;
+                    case 'edate': vA = new Date(a.EndDate || 0).getTime(); vB = new Date(b.EndDate || 0).getTime(); break;
+                    case 'days': vA = a.DateCount || 0; vB = b.DateCount || 0; break;
+                    case 'estpax': vA = a.EstimatedPax || 0; vB = b.EstimatedPax || 0; break;
+                    case 'r1pax': vA = a.Range1Pax || 0; vB = b.Range1Pax || 0; break;
+                    case 'r1sale': vA = a.Range1SaleAmount || 0; vB = b.Range1SaleAmount || 0; break;
+                    case 'r2pax': vA = a.Range2Pax || 0; vB = b.Range2Pax || 0; break;
+                    case 'r2sale': vA = a.Range2SaleAmount || 0; vB = b.Range2SaleAmount || 0; break;
+                    case 'growth': vA = a.PercentageChange || 0; vB = b.PercentageChange || 0; break;
+                    default: vA = (a.Sector || "").toLowerCase(); vB = (b.Sector || "").toLowerCase();
+                }
+                if (vA < vB) return state.sortOrder === 'asc' ? -1 : 1;
+                if (vA > vB) return state.sortOrder === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            // 3. Render
+            const container = document.getElementById('render-container');
+            if (filteredData.length === 0) {
+                container.innerHTML = `
+                            <div class="text-center py-5 bg-white rounded-4 border shadow-sm my-5">
+                                <i data-lucide="search-x" class="text-muted mb-3" style="width: 3rem; height: 3rem; opacity: 0.5;"></i>
+                                <h4 class="fw-bold" style="color: var(--slate-800);">No sectors found</h4>
+                                <p class="text-muted mb-0">Try changing your search term.</p>
+                            </div>`;
+            } else {
+                container.innerHTML = buildListView(filteredData);
+            }
+            lucide.createIcons();
+        }
+
+        // --- HTML BUILDER ---
+        function buildListView(records) {
+            const getIcon = (col) => {
+                const isActive = state.sortBy === col;
+                const icon = isActive ? (state.sortOrder === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down';
+                const activeCls = isActive ? 'active' : '';
+                return `<i data-lucide="${icon}" class="sort-icon ${activeCls}"></i>`;
+            };
+
+            // Calculate Footer Totals
+            let tEst = 0, tR1Pax = 0, tR1Sale = 0, tR2Pax = 0, tR2Sale = 0;
+
+            // Notice we use a flat header row to ensure perfect `d-none` CSS behavior for the accordion, keeping all 10 columns intact
+            let html = `
+                    <div class="table-responsive hide-scrollbar">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th onclick="handleSort('sector')" class="align-middle border-end"><div class="d-flex align-items-center">Sector ${getIcon('sector')}</div></th>
+                                    <th onclick="handleSort('sdate')" class="d-none d-lg-table-cell text-center"><div class="d-flex justify-content-center align-items-center">Start Date ${getIcon('sdate')}</div></th>
+                                    <th onclick="handleSort('edate')" class="d-none d-lg-table-cell text-center"><div class="d-flex justify-content-center align-items-center">End Date ${getIcon('edate')}</div></th>
+                                    <th onclick="handleSort('days')" class="d-none d-xl-table-cell text-center"><div class="d-flex justify-content-center align-items-center">Days ${getIcon('days')}</div></th>
+                                    <th onclick="handleSort('estpax')" class="d-none d-xl-table-cell text-center border-end"><div class="d-flex justify-content-center align-items-center">Est. Pax ${getIcon('estpax')}</div></th>
+                            
+                                    <th onclick="handleSort('r1pax')" class="d-none d-sm-table-cell text-center" style="background-color: #f8fafc;"><div class="d-flex justify-content-center align-items-center">${r1Label} Pax ${getIcon('r1pax')}</div></th>
+                                    <th onclick="handleSort('r1sale')" class="text-end border-end" style="background-color: #f8fafc;"><div class="d-flex justify-content-end align-items-center">${r1Label} Sale (₹) ${getIcon('r1sale')}</div></th>
+                            
+                                    <th onclick="handleSort('r2pax')" class="d-none d-sm-table-cell text-center" style="background-color: #e0f2fe;"><div class="d-flex justify-content-center align-items-center">${r2Label} Pax ${getIcon('r2pax')}</div></th>
+                                    <th onclick="handleSort('r2sale')" class="text-end border-end" style="background-color: #e0f2fe;"><div class="d-flex justify-content-end align-items-center">${r2Label} Sale (₹) ${getIcon('r2sale')}</div></th>
+                            
+                                    <th onclick="handleSort('growth')" class="text-center"><div class="d-flex justify-content-center align-items-center">Growth ${getIcon('growth')}</div></th>
+                                    <th class="text-center d-xl-none">More</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+
+            records.forEach((row, index) => {
+                // Accumulate totals
+                tEst += (row.EstimatedPax || 0);
+                tR1Pax += (row.Range1Pax || 0);
+                tR1Sale += (row.Range1SaleAmount || 0);
+                tR2Pax += (row.Range2Pax || 0);
+                tR2Sale += (row.Range2SaleAmount || 0);
+
+                let trendBadge = `<span class="trend-flat"><i data-lucide="minus" style="width: 14px; height: 14px;"></i> 0%</span>`;
+                if (row.PercentageChange > 0) {
+                    trendBadge = `<span class="trend-up"><i data-lucide="trending-up" style="width: 14px; height: 14px;"></i> +${row.PercentageChange.toFixed(1)}%</span>`;
+                } else if (row.PercentageChange < 0) {
+                    trendBadge = `<span class="trend-down"><i data-lucide="trending-down" style="width: 14px; height: 14px;"></i> ${row.PercentageChange.toFixed(1)}%</span>`;
+                }
+                
+                const r1PaxDisp = row.Range1Pax > 0 ? row.Range1Pax : '-';
+                const r1SaleDisp = row.Range1SaleAmount > 0 ? formatNum(row.Range1SaleAmount) : '-';
+                const r2PaxDisp = row.Range2Pax > 0 ? row.Range2Pax : '-';
+                const r2SaleDisp = row.Range2SaleAmount > 0 ? formatNum(row.Range2SaleAmount) : '-';
+
+                html += `
+                            <!-- Main Visible Row -->
+                            <tr class="main-row" onclick="toggleRow(${index})">
+                                <td class="text-start fw-bolder text-primary border-end">${row.Sector || '-'}</td>
+                        
+                                <td class="d-none d-lg-table-cell text-center text-muted fw-medium">${row.StartDate || '-'}</td>
+                                <td class="d-none d-lg-table-cell text-center text-muted fw-medium">${row.EndDate || '-'}</td>
+                                <td class="d-none d-xl-table-cell text-center text-dark fw-bold">${row.DateCount > 0 ? row.DateCount : '-'}</td>
+                                <td class="d-none d-xl-table-cell text-center text-dark fw-bold border-end">${row.EstimatedPax > 0 ? row.EstimatedPax : '-'}</td>
+                        
+                                <td class="d-none d-sm-table-cell text-center text-muted fw-bold">${r1PaxDisp}</td>
+                                <td class="text-end text-muted fw-bold border-end">${r1SaleDisp}</td>
+                        
+                                <td class="d-none d-sm-table-cell text-center text-dark fw-bolder" style="background-color: #f8fafc;">${r2PaxDisp}</td>
+                                <td class="text-end text-success fw-bolder border-end" style="background-color: #f8fafc;">${r2SaleDisp}</td>
+                        
+                                <td class="text-center">${trendBadge}</td>
+                        
+                                <td class="text-center d-xl-none">
+                                    <button class="btn btn-light btn-sm border text-muted shadow-sm px-2">
+                                        <i data-lucide="chevron-down" id="chev-${index}" class="chevron-icon" style="width: 1.25rem; height: 1.25rem;"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                    
+                            <!-- Expanded Accordion Row -->
+                            <tr id="expand-${index}" class="expanded-row d-none d-xl-none">
+                                <td colspan="11" class="p-0 border-0">
+                                    <div class="p-4" style="background-color: rgba(248, 250, 252, 0.5);">
+                                        <div class="row g-3">
+                                            <div class="col-6 d-lg-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Start Date</div><div class="fw-bold text-dark">${row.StartDate || '-'}</div></div>
+                                            <div class="col-6 d-lg-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">End Date</div><div class="fw-bold text-dark">${row.EndDate || '-'}</div></div>
+                                            <div class="col-6 d-xl-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Days</div><div class="fw-bold text-dark">${row.DateCount > 0 ? row.DateCount : '-'}</div></div>
+                                            <div class="col-6 d-xl-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">Est. Pax</div><div class="fw-bold text-dark">${row.EstimatedPax > 0 ? row.EstimatedPax : '-'}</div></div>
+                                            <div class="col-6 d-sm-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">${r1Label} Pax</div><div class="fw-bold text-muted">${r1PaxDisp}</div></div>
+                                            <div class="col-6 d-sm-none"><div class="text-xxs fw-bold text-muted text-uppercase mb-1">${r2Label} Pax</div><div class="fw-bold text-dark">${r2PaxDisp}</div></div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+            });
+
+            // Footer
+            html += `
+                                </tbody>
+                                <tfoot class="text-center align-middle">
+                                    <tr>
+                                        <th class="text-end pe-4 border-end">TOTAL:</th>
+                                        <th class="d-none d-lg-table-cell"></th>
+                                        <th class="d-none d-lg-table-cell"></th>
+                                        <th class="d-none d-xl-table-cell"></th>
+                                        <th class="d-none d-xl-table-cell text-center text-dark border-end">${formatNum(tEst)}</th>
+                                
+                                        <th class="d-none d-sm-table-cell text-center text-muted">${formatNum(tR1Pax)}</th>
+                                        <th class="text-end text-muted border-end">₹${formatNum(tR1Sale)}</th>
+                                
+                                        <th class="d-none d-sm-table-cell text-center text-dark">${formatNum(tR2Pax)}</th>
+                                        <th class="text-end text-success border-end">₹${formatNum(tR2Sale)}</th>
+                                
+                                        <th></th>
+                                        <th class="d-xl-none"></th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    `;
+            return html;
+        }
+
+        // --- EXPORT FUNCTIONALITY ---
+        function exportToCSV() {
+            if (!filteredData || filteredData.length === 0) {
+                alert("No data available to export.");
+                return;
+            }
+            
+            // Build headers
+            let csv = `Sector,Start Date,End Date,Days,Est. Pax,${r1Label} Pax,${r1Label} Sale,${r2Label} Pax,${r2Label} Sale,Growth\n`;
+            
+            filteredData.forEach(row => {
+                const s = `"${row.Sector || ''}"`;
+                const sd = `"${row.StartDate || ''}"`;
+                const ed = `"${row.EndDate || ''}"`;
+                const days = row.DateCount || 0;
+                const estpax = row.EstimatedPax || 0;
+                const r1p = row.Range1Pax || 0;
+                const r1s = row.Range1SaleAmount || 0;
+                const r2p = row.Range2Pax || 0;
+                const r2s = row.Range2SaleAmount || 0;
+                const gr = `"${(row.PercentageChange || 0).toFixed(1)}%"`;
+
+                csv += `${s},${sd},${ed},${days},${estpax},${r1p},${r1s},${r2p},${r2s},${gr}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            
+            link.setAttribute("href", url);
+            link.setAttribute("download", `Sector_Breakdown_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+}

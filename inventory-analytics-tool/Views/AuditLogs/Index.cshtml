@@ -1,0 +1,407 @@
+﻿@{
+    ViewData["Title"] = "System Audit Logs";
+    Layout = "~/Views/Shared/_Layout.cshtml"; 
+}
+
+<style>
+    /* --- MODERN SAAS AESTHETIC OVERRIDES --- */
+    :root {
+        --surface-color: #ffffff;
+        --background-color: #f8fafc;
+        --border-color: #e2e8f0;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        --primary-accent: #3b82f6;
+    }
+
+    body {
+        background-color: var(--background-color);
+    }
+
+    /* Header & Filter Bar */
+    .audit-header {
+        margin-bottom: 24px;
+        color: var(--text-main);
+        font-weight: 700;
+        letter-spacing: -0.5px;
+    }
+    
+    .floating-control-panel {
+        background: var(--surface-color);
+        padding: 20px;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        border: 1px solid var(--border-color);
+        margin-bottom: 24px;
+    }
+
+    .floating-control-panel label {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+    }
+
+    .form-control-modern {
+        background-color: #f1f5f9;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    .form-control-modern:focus {
+        background-color: #fff;
+        border-color: var(--primary-accent);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    /* Modern Tabs */
+    .nav-modern {
+        border-bottom: 2px solid var(--border-color);
+        gap: 10px;
+    }
+    .nav-modern .nav-link {
+        color: var(--text-muted);
+        border: none;
+        background: transparent;
+        font-weight: 600;
+        padding: 12px 20px;
+        border-radius: 8px 8px 0 0;
+        transition: all 0.2s;
+        margin-bottom: -2px;
+        border-bottom: 2px solid transparent;
+    }
+    .nav-modern .nav-link:hover {
+        color: var(--text-main);
+        background-color: #f1f5f9;
+    }
+    .nav-modern .nav-link.active {
+        color: var(--primary-accent);
+        border-bottom: 2px solid var(--primary-accent);
+        background: transparent;
+    }
+
+    /* Table Styling */
+    .table-container {
+        background: var(--surface-color);
+        border-radius: 0 0 16px 16px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--border-color);
+        border-top: none;
+        padding: 24px;
+    }
+
+    table.dataTable {
+        border-collapse: collapse !important;
+        width: 100% !important;
+    }
+    
+    table.dataTable thead th {
+        border-bottom: 2px solid var(--border-color) !important;
+        border-top: none !important;
+        color: var(--text-muted);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 16px 12px;
+    }
+
+    table.dataTable tbody td {
+        padding: 16px 12px !important;
+        vertical-align: middle;
+        border-bottom: 1px solid var(--border-color) !important;
+        color: var(--text-main);
+        font-size: 0.95rem;
+        transition: background-color 0.15s;
+    }
+
+    table.dataTable tbody tr:hover td {
+        background-color: #f8fafc !important;
+    }
+
+    /* Soft UI Badges */
+    .badge-soft {
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        letter-spacing: 0.3px;
+    }
+    .badge-soft-admin { background: #fee2e2; color: #991b1b; }
+    .badge-soft-revenue { background: #fef3c7; color: #92400e; }
+    .badge-soft-supplier { background: #e0e7ff; color: #3730a3; }
+    
+    .badge-soft-get { background: #dbeafe; color: #1e40af; }
+    .badge-soft-post { background: #d1fae5; color: #065f46; }
+    
+    .badge-soft-success { background: #d1fae5; color: #065f46; }
+    .badge-soft-danger { background: #fee2e2; color: #991b1b; }
+    .badge-soft-neutral { background: #f1f5f9; color: #475569; }
+
+    /* DataTables Overrides */
+    .dataTables_wrapper .dataTables_filter input {
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 6px 12px;
+        margin-left: 8px;
+    }
+    .dataTables_wrapper .dataTables_filter input:focus {
+        outline: none;
+        border-color: var(--primary-accent);
+    }
+    .page-item.active .page-link {
+        background-color: var(--primary-accent);
+        border-color: var(--primary-accent);
+        border-radius: 6px;
+    }
+</style>
+
+<div class="container-fluid mt-4 mb-5">
+    <div class="audit-header">
+        <h2 class="m-0"><i class="fas fa-satellite-dish text-primary me-2"></i> Audit & Activity Center</h2>
+    </div>
+
+    <!-- GLOBAL FILTERS -->
+    <div class="floating-control-panel row align-items-end">
+        <div class="col-md-3 mb-3 mb-md-0">
+            <label><i class="far fa-calendar-alt me-1"></i> Start Date</label>
+            <input type="date" id="minDate" class="form-control form-control-modern" />
+        </div>
+        <div class="col-md-3 mb-3 mb-md-0">
+            <label><i class="far fa-calendar-check me-1"></i> End Date</label>
+            <input type="date" id="maxDate" class="form-control form-control-modern" />
+        </div>
+        <div class="col-md-3 mb-3 mb-md-0">
+            <label><i class="fas fa-shield-alt me-1"></i> Target Role</label>
+            <select id="roleFilter" class="form-control form-control-modern">
+                <option value="">All Roles</option>
+                <option value="Admin">Admin</option>
+                <option value="Revenue">Revenue</option>
+                <option value="Supplier">Supplier</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button id="clearFilters" class="btn btn-dark w-100 py-2" style="border-radius: 8px;">
+                <i class="fas fa-undo-alt me-2"></i> Reset Filters
+            </button>
+        </div>
+    </div>
+
+    <!-- TAB NAVIGATION -->
+    <ul class="nav nav-modern" id="auditTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="activity-tab" data-bs-toggle="tab" data-bs-target="#activity" type="button" role="tab">
+                <i class="fas fa-wave-square me-1"></i> Activity Stream
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="sessions-tab" data-bs-toggle="tab" data-bs-target="#sessions" type="button" role="tab">
+                <i class="fas fa-network-wired me-1"></i> Active Sessions
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="uploads-tab" data-bs-toggle="tab" data-bs-target="#uploads" type="button" role="tab">
+                <i class="fas fa-cloud-upload-alt me-1"></i> Data Imports
+            </button>
+        </li>
+    </ul>
+
+    <!-- TAB CONTENT -->
+    <div class="tab-content table-container" id="auditTabsContent">
+        
+        <!-- 1. ACTIVITY LOGS TAB -->
+        <div class="tab-pane fade show active" id="activity" role="tabpanel">
+            <div class="table-responsive">
+                <table id="activityTable" class="table display w-100">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>User</th>
+                            <th>Role</th>
+                            <th>Type</th>
+                            <th>Target Action</th>
+                            <th>Controller</th>
+                            <th>Latency</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 2. SESSIONS TAB -->
+        <div class="tab-pane fade" id="sessions" role="tabpanel">
+            <div class="table-responsive">
+                <table id="sessionsTable" class="table display w-100">
+                    <thead>
+                        <tr>
+                            <th>Login Time</th>
+                            <th>Logout Time</th>
+                            <th>Identity</th>
+                            <th>Access</th>
+                            <th>IP Address</th>
+                            <th>Client Specs</th>
+                            <th>Duration</th>
+                            <th>State</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 3. UPLOADS TAB -->
+        <div class="tab-pane fade" id="uploads" role="tabpanel">
+            <div class="table-responsive">
+                <table id="uploadsTable" class="table display w-100">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>User</th>
+                            <th>Payload Name</th>
+                            <th>Volume</th>
+                            <th>Lines Parsed</th>
+                            <th>Status</th>
+                            <th>System Response</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            
+            // --- UI Formatters ---
+            function getRoleBadge(role) {
+                if (!role) return '';
+                let lowerRole = role.toLowerCase();
+                if (lowerRole === 'admin') return `<span class="badge-soft badge-soft-admin">Admin</span>`;
+                if (lowerRole === 'revenue') return `<span class="badge-soft badge-soft-revenue">Revenue</span>`;
+                if (lowerRole === 'supplier') return `<span class="badge-soft badge-soft-supplier">Supplier</span>`;
+                return `<span class="badge-soft badge-soft-neutral">${role}</span>`;
+            }
+
+            function getMethodBadge(method) {
+                if(method === 'GET') return `<span class="badge-soft badge-soft-get"><i class="fas fa-eye me-1"></i> READ</span>`;
+                if(method === 'POST' || method === 'PUT') return `<span class="badge-soft badge-soft-post"><i class="fas fa-pen me-1"></i> WRITE</span>`;
+                return `<span class="badge-soft badge-soft-neutral">${method}</span>`;
+            }
+
+            // --- 1. Initialize Activity Table ---
+            var activityTable = $('#activityTable').DataTable({
+                ajax: { url: '/AuditLogs/GetActivities', dataSrc: 'data' },
+                order: [[0, 'desc']],
+                pageLength: 25,
+                language: { search: "", searchPlaceholder: "Search logs..." },
+                columns: [
+                    { data: 'timestamp', render: function(data) { return `<span class="text-muted"><i class="far fa-clock me-1"></i>${data}</span>`; } },
+                    { data: 'username', render: function(data) { return `<span class="fw-bold">${data}</span>`; } },
+                    { data: 'userRole', render: function(data) { return getRoleBadge(data); } },
+                    { data: 'httpMethod', render: function(data) { return getMethodBadge(data); } },
+                    { data: 'actionName', render: function(data) { return `<span class="text-primary">${data}</span>`; } },
+                    { data: 'controllerName' },
+                    { data: 'executionDurationMs', render: function(data) { return `<span class="text-muted">${data} ms</span>`; } },
+                    { data: 'statusCode', render: function(data) { 
+                        return data === 200 ? `<span class="badge-soft badge-soft-success">200 OK</span>` 
+                                            : `<span class="badge-soft badge-soft-danger">${data} ERR</span>`; 
+                    }}
+                ]
+            });
+
+            // --- 2. Initialize Sessions Table ---
+            var sessionsTable = $('#sessionsTable').DataTable({
+                ajax: { url: '/AuditLogs/GetSessions', dataSrc: 'data' },
+                order: [[0, 'desc']],
+                pageLength: 25,
+                language: { search: "", searchPlaceholder: "Search sessions..." },
+                columns: [
+                    { data: 'loginTime', render: function(data) { return `<span class="text-muted">${data}</span>`; } },
+                    { data: 'logoutTime', render: function(data) { return data === 'Active' ? `<span class="text-success fw-bold">Live</span>` : `<span class="text-muted">${data}</span>`; } },
+                    { data: 'username', render: function(data) { return `<span class="fw-bold">${data}</span>`; } },
+                    { data: 'userRole', render: function(data) { return getRoleBadge(data); } },
+                    { data: 'ipAddress', render: function(data) { return `<span class="font-monospace text-muted" style="font-size:0.85rem;">${data}</span>`; } },
+                    { data: null, render: function(data, type, row) { return `<span>${row.browserName}</span><br><span class="text-muted" style="font-size: 0.8rem;">${row.operatingSystem}</span>`; } },
+                    { data: 'durationSeconds', render: function(data) { return data ? `<span class="text-muted">${data}s</span>` : '-'; } },
+                    { data: 'isActive', render: function(data) { 
+                        return data ? `<span class="badge-soft badge-soft-success"><i class="fas fa-circle me-1" style="font-size:8px;"></i> Active</span>` 
+                                    : `<span class="badge-soft badge-soft-neutral">Closed</span>`; 
+                    }}
+                ]
+            });
+
+            // --- 3. Initialize Uploads Table ---
+            var uploadsTable = $('#uploadsTable').DataTable({
+                ajax: { url: '/AuditLogs/GetUploads', dataSrc: 'data' },
+                order: [[0, 'desc']],
+                pageLength: 25,
+                language: { search: "", searchPlaceholder: "Search imports..." },
+                columns: [
+                    { data: 'timestamp', render: function(data) { return `<span class="text-muted">${data}</span>`; } },
+                    { data: 'username', render: function(data) { return `<span class="fw-bold">${data}</span>`; } },
+                    { data: 'fileName', render: function(data) { return `<i class="far fa-file-excel text-success me-2"></i>${data}`; } },
+                    { data: 'fileSizeBytes', render: function(data) { return `<span class="text-muted">${(data / 1024).toFixed(2)} KB</span>`; } },
+                    { data: 'recordsParsed', render: function(data) { return `<span class="fw-bold">${data}</span>`; } },
+                    { data: 'isSuccessful', render: function(data) { 
+                        return data ? `<span class="badge-soft badge-soft-success"><i class="fas fa-check me-1"></i> Success</span>` 
+                                    : `<span class="badge-soft badge-soft-danger"><i class="fas fa-times me-1"></i> Failed</span>`; 
+                    }},
+                    { data: 'errorMessage', render: function(data) { return data ? `<span class="text-danger" style="font-size:0.85rem;">${data}</span>` : '<span class="text-muted">-</span>'; } }
+                ]
+            });
+
+            // --- Custom Filtering Logic ---
+            $.fn.dataTable.ext.search.push(
+                function(settings, data, dataIndex) {
+                    var min = $('#minDate').val();
+                    var max = $('#maxDate').val();
+                    
+                    // Extracting YYYY-MM-DD from our specific date string format (yyyy-MM-dd HH:mm tt)
+                    var rawDateHtml = data[0];
+                    var dateMatch = rawDateHtml.match(/\d{4}-\d{2}-\d{2}/);
+                    var dateStr = dateMatch ? dateMatch[0] : "";
+                    
+                    if (min === "" && max === "") return true;
+                    if (min === "" && dateStr <= max) return true;
+                    if (min <= dateStr && max === "") return true;
+                    if (min <= dateStr && dateStr <= max) return true;
+                    return false;
+                }
+            );
+
+            $('#minDate, #maxDate').on('change', function () {
+                activityTable.draw();
+                sessionsTable.draw();
+                uploadsTable.draw();
+            });
+
+            $('#roleFilter').on('change', function () {
+                var selectedRole = $(this).val();
+                activityTable.column(2).search(selectedRole).draw();
+                sessionsTable.column(3).search(selectedRole).draw();
+            });
+
+            $('#clearFilters').on('click', function() {
+                $('#minDate, #maxDate, #roleFilter').val('');
+                activityTable.search('').columns().search('').draw();
+                sessionsTable.search('').columns().search('').draw();
+                uploadsTable.search('').columns().search('').draw();
+            });
+
+            // Adjust headers when changing tabs
+            $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+                $.fn.dataTable.tables({ visible: true, api: true }).columns.adjust();
+            });
+        });
+    </script>
+}

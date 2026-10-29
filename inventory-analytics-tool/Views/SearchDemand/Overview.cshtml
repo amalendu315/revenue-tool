@@ -1,0 +1,739 @@
+﻿@{
+    ViewData["Title"] = "Search Analytics Overview";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+
+    body[data-layout="horizontal"] .page-content, .page-content {
+        padding-top: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        padding-bottom: 60px !important;
+    }
+
+    :root {
+        --brand-blue: #1076bb;
+        --brand-red: #f16367;
+        --slate-50: #f8fafc;
+        --slate-100: #f1f5f9;
+        --slate-200: #e2e8f0;
+        --slate-300: #cbd5e1;
+        --slate-400: #94a3b8;
+        --slate-500: #64748b;
+        --slate-600: #475569;
+        --slate-700: #334155;
+        --slate-800: #1e293b;
+        --slate-900: #0f172a;
+    }
+
+    .custom-scope {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--slate-50);
+        color: var(--slate-900);
+    }
+
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-up {
+        animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Hero Banner */
+    .hero-banner {
+        background: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-red) 100%);
+        padding-top: 2.5rem;
+        padding-bottom: 7rem;
+        position: relative;
+    }
+
+    .hero-pattern {
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0);
+        background-size: 24px 24px;
+    }
+
+    /* Modern Inputs */
+    .modern-input, .modern-select {
+        background-color: var(--slate-50);
+        border: 1px solid var(--slate-200);
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+        color: var(--slate-800);
+        font-size: 0.875rem;
+        font-weight: 500;
+        height: 38px;
+        transition: all 0.2s;
+        outline: none;
+        width: 100%;
+    }
+
+        .modern-input:focus, .modern-select:focus {
+            background-color: #fff;
+            border-color: var(--brand-blue);
+            box-shadow: 0 0 0 4px rgba(16, 118, 187, 0.1);
+        }
+    
+    .input-icon-wrapper {
+        position: relative;
+    }
+
+        .input-icon-wrapper .lucide {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--slate-400);
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .input-icon-wrapper input {
+            padding-left: 2.5rem;
+        }
+
+    /* Analytics Panels & Cards */
+    .analytics-panel {
+        background: #ffffff;
+        border-radius: 1rem;
+        border: 1px solid var(--slate-200);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        padding: 1.5rem;
+        height: 100%;
+    }
+
+    .hover-card {
+        transition: all 0.3s ease;
+    }
+
+        .hover-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04) !important;
+            border-color: rgba(16, 118, 187, 0.3) !important;
+        }
+
+    .chart-container {
+        position: relative;
+        height: 320px;
+        width: 100%;
+    }
+
+    .legend-scroll {
+        max-height: 150px;
+        overflow-y: auto;
+        margin-top: 1rem;
+        font-size: 0.8125rem;
+    }
+
+    .legend-row {
+        display: flex;
+        align-items: center;
+        padding: 0.25rem 0;
+        border-bottom: 1px solid var(--slate-100);
+    }
+
+    /* Custom Table Styling */
+    .modern-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        font-size: 0.8125rem;
+        white-space: nowrap;
+    }
+
+        .modern-table thead th {
+            background-color: var(--slate-50);
+            color: var(--slate-600);
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--slate-200);
+            user-select: none;
+        }
+
+        .modern-table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--slate-700);
+            font-weight: 500;
+        }
+
+        .modern-table tbody tr {
+            transition: background-color 0.2s;
+        }
+
+            .modern-table tbody tr:hover {
+                background-color: var(--slate-50);
+            }
+</style>
+
+<div class="page-content custom-scope pb-5">
+    
+    <!-- 1. HERO BANNER -->
+    <div class="hero-banner px-3">
+        <div class="hero-pattern"></div>
+        <div class="container-fluid position-relative z-1" style="max-width: 1800px;">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">
+                <div class="text-white">
+                    <p class="fw-bold text-uppercase mb-1" style="font-size: 0.75rem; letter-spacing: 0.05em; color: rgba(255,255,255,0.7);">Analytics workspace</p>
+                    <h1 class="fw-bolder mb-2 d-flex align-items-center gap-2 text-white" style="font-size: 2.25rem;">
+                        <i data-lucide="bar-chart-2" style="width: 2rem; height: 2rem; opacity: 0.9;"></i> Search Analytics Overview
+                    </h1>
+                    <p class="mb-0 fw-medium opacity-75" style="font-size: 1.125rem; max-width: 600px;">
+                        Explore traffic, latency, and route behavior.
+                    </p>
+                </div>
+                
+                <!-- NEW: Quick Navigation Buttons -->
+                <div class="d-flex flex-wrap gap-3 mt-3 mt-md-0">
+                    <a href="/SearchPulse/Agents" class="btn bg-white text-primary fw-bold shadow-sm d-flex align-items-center gap-2" style="border-radius: 0.5rem; padding: 0.6rem 1.25rem; transition: transform 0.2s;">
+                        <i data-lucide="users" style="width: 1.1rem; height: 1.1rem;"></i> Agent Analytics
+                    </a>
+                    <a href="/SearchPulse/Routes" class="btn bg-white text-primary fw-bold shadow-sm d-flex align-items-center gap-2" style="border-radius: 0.5rem; padding: 0.6rem 1.25rem; transition: transform 0.2s;">
+                        <i data-lucide="route" style="width: 1.1rem; height: 1.1rem;"></i> Route Analytics
+                    </a>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. FILTER BAR -->
+    <div class="container-fluid position-relative px-3" style="max-width: 1600px; margin-top: -3.5rem; z-index: 10;">
+        <div class="card border-0 rounded-4 shadow-sm p-4 mb-4">
+            
+            <form id="overviewFiltersForm" class="row g-3 align-items-end">
+                <div class="col-12 col-md-6 col-xl-2">
+                    <label class="form-label text-muted text-xxs fw-bold text-uppercase mb-1">Route</label>
+                    <div class="input-icon-wrapper">
+                        <i data-lucide="map-pin"></i>
+                        <input type="text" id="filterRoute" class="modern-input" placeholder="e.g. DEL-DXB">
+                    </div>
+                </div>
+                
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label text-muted text-xxs fw-bold text-uppercase mb-1">From</label>
+                    <div class="input-icon-wrapper">
+                        <i data-lucide="calendar"></i>
+                        <input type="datetime-local" id="filterFrom" class="modern-input">
+                    </div>
+                </div>
+                
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label text-muted text-xxs fw-bold text-uppercase mb-1">To</label>
+                    <div class="input-icon-wrapper">
+                        <i data-lucide="calendar"></i>
+                        <input type="datetime-local" id="filterTo" class="modern-input">
+                    </div>
+                </div>
+                
+                <div class="col-12 col-md-6 col-xl-2">
+                    <label class="form-label text-muted text-xxs fw-bold text-uppercase mb-1">Route Type</label>
+                    <select id="filterType" class="modern-select cursor-pointer">
+                        <option value="all">All routes</option>
+                        <option value="domestic">Domestic</option>
+                        <option value="international">International</option>
+                        <option value="unknown">Unknown</option>
+                    </select>
+                </div>
+                
+                <div class="col-12 col-xl-2 mt-4 mt-xl-0 d-flex align-items-end">
+                    <button type="submit" id="btnSearch" class="btn text-white w-100 shadow-sm d-flex align-items-center justify-content-center gap-2" style="background-color: var(--brand-blue); font-weight: 700; height: 38px; border-radius: 0.5rem; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#0e65a0'" onmouseout="this.style.backgroundColor='var(--brand-blue)'">
+                        <i data-lucide="search" style="width: 1.1rem; height: 1.1rem;"></i> Search
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 3. MAIN CONTENT STATES -->
+        <div id="loadingState" class="text-center py-5 bg-white rounded-4 border shadow-sm my-4 d-none animate-fade-up">
+            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+            <h4 class="fw-bold" style="color: var(--slate-800);">Loading analytics data...</h4>
+            <p class="text-muted mb-0">Querying database for traffic and latency logs.</p>
+        </div>
+
+        <div id="errorState" class="alert alert-danger rounded-4 d-none shadow-sm fw-bold my-4 animate-fade-up" role="alert"></div>
+
+        <div id="emptyState" class="text-center py-5 bg-white rounded-4 border shadow-sm my-4 animate-fade-up">
+            <i data-lucide="bar-chart-2" class="text-muted mb-3" style="width: 3rem; height: 3rem; opacity: 0.5;"></i>
+            <h4 class="fw-bold" style="color: var(--slate-800);">Start with a search</h4>
+            <p class="text-muted mb-0">Choose an optional route and date range, then click <b>Search</b>.<br />Leaving dates blank uses the latest available two-day window.</p>
+        </div>
+
+        <!-- DASHBOARD CONTAINER -->
+        <div id="dashboardState" class="d-none animate-fade-up">
+            
+            <div class="d-flex align-items-center gap-2 mb-4 bg-white p-3 rounded-3 shadow-sm border w-100">
+                <i data-lucide="clock" class="text-primary" style="width: 1.25rem; height: 1.25rem;"></i>
+                <p class="text-muted fw-medium mb-0 fs-6">
+                    Response-time window: <b class="text-dark" id="txtDataFrom"></b> to <b class="text-dark" id="txtDataTo"></b>
+                    <span id="txtDataRoute" class="fw-bold text-primary"></span>
+                </p>
+            </div>
+
+            <!-- KPI Grid -->
+            <div class="row g-4 mb-4" id="kpiGrid">
+                <!-- Injected via JS -->
+            </div>
+
+            <!-- Chart Row 1 -->
+            <div class="row g-4 mb-4">
+                <div class="col-12 col-xl-8">
+                    <div class="analytics-panel">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div>
+                                <p class="text-primary fw-bold text-uppercase mb-1" style="font-size: 0.7rem;"><span id="txtInterval1">5</span>-minute buckets</p>
+                                <h4 class="fw-bold text-dark mb-0">Maximum response time</h4>
+                                <small class="text-muted">Top 10 agents by peak latency</small>
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2" onclick="charts.agentResponse.resetZoom()">
+                                <i data-lucide="zoom-out" style="width: 14px; height: 14px;"></i> Reset Zoom
+                            </button>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chartAgentResponse"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-xl-4">
+                    <div class="analytics-panel d-flex flex-column">
+                        <div class="mb-4">
+                            <p class="text-primary fw-bold text-uppercase mb-1" style="font-size: 0.7rem;">Traffic distribution</p>
+                            <h4 class="fw-bold text-dark mb-0">Agent contribution</h4>
+                            <small class="text-muted">All Account IDs</small>
+                        </div>
+                        <div class="chart-container" style="height: 200px;">
+                            <canvas id="chartAgentDonut"></canvas>
+                        </div>
+                        <div class="legend-scroll hide-scrollbar mt-3 pt-3 border-top" id="donutLegend"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Row 2 -->
+            <div class="row g-4 mb-4">
+                <div class="col-12">
+                    <div class="analytics-panel">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div>
+                                <p class="text-primary fw-bold text-uppercase mb-1" style="font-size: 0.7rem;"><span id="txtInterval2">5</span>-minute buckets</p>
+                                <h4 class="fw-bold text-dark mb-0">Request volume by leading route</h4>
+                                <small class="text-muted">Top 5 routes by total requests</small>
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2" onclick="charts.routeRequest.resetZoom()">
+                                <i data-lucide="zoom-out" style="width: 14px; height: 14px;"></i> Reset Zoom
+                            </button>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chartRouteRequest"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Row 3 -->
+            <div class="row g-4 mb-4">
+                <div class="col-12">
+                    <div class="analytics-panel">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div>
+                                <p class="text-primary fw-bold text-uppercase mb-1" style="font-size: 0.7rem;"><span id="txtInterval3">5</span>-minute buckets</p>
+                                <h4 class="fw-bold text-dark mb-0">API search count over search time</h4>
+                                <small class="text-muted">Search count by search datetime (UTC), API searches only</small>
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2" onclick="charts.apiSearch.resetZoom()">
+                                <i data-lucide="zoom-out" style="width: 14px; height: 14px;"></i> Reset Zoom
+                            </button>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chartApiSearch"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Row 4 -->
+            <div class="row g-4 mb-4">
+                <div class="col-12">
+                    <div class="analytics-panel">
+                        <div class="mb-4">
+                            <p class="text-primary fw-bold text-uppercase mb-1" style="font-size: 0.7rem;">By journey date</p>
+                            <h4 class="fw-bold text-dark mb-0">Search count: our log vs Skyscanner</h4>
+                            <small class="text-muted"><i data-lucide="info" class="text-info d-inline-block align-middle" style="width:12px; height:12px;"></i> Click a bar for route contribution</small>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chartJourneyDate"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agent Summary Table -->
+            <div class="analytics-panel mb-5">
+                <div class="mb-4">
+                    <p class="text-primary fw-bold text-uppercase mb-1" style="font-size: 0.7rem;">Agent performance</p>
+                    <h4 class="fw-bold text-dark mb-0">Response-time summary</h4>
+                    <small class="text-muted">High response time: over 6 seconds</small>
+                </div>
+                <div class="table-responsive hide-scrollbar">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Agent</th>
+                                <th class="text-end">Max response</th>
+                                <th class="text-end">Average response</th>
+                                <th class="text-center">Total requests</th>
+                                <th class="text-center">Over 6 sec</th>
+                            </tr>
+                        </thead>
+                        <tbody id="summaryTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Bar Chart Click -->
+<div class="modal fade" id="routeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg p-3">
+            <div class="modal-header border-0 pb-0">
+                <div>
+                    <p class="text-primary fw-bold text-uppercase mb-1" style="font-size: 0.7rem;" id="modalSourceLabel">Source</p>
+                    <h4 class="modal-title fw-bold text-dark" id="modalTitle">Route contribution</h4>
+                </div>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="modalLoader" class="text-center d-none py-4">
+                    <div class="spinner-border text-primary"></div>
+                    <p class="text-muted mt-2 mb-0">Analyzing route breakdown...</p>
+                </div>
+                <div id="modalError" class="alert alert-danger d-none text-sm fw-bold"></div>
+                <div id="modalChartContainer" class="chart-container d-none mt-3" style="height: 300px;">
+                    <canvas id="modalPieChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+    
+    <script>
+        let charts = { agentResponse: null, agentDonut: null, routeRequest: null, apiSearch: null, journeyDate: null, modalPie: null };
+        const palette = ["#4f46e5", "#0ea5e9", "#10b981", "#f59e0b", "#f43f5e", "#8b5cf6", "#06b6d4", "#84cc16", "#f97316", "#ec4899"];
+
+        const numFormat = (val) => new Intl.NumberFormat('en-IN').format(val || 0);
+        const compFormat = (val) => new Intl.NumberFormat('en-IN', { notation: "compact", maximumFractionDigits: 2 }).format(val || 0);
+        const msFormat = (val) => val != null ? `${numFormat(val)} ms` : "—";
+        const parseDate = (isoStr) => isoStr ? new Date(isoStr).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : "—";
+
+        $(document).ready(function () {
+            lucide.createIcons();
+            $('#overviewFiltersForm').on('submit', function (e) {
+                e.preventDefault();
+                fetchOverviewData();
+            });
+        });
+
+        function fetchOverviewData() {
+            $('#emptyState, #dashboardState, #errorState').addClass('d-none');
+            $('#loadingState').removeClass('d-none');
+            $('#btnSearch').prop('disabled', true).html('<div class="spinner-border spinner-border-sm me-2"></div> Loading...');
+
+            const payload = {
+                route: $('#filterRoute').val(),
+                from_date: $('#filterFrom').val(),
+                to_date: $('#filterTo').val(),
+                journeyType: $('#filterType').val()
+            };
+
+            $.ajax({
+                url: '/SearchPulse/api/overview',
+                type: 'GET',
+                data: payload,
+                success: function (response) {
+                    $('#loadingState').addClass('d-none');
+                    $('#btnSearch').prop('disabled', false).html('<i data-lucide="search" style="width: 1.1rem; height: 1.1rem;"></i> Search');
+                    renderDashboard(response);
+                    lucide.createIcons();
+                },
+                error: function (xhr) {
+                    $('#loadingState').addClass('d-none');
+                    $('#btnSearch').prop('disabled', false).html('<i data-lucide="search" style="width: 1.1rem; height: 1.1rem;"></i> Search');
+                    $('#errorState').removeClass('d-none').text(xhr.responseJSON?.detail || "Failed to load data.");
+                    lucide.createIcons();
+                }
+            });
+        }
+
+        function renderDashboard(data) {
+            $('#dashboardState').removeClass('d-none');
+
+            $('#txtDataFrom').text(parseDate(data.response_time_chart_window.from_date));
+            $('#txtDataTo').text(parseDate(data.response_time_chart_window.to_date));
+            if (data.filters.route) {
+                $('#txtDataRoute').html(`<span class="mx-2 opacity-25">•</span> Route: ${data.filters.route}`);
+            } else {
+                $('#txtDataRoute').html('');
+            }
+            
+            const interval = data.chart_aggregation_minutes || 5;
+            $('#txtInterval1, #txtInterval2, #txtInterval3').text(interval);
+
+            // Render KPIs using Unified Theme standard cards
+            const kpis = data.kpis;
+            const ratio = kpis.search_to_result_ratio;
+            const kpiHtml = `
+                        ${buildKpi("Total requests", compFormat(kpis.total_requests), `${numFormat(kpis.total_requests)} search log entries`)}
+                        ${buildKpi("Active agents", numFormat(kpis.total_active_agents), "Distinct Account IDs")}
+                        ${buildKpi("Search to result", ratio?.percentage == null ? "—" : `${ratio.percentage}%`, `${numFormat(ratio?.successful_searches)} successful searches`)}
+                        ${buildKpi("Average response time", msFormat(kpis.average_response_time_ms), "Mean latency")}
+                        ${buildKpi("P50 response time", msFormat(kpis.response_time_p50_ms), "Median latency")}
+                        ${buildKpi("P85 response time", msFormat(kpis.response_time_p85_ms), "85th percentile latency")}
+                        ${buildKpi("P99 response time", msFormat(kpis.response_time_p99_ms), "99th percentile latency")}
+                        ${buildKpi("Peak response time", msFormat(kpis.max_response_time_ms), "Maximum observed latency")}
+                        ${buildKpi("Most searched route", kpis.most_searched_route?.route || "—", `${numFormat(kpis.most_searched_route?.request_count)} requests`)}
+                        ${buildKpi("API search count", compFormat(kpis.api_search_count), `${numFormat(kpis.api_search_count)} API searches`)}
+                        ${buildKpi("Portal search count", compFormat(kpis.portal_search_count), `${numFormat(kpis.portal_search_count)} portal searches`)}
+                    `;
+            $('#kpiGrid').html(kpiHtml);
+
+            Object.keys(charts).forEach(key => { if (charts[key]) charts[key].destroy(); });
+
+            renderAgentResponseChart(data.response_time_series, data.response_time_top_agents);
+            renderAgentDonut(data.agent_contributions);
+            renderRouteRequestChart(data.route_request_series, data.top_routes);
+            renderApiSearchChart(data.api_search_time_series);
+            renderJourneyBarChart(data.journey_date_series);
+
+            let tbody = '';
+            data.agent_summary.forEach(row => {
+                let name = row.account_name || `Account ${row.account_id}`;
+                tbody += `<tr>
+                                    <td class="fw-bolder text-dark">${name}</td>
+                                    <td class="text-end fw-bold text-muted">${msFormat(row.max_response_time_ms)}</td>
+                                    <td class="text-end fw-bold text-primary">${msFormat(row.average_response_time_ms)}</td>
+                                    <td class="text-center fw-bolder">${numFormat(row.total_requests)}</td>
+                                    <td class="text-center">
+                                        ${row.high_response_time_requests > 0
+                        ? `<span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1">${numFormat(row.high_response_time_requests)}</span>`
+                        : `<span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">0</span>`}
+                                    </td>
+                                  </tr>`;
+            });
+            $('#summaryTableBody').html(tbody);
+        }
+
+        function buildKpi(label, value, detail) {
+            return `
+                        <div class="col-12 col-sm-6 col-lg-3">
+                            <article class="bg-white border border-slate-200 rounded-4 p-4 shadow-sm h-100 d-flex flex-column justify-content-between hover-card">
+                                <div>
+                                    <p class="text-muted fw-bold text-uppercase mb-2" style="font-size: 0.7rem; letter-spacing: 0.05em;">${label}</p>
+                                    <div class="fw-bolder text-dark mb-1" style="font-size: 1.75rem; line-height: 1.2;">${value}</div>
+                                </div>
+                                <span class="text-muted fw-medium" style="font-size: 0.75rem;">${detail}</span>
+                            </article>
+                        </div>`;
+        }
+
+        const commonTimeOptions = {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 12 } } },
+                zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' } }
+            },
+            scales: {
+                x: { type: 'time', time: { unit: 'hour' }, grid: { color: 'rgba(226, 232, 240, 0.5)' }, ticks: { font: { family: 'Inter' } } },
+                y: { grid: { color: 'rgba(226, 232, 240, 1)' }, ticks: { font: { family: 'Inter' } } }
+            }
+        };
+
+        function renderAgentResponseChart(series, agents) {
+            let datasets = agents.map((agent, i) => {
+                return {
+                    label: agent.account_name || `Account ${agent.account_id}`,
+                    data: series.filter(s => s.account_id === agent.account_id).map(s => ({ x: new Date(s.bucket_start), y: s.max_response_time_ms })),
+                    borderColor: palette[i % palette.length],
+                    tension: 0.2, fill: false, pointRadius: 0
+                };
+            });
+            const ctx = document.getElementById('chartAgentResponse').getContext('2d');
+            charts.agentResponse = new Chart(ctx, { type: 'line', data: { datasets }, options: commonTimeOptions });
+        }
+
+        function renderAgentDonut(agents) {
+            let labels = agents.map(a => a.account_name || `Account ${a.account_id}`);
+            let data = agents.map(a => a.request_count);
+            let colors = agents.map((a, i) => palette[i % palette.length]);
+
+            const ctx = document.getElementById('chartAgentDonut').getContext('2d');
+            charts.agentDonut = new Chart(ctx, {
+                type: 'doughnut',
+                data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '70%' }
+            });
+
+            let legendHtml = '';
+            agents.forEach((a, i) => {
+                legendHtml += `
+                            <div class="legend-row py-2">
+                                <span style="width: 10px; height: 10px; border-radius: 50%; background: ${colors[i]}; margin-right: 12px; flex-shrink: 0;"></span>
+                                <span class="fw-bold flex-grow-1 text-truncate text-dark" title="${labels[i]}">${labels[i]}</span>
+                                <span class="text-muted fw-bold me-3 text-end" style="width: 60px;">${numFormat(a.request_count)}</span>
+                                <span class="fw-bolder text-end" style="color: var(--brand-blue); width: 45px;">${a.traffic_percentage}%</span>
+                            </div>`;
+            });
+            $('#donutLegend').html(legendHtml);
+        }
+
+        function renderRouteRequestChart(series, routes) {
+            let datasets = routes.map((route, i) => {
+                return {
+                    label: route.route,
+                    data: series.filter(s => s.route === route.route).map(s => ({ x: new Date(s.bucket_start), y: s.request_count })),
+                    borderColor: palette[i % palette.length],
+                    tension: 0.2, fill: false, pointRadius: 0
+                };
+            });
+            const ctx = document.getElementById('chartRouteRequest').getContext('2d');
+            charts.routeRequest = new Chart(ctx, { type: 'line', data: { datasets }, options: commonTimeOptions });
+        }
+
+        function renderApiSearchChart(series) {
+            let data = {
+                datasets: [{
+                    label: "API search count",
+                    data: series.map(s => ({ x: new Date(s.bucket_start), y: s.api_search_count })),
+                    borderColor: "#4f46e5", backgroundColor: "rgba(79, 70, 229, 0.16)",
+                    fill: true, tension: 0.2, pointRadius: 0
+                }]
+            };
+            const ctx = document.getElementById('chartApiSearch').getContext('2d');
+            charts.apiSearch = new Chart(ctx, { type: 'line', data: data, options: commonTimeOptions });
+        }
+
+        function renderJourneyBarChart(series) {
+            let data = {
+                labels: [...new Set(series.map(s => s.journey_date))].sort(),
+                datasets: [
+                    { label: "Our API search", backgroundColor: "#4f46e5", yAxisID: 'y', data: series.map(s => s.api_count), borderRadius: 4 },
+                    { label: "Our portal search", backgroundColor: "#f59e0b", yAxisID: 'y', data: series.map(s => s.portal_count), borderRadius: 4 },
+                    { label: "Skyscanner search", backgroundColor: "#0891b2", yAxisID: 'y1', data: series.map(s => s.skyscanner_count), borderRadius: 4 }
+                ]
+            };
+
+            let options = {
+                responsive: true, maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' } },
+                    legend: { labels: { font: { family: 'Inter' } } }
+                },
+                scales: {
+                    x: { type: 'time', time: { unit: 'day' }, grid: { display: false }, ticks: { font: { family: 'Inter' } } },
+                    y: { position: 'left', grid: { color: 'rgba(226, 232, 240, 1)' }, ticks: { font: { family: 'Inter' } } },
+                    y1: { position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Skyscanner searches', font: { family: 'Inter', weight: 'bold' } }, ticks: { font: { family: 'Inter' } } }
+                },
+                onClick: (e, elements, chart) => {
+                    if (!elements.length) return;
+                    const datasetIndex = elements[0].datasetIndex;
+                    const index = elements[0].index;
+                    const sourceLabel = chart.data.datasets[datasetIndex].label;
+                    const sourceVal = sourceLabel.includes("Skyscanner") ? "skyscanner" : "ours";
+                    openRouteModal(chart.data.labels[index], sourceVal, sourceLabel);
+                },
+                onHover: (e, elements) => {
+                    e.native.target.style.cursor = elements.length ? 'pointer' : 'default';
+                }
+            };
+            const ctx = document.getElementById('chartJourneyDate').getContext('2d');
+            charts.journeyDate = new Chart(ctx, { type: 'bar', data: data, options: options });
+        }
+
+        function openRouteModal(date, source, label) {
+            $('#modalSourceLabel').text(label);
+            const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0];
+            $('#modalTitle').text(`Route contribution — ${dateStr}`);
+            $('#modalLoader').removeClass('d-none');
+            $('#modalChartContainer, #modalError').addClass('d-none');
+            
+            const modal = new bootstrap.Modal(document.getElementById('routeModal'));
+            modal.show();
+
+            $.ajax({
+                url: '/SearchPulse/api/route-contribution',
+                type: 'GET',
+                data: { date: dateStr, source: source, journeyType: $('#filterType').val() },
+                success: function (response) {
+                    $('#modalLoader').addClass('d-none');
+                    $('#modalChartContainer').removeClass('d-none');
+                    renderModalPie(response.routes || []);
+                },
+                error: function (xhr) {
+                    $('#modalLoader').addClass('d-none');
+                    $('#modalError').removeClass('d-none').text(xhr.responseJSON?.detail || "Failed to load routes.");
+                }
+            });
+        }
+
+        function renderModalPie(routes) {
+            if (charts.modalPie) charts.modalPie.destroy();
+            
+            const top = routes.slice(0, 10);
+            const otherCount = routes.slice(10).reduce((sum, row) => sum + row.search_count, 0);
+            const slices = otherCount > 0 ? [...top, { route: "Other", search_count: otherCount }] : top;
+
+            const ctx = document.getElementById('modalPieChart').getContext('2d');
+            charts.modalPie = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: slices.map(s => s.route),
+                    datasets: [{ data: slices.map(s => s.search_count), backgroundColor: palette, borderWidth: 0 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right', labels: { font: { family: 'Inter', size: 12 } } } }
+                }
+            });
+        }
+    </script>
+}
