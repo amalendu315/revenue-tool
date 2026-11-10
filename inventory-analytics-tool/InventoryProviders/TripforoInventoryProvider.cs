@@ -38,15 +38,24 @@ namespace inventory_analytics_tool.InventoryProviders
 
                 // 1. Build the specific Tripforo Request Body
                 // Note: Move these credentials to your appsettings.json later!
+                var userId = _config["Tripforo:UserId"];
+                var password = _config["Tripforo:Password"];
+
+                if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(password))
+                {
+                    throw new InvalidOperationException(
+                        "Tripforo credentials are not configured.");
+                }
+
                 var requestBody = new
                 {
                     Auth_Header = new
                     {
-                        UserId = _config["Tripforo:UserId"] ?? "airiq",
-                        Password = _config["Tripforo:Password"] ?? "3BB0C8CF63B4FCA8348E505AE8EA4AEFB9D45FA7",
-                        IP_Address = "XXXXXXXXX", // Replace with your actual server IP if required
-                        Request_Id = "Biplab",
-                        IMEI_Number = "2232323232326"
+                        UserId = userId,
+                        Password = password,
+                        IP_Address = _config["Tripforo:IP_Address"],
+                        Request_Id = _config["Tripforo:Request_Id"],
+                        IMEI_Number = _config["Tripforo:IMEI_Number"]
                     }
                 };
 
